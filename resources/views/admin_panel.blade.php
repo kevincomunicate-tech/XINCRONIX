@@ -1,0 +1,2323 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Xincronix — Panel Super Administrador</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --ink:      #07101f;
+  --navy:     #0d1f3c;
+  --cobalt:   #1a3a7c;
+  --electric: #2a5bff;
+  --sky:      #5b8bff;
+  --frost:    #adc6ff;
+  --white:    #ffffff;
+  --muted:    #6b7a9a;
+  --success:  #10b981;
+  --warning:  #f59e0b;
+  --danger:   #ef4444;
+  --purple:   #8b5cf6;
+  --accent:   #ff6b35;
+  --border:   rgba(255,255,255,0.08);
+  --glass:    rgba(255,255,255,0.04);
+  --sidebar-w: 260px;
+}
+
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+html { font-size:15px; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--ink);
+  color: var(--white);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+.app { display: flex; min-height: 100vh; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: var(--sidebar-w);
+  background: linear-gradient(180deg, #0a1728 0%, #060f1e 100%);
+  border-right: 1px solid var(--border);
+  position: fixed; top: 0; left: 0; height: 100vh;
+  display: flex; flex-direction: column;
+  z-index: 100;
+  transition: transform 0.3s ease;
+}
+
+.sidebar-header {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.logo-icon {
+  width: 36px; height: 36px; border-radius: 9px;
+  background: rgba(42,91,255,0.2); border: 1px solid rgba(42,91,255,0.35);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 800; color: var(--sky);
+  flex-shrink: 0;
+}
+.logo-text { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; letter-spacing: -0.4px; }
+.logo-text span { color: var(--sky); }
+
+.sidebar-badge {
+  margin: 0 16px 0;
+  padding: 6px 12px;
+  background: rgba(139,92,246,0.12);
+  border: 1px solid rgba(139,92,246,0.25);
+  border-radius: 8px;
+  font-size: 10.5px; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; color: #a78bfa;
+  margin-top: 14px; margin-bottom: 6px;
+  display: flex; align-items: center; gap: 6px;
+}
+.badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #8b5cf6; animation: blink 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.2;} }
+
+.nav-section-label {
+  font-size: 9.5px; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase; color: rgba(255,255,255,0.2);
+  padding: 14px 20px 6px;
+}
+
+.nav-item {
+  display: flex; align-items: center; gap: 11px;
+  padding: 10px 16px; margin: 2px 8px;
+  border-radius: 9px; cursor: pointer;
+  font-size: 13.5px; font-weight: 500;
+  color: rgba(255,255,255,0.45);
+  transition: all 0.18s; position: relative;
+  border: 1px solid transparent;
+  text-decoration: none;
+}
+.nav-item:hover { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.8); }
+.nav-item.active {
+  background: rgba(42,91,255,0.15);
+  border-color: rgba(42,91,255,0.25);
+  color: var(--white);
+}
+.nav-item.active::before {
+  content: '';
+  position: absolute; left: -8px; top: 50%; transform: translateY(-50%);
+  width: 3px; height: 20px; background: var(--electric); border-radius: 2px;
+}
+.nav-icon { font-size: 16px; flex-shrink: 0; width: 20px; text-align: center; }
+.nav-badge {
+  margin-left: auto; background: var(--danger);
+  color: white; font-size: 10px; font-weight: 700;
+  padding: 2px 6px; border-radius: 20px;
+}
+.nav-badge.green { background: var(--success); }
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 16px;
+  border-top: 1px solid var(--border);
+}
+.admin-card {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px; border-radius: 10px;
+  background: var(--glass); cursor: pointer;
+  transition: background 0.2s;
+}
+.admin-card:hover { background: rgba(255,255,255,0.07); }
+.admin-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--electric), var(--purple));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; flex-shrink: 0;
+}
+.admin-info .admin-name { font-size: 12.5px; font-weight: 600; color: var(--white); }
+.admin-info .admin-role { font-size: 11px; color: rgba(255,255,255,0.35); }
+.logout-btn {
+  margin-left: auto; background: none; border: none;
+  color: rgba(255,255,255,0.3); cursor: pointer; font-size: 16px;
+  padding: 4px; transition: color 0.2s;
+}
+.logout-btn:hover { color: var(--danger); }
+
+/* ── MAIN ── */
+.main {
+  margin-left: var(--sidebar-w);
+  flex: 1; display: flex; flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  height: 64px;
+  background: rgba(7,16,31,0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 28px; gap: 16px;
+  position: sticky; top: 0; z-index: 50;
+}
+.topbar-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; flex: 1; }
+.topbar-search {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--glass); border: 1px solid var(--border);
+  border-radius: 9px; padding: 7px 14px;
+  width: 280px;
+}
+.topbar-search input {
+  background: none; border: none; outline: none;
+  font-size: 13px; color: var(--white); font-family: 'DM Sans', sans-serif;
+  width: 100%;
+}
+.topbar-search input::placeholder { color: rgba(255,255,255,0.25); }
+.topbar-search .search-icon { color: rgba(255,255,255,0.25); font-size: 14px; }
+
+.topbar-actions { display: flex; align-items: center; gap: 10px; }
+.icon-btn {
+  width: 36px; height: 36px; border-radius: 9px;
+  background: var(--glass); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.2s; position: relative;
+  font-size: 16px;
+}
+.icon-btn:hover { background: rgba(42,91,255,0.1); border-color: rgba(42,91,255,0.3); }
+.icon-btn .notif-dot {
+  position: absolute; top: 6px; right: 6px;
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--danger); border: 1.5px solid var(--ink);
+}
+
+/* ── CONTENT ── */
+.content { padding: 28px; flex: 1; }
+
+.view { display: none; animation: fadeIn 0.35s ease; }
+.view.active { display: block; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+
+/* ── STATS CARDS ── */
+.stats-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 16px; margin-bottom: 28px;
+}
+.stat-card {
+  background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%);
+  border: 1px solid var(--border); border-radius: 14px;
+  padding: 20px; position: relative; overflow: hidden;
+  transition: border-color 0.2s;
+}
+.stat-card:hover { border-color: rgba(255,255,255,0.15); }
+.stat-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+}
+.stat-card.blue::before  { background: linear-gradient(90deg, var(--electric), var(--sky)); }
+.stat-card.green::before { background: linear-gradient(90deg, var(--success), #34d399); }
+.stat-card.warn::before  { background: linear-gradient(90deg, var(--warning), #fbbf24); }
+.stat-card.purple::before{ background: linear-gradient(90deg, var(--purple), #a78bfa); }
+
+.stat-icon {
+  width: 38px; height: 38px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; margin-bottom: 12px;
+}
+.stat-card.blue   .stat-icon { background: rgba(42,91,255,0.15); }
+.stat-card.green  .stat-icon { background: rgba(16,185,129,0.15); }
+.stat-card.warn   .stat-icon { background: rgba(245,158,11,0.15); }
+.stat-card.purple .stat-icon { background: rgba(139,92,246,0.15); }
+
+.stat-num  { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; line-height:1; }
+.stat-label{ font-size:12px; color:rgba(255,255,255,0.4); margin-top:4px; }
+.stat-delta{
+  position:absolute; top:16px; right:16px;
+  font-size:11px; font-weight:600; padding: 3px 8px; border-radius:20px;
+}
+.delta-up   { background:rgba(16,185,129,0.15);  color:var(--success); }
+.delta-down { background:rgba(239,68,68,0.15);   color:var(--danger); }
+.delta-pend { background:rgba(245,158,11,0.15);  color:var(--warning); }
+
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px;
+}
+.section-title { font-family:'Syne',sans-serif; font-size:20px; font-weight:800; }
+.section-sub   { font-size:13px; color:rgba(255,255,255,0.4); margin-top:2px; }
+
+.btn {
+  display:inline-flex; align-items:center; gap:7px;
+  padding:9px 18px; border-radius:9px; border:none;
+  font-size:13px; font-weight:600; font-family:'DM Sans',sans-serif;
+  cursor:pointer; transition:all 0.2s;
+}
+.btn-primary { background:var(--electric); color:var(--white); box-shadow:0 0 20px rgba(42,91,255,0.3); }
+.btn-primary:hover { background:#3d6aff; transform:translateY(-1px); box-shadow:0 4px 28px rgba(42,91,255,0.45); }
+.btn-outline { background:transparent; color:rgba(255,255,255,0.6); border:1px solid var(--border); }
+.btn-outline:hover { background:var(--glass); color:var(--white); border-color:rgba(255,255,255,0.2); }
+.btn-danger  { background:rgba(239,68,68,0.15); color:var(--danger); border:1px solid rgba(239,68,68,0.25); }
+.btn-danger:hover  { background:rgba(239,68,68,0.25); }
+.btn-success { background:rgba(16,185,129,0.15); color:var(--success); border:1px solid rgba(16,185,129,0.25); }
+.btn-success:hover { background:rgba(16,185,129,0.25); }
+.btn-sm { padding:6px 12px; font-size:12px; border-radius:7px; }
+
+.filter-bar {
+  display:flex; align-items:center; gap:10px;
+  margin-bottom:18px; flex-wrap:wrap;
+}
+.filter-input {
+  display:flex; align-items:center; gap:8px;
+  background:var(--glass); border:1px solid var(--border);
+  border-radius:9px; padding:8px 14px; flex:1; min-width:200px;
+}
+.filter-input input {
+  background:none; border:none; outline:none; width:100%;
+  font-size:13px; color:var(--white); font-family:'DM Sans',sans-serif;
+}
+.filter-input input::placeholder { color:rgba(255,255,255,0.22); }
+.filter-select {
+  background:var(--glass); border:1px solid var(--border);
+  border-radius:9px; padding:8px 14px;
+  font-size:13px; color:var(--white); font-family:'DM Sans',sans-serif;
+  cursor:pointer; outline:none; -webkit-appearance:none;
+}
+.filter-select option { background:var(--navy); }
+
+.table-wrap {
+  background:var(--glass); border:1px solid var(--border);
+  border-radius:14px; overflow:hidden;
+}
+.data-table { width:100%; border-collapse:collapse; }
+.data-table thead tr {
+  background:rgba(255,255,255,0.03);
+  border-bottom:1px solid var(--border);
+}
+.data-table th {
+  padding:12px 16px; text-align:left;
+  font-size:11px; font-weight:700; letter-spacing:0.8px;
+  text-transform:uppercase; color:rgba(255,255,255,0.3);
+  white-space:nowrap;
+}
+.data-table td {
+  padding:13px 16px; font-size:13.5px;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+  vertical-align:middle;
+}
+.data-table tr:last-child td { border-bottom:none; }
+.data-table tbody tr { transition:background 0.15s; }
+.data-table tbody tr:hover { background:rgba(255,255,255,0.03); }
+
+.table-avatar {
+  width:32px; height:32px; border-radius:8px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px; font-weight:700; flex-shrink:0;
+}
+.cell-main  { font-weight:600; color:var(--white); }
+.cell-sub   { font-size:11.5px; color:rgba(255,255,255,0.35); margin-top:2px; }
+
+.badge {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:3px 10px; border-radius:20px;
+  font-size:11px; font-weight:700; white-space:nowrap;
+}
+.badge::before { content:''; width:5px; height:5px; border-radius:50%; }
+.badge-active  { background:rgba(16,185,129,0.15); color:#34d399; border:1px solid rgba(16,185,129,0.2); }
+.badge-active::before { background:#34d399; }
+.badge-pending { background:rgba(245,158,11,0.15); color:#fbbf24; border:1px solid rgba(245,158,11,0.2); }
+.badge-pending::before { background:#fbbf24; }
+.badge-inactive{ background:rgba(107,122,154,0.15); color:var(--muted); border:1px solid rgba(107,122,154,0.2); }
+.badge-inactive::before { background:var(--muted); }
+.badge-rejected{ background:rgba(239,68,68,0.15); color:#f87171; border:1px solid rgba(239,68,68,0.2); }
+.badge-rejected::before { background:#f87171; }
+
+.plan-badge {
+  padding:3px 9px; border-radius:6px; font-size:11px; font-weight:700;
+}
+.plan-starter    { background:rgba(107,122,154,0.2); color:var(--muted); }
+.plan-business   { background:rgba(42,91,255,0.15);  color:var(--sky); }
+.plan-enterprise { background:rgba(240,192,64,0.15); color:#f0c040; }
+
+.actions-cell { display:flex; align-items:center; gap:6px; }
+.action-btn {
+  width:30px; height:30px; border-radius:7px;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:all 0.15s; border:none;
+  font-size:14px; background:rgba(255,255,255,0.04);
+}
+.action-btn:hover { transform:scale(1.1); }
+.action-btn.view-btn  { color:var(--sky); }
+.action-btn.view-btn:hover  { background:rgba(91,139,255,0.15); }
+.action-btn.edit-btn  { color:var(--warning); }
+.action-btn.edit-btn:hover  { background:rgba(245,158,11,0.15); }
+.action-btn.del-btn   { color:var(--danger); }
+.action-btn.del-btn:hover   { background:rgba(239,68,68,0.15); }
+.action-btn.approve-btn { color:var(--success); }
+.action-btn.approve-btn:hover { background:rgba(16,185,129,0.15); }
+
+.pagination {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 16px; border-top:1px solid var(--border);
+  font-size:12.5px; color:rgba(255,255,255,0.4);
+}
+.page-btns { display:flex; gap:6px; }
+.page-btn {
+  width:30px; height:30px; border-radius:7px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:12.5px; cursor:pointer; background:var(--glass);
+  border:1px solid var(--border); color:rgba(255,255,255,0.5);
+  transition:all 0.15s;
+}
+.page-btn:hover, .page-btn.active {
+  background:rgba(42,91,255,0.2); border-color:rgba(42,91,255,0.4); color:var(--white);
+}
+
+/* MODAL */
+.modal-overlay {
+  position:fixed; inset:0; z-index:200;
+  background:rgba(0,0,0,0.7); backdrop-filter:blur(6px);
+  display:flex; align-items:center; justify-content:center;
+  padding:20px; opacity:0; pointer-events:none;
+  transition:opacity 0.25s;
+}
+.modal-overlay.open { opacity:1; pointer-events:all; }
+
+.modal {
+  background:linear-gradient(145deg, #0e1e38 0%, #080f1e 100%);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:18px; width:100%; max-width:620px;
+  max-height:90vh; overflow-y:auto;
+  transform:scale(0.95) translateY(20px);
+  transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow:0 24px 80px rgba(0,0,0,0.6);
+}
+.modal-overlay.open .modal { transform:scale(1) translateY(0); }
+.modal.modal-lg { max-width:820px; }
+
+.modal-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:22px 24px 18px; border-bottom:1px solid var(--border);
+}
+.modal-title { font-family:'Syne',sans-serif; font-size:18px; font-weight:800; }
+.modal-close {
+  width:32px; height:32px; border-radius:8px;
+  background:var(--glass); border:none; cursor:pointer;
+  color:rgba(255,255,255,0.4); font-size:18px;
+  display:flex; align-items:center; justify-content:center;
+  transition:all 0.15s;
+}
+.modal-close:hover { background:rgba(239,68,68,0.15); color:var(--danger); }
+
+.modal-body { padding:22px 24px; }
+.modal-footer {
+  padding:16px 24px; border-top:1px solid var(--border);
+  display:flex; align-items:center; justify-content:flex-end; gap:10px;
+}
+
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.form-grid.single { grid-template-columns:1fr; }
+.form-group { display:flex; flex-direction:column; gap:6px; }
+.form-group.full { grid-column: 1 / -1; }
+.form-label {
+  font-size:11px; font-weight:700; letter-spacing:0.5px;
+  text-transform:uppercase; color:rgba(255,255,255,0.35);
+}
+.form-control {
+  background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);
+  border-radius:9px; padding:10px 14px;
+  font-size:13.5px; font-family:'DM Sans',sans-serif;
+  color:var(--white); outline:none; transition:all 0.2s;
+}
+.form-control::placeholder { color:rgba(255,255,255,0.2); }
+.form-control:focus {
+  background:rgba(42,91,255,0.07); border-color:rgba(42,91,255,0.45);
+  box-shadow:0 0 0 3px rgba(42,91,255,0.1);
+}
+select.form-control { -webkit-appearance:none; cursor:pointer; }
+select.form-control option { background:var(--navy); }
+textarea.form-control { resize:vertical; min-height:80px; }
+.form-error { font-size:11.5px; color:var(--danger); display:none; }
+.form-error.show { display:block; }
+
+.detail-section { margin-bottom:20px; }
+.detail-section-title {
+  font-size:10.5px; font-weight:700; letter-spacing:1.5px;
+  text-transform:uppercase; color:rgba(255,255,255,0.25);
+  margin-bottom:12px; padding-bottom:8px;
+  border-bottom:1px solid var(--border);
+}
+.detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.detail-item .dk { font-size:11.5px; color:rgba(255,255,255,0.35); margin-bottom:3px; }
+.detail-item .dv { font-size:13.5px; font-weight:600; color:var(--white); }
+
+/* CONFIRM */
+.confirm-overlay {
+  position:fixed; inset:0; z-index:300;
+  background:rgba(0,0,0,0.8); backdrop-filter:blur(8px);
+  display:flex; align-items:center; justify-content:center;
+  padding:20px; opacity:0; pointer-events:none; transition:opacity 0.2s;
+}
+.confirm-overlay.open { opacity:1; pointer-events:all; }
+.confirm-box {
+  background:linear-gradient(145deg,#12213d,#080f1e);
+  border:1px solid rgba(239,68,68,0.2);
+  border-radius:16px; padding:28px; max-width:400px; width:100%;
+  transform:scale(0.9); transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow:0 24px 60px rgba(0,0,0,0.7);
+  text-align:center;
+}
+.confirm-overlay.open .confirm-box { transform:scale(1); }
+.confirm-icon { font-size:44px; margin-bottom:14px; }
+.confirm-title { font-family:'Syne',sans-serif; font-size:18px; font-weight:800; margin-bottom:8px; }
+.confirm-msg { font-size:13.5px; color:rgba(255,255,255,0.45); line-height:1.6; margin-bottom:22px; }
+.confirm-btns { display:flex; gap:10px; justify-content:center; }
+
+/* TOAST */
+.toast-container { position:fixed; top:20px; right:20px; z-index:999; display:flex; flex-direction:column; gap:8px; }
+.toast {
+  display:flex; align-items:center; gap:10px;
+  padding:12px 16px; border-radius:11px;
+  font-size:13px; font-weight:500; max-width:340px;
+  backdrop-filter:blur(10px);
+  box-shadow:0 8px 24px rgba(0,0,0,0.4);
+  transform:translateX(110%); opacity:0;
+  transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1);
+}
+.toast.show { transform:translateX(0); opacity:1; }
+.toast.success { background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3); color:#6ee7b7; }
+.toast.error   { background:rgba(239,68,68,0.12);  border:1px solid rgba(239,68,68,0.3);  color:#fca5a5; }
+.toast.warn    { background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.3); color:#fcd34d; }
+.toast.info    { background:rgba(42,91,255,0.12);  border:1px solid rgba(42,91,255,0.3);  color:var(--frost); }
+
+/* SOPORTE */
+.tickets-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:24px; }
+.ticket-stat-card {
+  padding:18px 20px; background:var(--glass); border:1px solid var(--border); border-radius:12px;
+  display:flex; align-items:center; gap:14px;
+}
+.ticket-stat-icon { font-size:24px; }
+.ticket-stat-num { font-family:'Syne',sans-serif; font-size:24px; font-weight:800; }
+.ticket-stat-label { font-size:12px; color:rgba(255,255,255,0.35); }
+
+.ticket-card {
+  background:var(--glass); border:1px solid var(--border); border-radius:12px;
+  padding:18px 20px; margin-bottom:10px; transition:all 0.2s; cursor:pointer;
+}
+.ticket-card:hover { background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.12); }
+.ticket-card-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:8px; }
+.ticket-id { font-size:11px; font-weight:700; color:var(--sky); }
+.ticket-title { font-size:14px; font-weight:600; color:var(--white); margin-bottom:4px; }
+.ticket-meta { font-size:12px; color:rgba(255,255,255,0.35); }
+.ticket-priority { padding:3px 9px; border-radius:6px; font-size:10.5px; font-weight:700; }
+.prio-high   { background:rgba(239,68,68,0.15);  color:#f87171; }
+.prio-medium { background:rgba(245,158,11,0.15); color:#fbbf24; }
+.prio-low    { background:rgba(16,185,129,0.15); color:#34d399; }
+
+/* CHARTS */
+.chart-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px; }
+.chart-card {
+  background:var(--glass); border:1px solid var(--border); border-radius:14px; padding:20px;
+}
+.chart-title { font-size:13px; font-weight:700; color:rgba(255,255,255,0.6); margin-bottom:16px; }
+.bar-chart { display:flex; align-items:flex-end; gap:8px; height:120px; }
+.bar-wrap  { flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; }
+.bar {
+  width:100%; border-radius:4px 4px 0 0;
+  background:linear-gradient(to top, var(--electric), var(--sky));
+  min-height:4px; transition:height 0.8s cubic-bezier(0.4,0,0.2,1);
+}
+.bar-label { font-size:10px; color:rgba(255,255,255,0.3); }
+
+.donut-wrap { display:flex; align-items:center; gap:20px; }
+.donut {
+  width:100px; height:100px; border-radius:50%;
+  background:conic-gradient(var(--electric) 0% 45%, var(--success) 45% 75%, var(--warning) 75% 90%, var(--purple) 90% 100%);
+  position:relative; flex-shrink:0;
+}
+.donut::after {
+  content:''; position:absolute; inset:22px;
+  border-radius:50%; background:linear-gradient(145deg,#0e1e38,#080f1e);
+}
+.donut-legend { display:flex; flex-direction:column; gap:7px; }
+.legend-item { display:flex; align-items:center; gap:7px; font-size:12px; color:rgba(255,255,255,0.55); }
+.legend-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+
+.empty-state {
+  text-align:center; padding:48px 20px;
+  color:rgba(255,255,255,0.25);
+}
+.empty-state .empty-icon { font-size:40px; margin-bottom:12px; opacity:.4; }
+.empty-state p { font-size:13.5px; }
+
+.spinner {
+  width:18px; height:18px; border-radius:50%;
+  border:2px solid rgba(255,255,255,0.2);
+  border-top-color:white;
+  animation:spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+.loading-overlay {
+  position:absolute; inset:0; background:rgba(7,16,31,0.85);
+  display:flex; align-items:center; justify-content:center;
+  border-radius:14px; z-index:10;
+}
+
+/* Debug panel */
+.debug-panel {
+  background: rgba(239,68,68,0.05);
+  border: 1px solid rgba(239,68,68,0.2);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+  display: none;
+}
+.debug-panel.show { display: block; }
+.debug-panel strong { color: var(--danger); }
+
+@media(max-width:900px){
+  .stats-grid   { grid-template-columns:1fr 1fr; }
+  .chart-row    { grid-template-columns:1fr; }
+  .tickets-grid { grid-template-columns:1fr; }
+  .form-grid    { grid-template-columns:1fr; }
+  .detail-grid  { grid-template-columns:1fr; }
+}
+@media(max-width:680px){
+  .sidebar { transform:translateX(-100%); }
+  .sidebar.open { transform:translateX(0); }
+  .main { margin-left:0; }
+  .stats-grid { grid-template-columns:1fr; }
+  .topbar-search { display:none; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-icon"><img src="{{ asset('assets/img/logo xincronix.png') }}" alt="Xincronix" style="width:100%;height:100%;object-fit:contain;"></div>
+    <div class="logo-text">Xin<span>cronix</span></div>
+  </div>
+
+  <div class="sidebar-badge">
+    <span class="badge-dot"></span> Super Admin
+  </div>
+
+  <div class="nav-section-label">Panel principal</div>
+  <a class="nav-item active" onclick="showView('dashboard')" href="#">
+    <span class="nav-icon">📊</span> Dashboard
+  </a>
+
+  <div class="nav-section-label">Gestión</div>
+  <a class="nav-item" onclick="showView('empresas')" href="#">
+    <span class="nav-icon">🏢</span> Empresas
+    <span class="nav-badge green" id="badge-empresas">0</span>
+  </a>
+  <a class="nav-item" onclick="showView('usuarios')" href="#">
+    <span class="nav-icon">👥</span> Usuarios
+    <span class="nav-badge green" id="badge-usuarios">0</span>
+  </a>
+  <a class="nav-item" onclick="showView('pagos')" href="#">
+    <span class="nav-icon">💳</span> Solicitudes de Pago
+    <span class="nav-badge" id="badge-pagos">0</span>
+  </a>
+
+  <div class="nav-section-label">Sistema</div>
+  <a class="nav-item" onclick="showView('soporte')" href="#">
+    <span class="nav-icon">🎧</span> Soporte Técnico
+    <span class="nav-badge" id="badge-soporte">0</span>
+  </a>
+  <a class="nav-item" onclick="showView('config')" href="#">
+    <span class="nav-icon">⚙️</span> Configuración
+  </a>
+
+  <div class="sidebar-footer">
+    <div class="admin-card">
+      <div class="admin-avatar">SA</div>
+      <div class="admin-info">
+        <div class="admin-name">Super Admin</div>
+        <div class="admin-role">Xincronix System</div>
+      </div>
+      <button class="logout-btn" onclick="confirmLogout()" title="Cerrar sesión">⏻</button>
+    </div>
+  </div>
+</aside>
+
+<div class="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-title" id="topbar-title">Dashboard</div>
+    <div class="topbar-search">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Buscar empresas, usuarios…" id="globalSearch" oninput="handleGlobalSearch(this.value)"/>
+    </div>
+    <div class="topbar-actions">
+      <div class="icon-btn" onclick="showView('soporte')" title="Notificaciones">
+        🔔<span class="notif-dot" id="notif-dot" style="display:none"></span>
+      </div>
+      <div class="icon-btn" onclick="reloadAll()" title="Actualizar datos">🔄</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ══════ DASHBOARD ══════ -->
+    <div class="view active" id="view-dashboard">
+
+      <div class="stats-grid">
+        <div class="stat-card blue">
+          <div class="stat-icon">🏢</div>
+          <div class="stat-num" id="dash-total-empresas">—</div>
+          <div class="stat-label">Empresas registradas</div>
+          <div class="stat-delta delta-up">Registradas</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-icon">👥</div>
+          <div class="stat-num" id="dash-total-usuarios">—</div>
+          <div class="stat-label">Usuarios activos</div>
+          <div class="stat-delta delta-up">✓ Activos</div>
+        </div>
+        <div class="stat-card warn">
+          <div class="stat-icon">⏳</div>
+          <div class="stat-num" id="dash-pendientes">—</div>
+          <div class="stat-label">Pagos pendientes</div>
+          <div class="stat-delta delta-pend">Por revisar</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-icon">🎧</div>
+          <div class="stat-num" id="dash-tickets">—</div>
+          <div class="stat-label">Tickets de soporte</div>
+          <div class="stat-delta delta-down">Abiertos</div>
+        </div>
+      </div>
+
+      <div class="chart-row">
+        <div class="chart-card">
+          <div class="chart-title">Empresas por plan</div>
+          <div class="donut-wrap">
+            <div class="donut" id="dash-donut"></div>
+            <div class="donut-legend">
+              <div class="legend-item"><div class="legend-dot" style="background:var(--electric)"></div>Business</div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--success)"></div>Starter</div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--warning)"></div>Enterprise</div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div>Sin plan</div>
+            </div>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Registros últimos 7 meses</div>
+          <div class="bar-chart" id="dash-bars"></div>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <div>
+          <div class="section-title">Empresas recientes</div>
+          <div class="section-sub">Últimas empresas registradas en la plataforma</div>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="showView('empresas')">Ver todas →</button>
+      </div>
+      <div class="table-wrap" style="position:relative;">
+        <div class="loading-overlay" id="loading-dash"><div class="spinner"></div></div>
+        <table class="data-table">
+          <thead><tr>
+            <th>Empresa</th><th>Plan</th><th>Estado</th><th>Fecha</th><th>Acciones</th>
+          </tr></thead>
+          <tbody id="dash-empresas-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══════ EMPRESAS ══════ -->
+    <div class="view" id="view-empresas">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Gestión de Empresas</div>
+          <div class="section-sub">CRUD completo de empresas registradas</div>
+        </div>
+        <button class="btn btn-primary" onclick="openEmpresaModal()">＋ Nueva empresa</button>
+      </div>
+
+      <!-- Panel de debug — solo visible si hay error -->
+      <div class="debug-panel" id="debug-panel">
+        <strong>⚠ Respuesta del servidor:</strong>
+        <pre id="debug-content" style="margin-top:6px;white-space:pre-wrap;word-break:break-all;"></pre>
+      </div>
+
+      <div class="filter-bar">
+        <div class="filter-input" style="max-width:300px;">
+          <span>🔍</span>
+          <input type="text" placeholder="Buscar por nombre, NIT, email…" id="empresaSearch" oninput="filterEmpresas()"/>
+        </div>
+        <select class="filter-select" id="empresaFilterPlan" onchange="filterEmpresas()">
+          <option value="">Todos los planes</option>
+          <option value="starter">Starter</option>
+          <option value="business">Business</option>
+          <option value="enterprise">Enterprise</option>
+        </select>
+        <select class="filter-select" id="empresaFilterSector" onchange="filterEmpresas()">
+          <option value="">Todos los sectores</option>
+          <option>Tecnología</option><option>Consultoría</option><option>Manufactura</option>
+          <option>Salud</option><option>Logística</option><option>Retail</option>
+          <option>Educación</option><option>Finanzas</option><option>Otro</option>
+        </select>
+        <button class="btn btn-outline btn-sm" onclick="exportCSV('empresas')">⬇ Exportar CSV</button>
+      </div>
+
+      <div class="table-wrap" style="position:relative;">
+        <div class="loading-overlay" id="loading-empresas"><div class="spinner"></div></div>
+        <table class="data-table">
+          <thead><tr>
+            <th></th>
+            <th>Empresa</th>
+            <th>NIT</th>
+            <th>Sector</th>
+            <th>Plan</th>
+            <th>Administrador</th>
+            <th>Empleados</th>
+            <th>Fecha registro</th>
+            <th>Acciones</th>
+          </tr></thead>
+          <tbody id="empresas-tbody"></tbody>
+        </table>
+        <div class="pagination">
+          <span id="empresas-count">Cargando…</span>
+          <div class="page-btns" id="empresas-pages"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ USUARIOS ══════ -->
+    <div class="view" id="view-usuarios">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Control de Usuarios</div>
+          <div class="section-sub">Gestión de cuentas y roles en la plataforma</div>
+        </div>
+        <button class="btn btn-primary" onclick="openUsuarioModal()">＋ Nuevo usuario</button>
+      </div>
+
+      <div class="filter-bar">
+        <div class="filter-input" style="max-width:300px;">
+          <span>🔍</span>
+          <input type="text" placeholder="Buscar por nombre, email…" id="usuarioSearch" oninput="filterUsuarios()"/>
+        </div>
+        <select class="filter-select" id="usuarioFilterRol" onchange="filterUsuarios()">
+          <option value="">Todos los roles</option>
+          <option value="1">Administrador</option>
+          <option value="2">Empleado</option>
+          <option value="3">Colaborador</option>
+        </select>
+        <select class="filter-select" id="usuarioFilterEstado" onchange="filterUsuarios()">
+          <option value="">Todos los estados</option>
+          <option value="1">Activo</option>
+          <option value="0">Inactivo</option>
+        </select>
+        <button class="btn btn-outline btn-sm" onclick="exportCSV('usuarios')">⬇ Exportar CSV</button>
+      </div>
+
+      <div class="table-wrap" style="position:relative;">
+        <div class="loading-overlay" id="loading-usuarios"><div class="spinner"></div></div>
+        <table class="data-table">
+          <thead><tr>
+            <th></th><th>Usuario</th><th>Email</th><th>Empresa</th>
+            <th>Rol</th><th>Estado</th><th>Cargo</th><th>Fecha registro</th><th>Acciones</th>
+          </tr></thead>
+          <tbody id="usuarios-tbody"></tbody>
+        </table>
+        <div class="pagination">
+          <span id="usuarios-count">Cargando…</span>
+          <div class="page-btns" id="usuarios-pages"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ PAGOS ══════ -->
+    <div class="view" id="view-pagos">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Solicitudes de Pago</div>
+          <div class="section-sub">Revisión y aprobación de comprobantes</div>
+        </div>
+      </div>
+      <div class="filter-bar">
+        <div class="filter-input" style="max-width:280px;">
+          <span>🔍</span>
+          <input type="text" placeholder="Buscar empresa o referencia…" id="pagoSearch" oninput="filterPagos()"/>
+        </div>
+        <select class="filter-select" id="pagoFilterEstado" onchange="filterPagos()">
+          <option value="">Todos los estados</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="aprobado">Aprobado</option>
+          <option value="rechazado">Rechazado</option>
+        </select>
+      </div>
+      <div class="table-wrap" style="position:relative;">
+        <div class="loading-overlay" id="loading-pagos"><div class="spinner"></div></div>
+        <table class="data-table">
+          <thead><tr>
+            <th>Referencia</th><th>Empresa</th><th>Plan</th><th>Método</th>
+            <th>Estado</th><th>Comprobante</th><th>Fecha</th><th>Acciones</th>
+          </tr></thead>
+          <tbody id="pagos-tbody"></tbody>
+        </table>
+        <div class="pagination">
+          <span id="pagos-count">Cargando…</span>
+          <div class="page-btns" id="pagos-pages"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ SOPORTE ══════ -->
+    <div class="view" id="view-soporte">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Soporte Técnico</div>
+          <div class="section-sub">Centro de ayuda y gestión de tickets</div>
+        </div>
+        <button class="btn btn-primary" onclick="openTicketModal()">＋ Crear ticket</button>
+      </div>
+
+      <div class="tickets-grid">
+        <div class="ticket-stat-card">
+          <span class="ticket-stat-icon">🔴</span>
+          <div><div class="ticket-stat-num" id="tkt-abiertos">—</div><div class="ticket-stat-label">Tickets abiertos</div></div>
+        </div>
+        <div class="ticket-stat-card">
+          <span class="ticket-stat-icon">🟡</span>
+          <div><div class="ticket-stat-num" id="tkt-proceso">—</div><div class="ticket-stat-label">En proceso</div></div>
+        </div>
+        <div class="ticket-stat-card">
+          <span class="ticket-stat-icon">🟢</span>
+          <div><div class="ticket-stat-num" id="tkt-cerrados">—</div><div class="ticket-stat-label">Resueltos</div></div>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <div class="filter-input" style="max-width:280px;">
+          <span>🔍</span>
+          <input type="text" placeholder="Buscar ticket…" id="ticketSearch" oninput="filterTickets()"/>
+        </div>
+        <select class="filter-select" id="ticketFilterEstado" onchange="filterTickets()">
+          <option value="">Todos</option>
+          <option value="abierto">Abierto</option>
+          <option value="proceso">En proceso</option>
+          <option value="cerrado">Cerrado</option>
+        </select>
+        <select class="filter-select" id="ticketFilterPrio" onchange="filterTickets()">
+          <option value="">Todas las prioridades</option>
+          <option value="alta">Alta</option>
+          <option value="media">Media</option>
+          <option value="baja">Baja</option>
+        </select>
+      </div>
+      <div id="tickets-list"></div>
+    </div>
+
+    <!-- ══════ CONFIG ══════ -->
+    <div class="view" id="view-config">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Configuración del Sistema</div>
+          <div class="section-sub">Parámetros globales de la plataforma</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <div class="chart-card">
+          <div class="chart-title" style="font-size:15px;margin-bottom:20px;">⚙️ Parámetros generales</div>
+          <div class="form-group" style="margin-bottom:14px;">
+            <label class="form-label">Nombre de la plataforma</label>
+            <input class="form-control" value="Xincronix" id="cfg-nombre"/>
+          </div>
+          <div class="form-group" style="margin-bottom:14px;">
+            <label class="form-label">Email de soporte</label>
+            <input class="form-control" value="contacto@xincronix.com" id="cfg-email"/>
+          </div>
+          <div class="form-group" style="margin-bottom:20px;">
+            <label class="form-label">Modo de mantenimiento</label>
+            <select class="form-control" id="cfg-maint">
+              <option value="0">Desactivado</option>
+              <option value="1">Activado</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="saveConfig()">💾 Guardar cambios</button>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title" style="font-size:15px;margin-bottom:20px;">🛡️ Seguridad</div>
+          <div class="form-group" style="margin-bottom:14px;">
+            <label class="form-label">Intentos máximos de login</label>
+            <input class="form-control" type="number" value="10"/>
+          </div>
+          <div class="form-group" style="margin-bottom:14px;">
+            <label class="form-label">Sesión expira en (horas)</label>
+            <input class="form-control" type="number" value="24"/>
+          </div>
+          <div class="form-group" style="margin-bottom:20px;">
+            <label class="form-label">2FA obligatorio para admins</label>
+            <select class="form-control"><option>No</option><option>Sí</option></select>
+          </div>
+          <button class="btn btn-outline" onclick="toast('Configuración de seguridad guardada','success')">💾 Guardar</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ══════ MODAL EMPRESA ══════ -->
+<div class="modal-overlay" id="modal-empresa">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-empresa-title">Nueva Empresa</div>
+      <button class="modal-close" onclick="closeModal('modal-empresa')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="emp-id"/>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Nombre de la empresa *</label>
+          <input class="form-control" id="emp-nombre" placeholder="Acme S.A.S."/>
+          <span class="form-error" id="err-emp-nombre">Campo obligatorio.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">NIT / RUT *</label>
+          <input class="form-control" id="emp-nit" placeholder="900.123.456-7"/>
+          <span class="form-error" id="err-emp-nit">Campo obligatorio.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email corporativo *</label>
+          <input class="form-control" id="emp-email" type="email" placeholder="admin@empresa.com"/>
+          <span class="form-error" id="err-emp-email">Email no válido.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Teléfono</label>
+          <input class="form-control" id="emp-telefono" placeholder="+57 300 000 0000"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Sector</label>
+          <select class="form-control" id="emp-sector">
+            <option value="">Selecciona…</option>
+            <option value="Tecnología">Tecnología</option>
+            <option value="Consultoría">Consultoría</option>
+            <option value="Manufactura">Manufactura</option>
+            <option value="Salud">Salud</option>
+            <option value="Logística">Logística</option>
+            <option value="Retail">Retail</option>
+            <option value="Educación">Educación</option>
+            <option value="Finanzas">Finanzas</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Plan de suscripción</label>
+          <select class="form-control" id="emp-plan">
+            <option value="starter">Starter</option>
+            <option value="business" selected>Business</option>
+            <option value="enterprise">Enterprise</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Administrador</label>
+          <input class="form-control" id="emp-admin" placeholder="Nombre completo"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Número de empleados</label>
+          <select class="form-control" id="emp-empleados">
+            <option value="">Selecciona…</option>
+            <option value="1 – 10">1 – 10</option>
+            <option value="11 – 50">11 – 50</option>
+            <option value="51 – 100">51 – 100</option>
+            <option value="101 – 500">101 – 500</option>
+            <option value="500+">500+</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Dirección</label>
+          <input class="form-control" id="emp-direccion" placeholder="Cra. 1 # 2-34, Ciudad"/>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-empresa')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveEmpresa()" id="btn-save-empresa">💾 Guardar empresa</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ MODAL DETALLE EMPRESA ══════ -->
+<div class="modal-overlay" id="modal-empresa-detail">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title" id="detail-empresa-nombre">—</div>
+      <button class="modal-close" onclick="closeModal('modal-empresa-detail')">×</button>
+    </div>
+    <div class="modal-body" id="detail-empresa-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-empresa-detail')">Cerrar</button>
+      <button class="btn btn-primary" id="detail-edit-btn">✏️ Editar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ MODAL USUARIO ══════ -->
+<div class="modal-overlay" id="modal-usuario">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-usuario-title">Nuevo Usuario</div>
+      <button class="modal-close" onclick="closeModal('modal-usuario')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="usr-id"/>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Nombres *</label>
+          <input class="form-control" id="usr-nombres" placeholder="María"/>
+          <span class="form-error" id="err-usr-nombres">Campo obligatorio.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Apellidos *</label>
+          <input class="form-control" id="usr-apellidos" placeholder="García López"/>
+          <span class="form-error" id="err-usr-apellidos">Campo obligatorio.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email *</label>
+          <input class="form-control" id="usr-email" type="email" placeholder="maria@empresa.com"/>
+          <span class="form-error" id="err-usr-email">Email no válido.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contraseña <span id="pwd-hint" style="font-weight:400;opacity:.6;display:none">(vacío = no cambiar)</span></label>
+          <input class="form-control" id="usr-password" type="password" placeholder="Mínimo 8 caracteres"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Empresa *</label>
+          <select class="form-control" id="usr-empresa">
+            <option value="">Selecciona empresa…</option>
+          </select>
+          <span class="form-error" id="err-usr-empresa">Selecciona una empresa.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Rol</label>
+          <select class="form-control" id="usr-rol">
+            <option value="1">Administrador</option>
+            <option value="2">Empleado</option>
+            <option value="3">Colaborador</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Cargo</label>
+          <input class="form-control" id="usr-cargo" placeholder="CEO, Director de TI…"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Teléfono</label>
+          <input class="form-control" id="usr-telefono" placeholder="+57 300 000 0000"/>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Estado</label>
+          <select class="form-control" id="usr-estado">
+            <option value="1">Activo</option>
+            <option value="0">Inactivo</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-usuario')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveUsuario()" id="btn-save-usuario">💾 Guardar usuario</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ MODAL TICKET ══════ -->
+<div class="modal-overlay" id="modal-ticket">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-ticket-title">Nuevo Ticket de Soporte</div>
+      <button class="modal-close" onclick="closeModal('modal-ticket')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="tkt-id"/>
+      <div class="form-grid single">
+        <div class="form-group">
+          <label class="form-label">Asunto *</label>
+          <input class="form-control" id="tkt-asunto" placeholder="Describe el problema brevemente"/>
+          <span class="form-error" id="err-tkt-asunto">Campo obligatorio.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Empresa relacionada</label>
+          <select class="form-control" id="tkt-empresa">
+            <option value="">Sin empresa asociada</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Prioridad</label>
+          <select class="form-control" id="tkt-prioridad">
+            <option value="baja">🟢 Baja</option>
+            <option value="media" selected>🟡 Media</option>
+            <option value="alta">🔴 Alta</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Estado</label>
+          <select class="form-control" id="tkt-estado">
+            <option value="abierto">Abierto</option>
+            <option value="proceso">En proceso</option>
+            <option value="cerrado">Cerrado</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Descripción detallada *</label>
+          <textarea class="form-control" id="tkt-descripcion" placeholder="Describe el problema con todos los detalles posibles…" style="min-height:110px;"></textarea>
+          <span class="form-error" id="err-tkt-descripcion">Campo obligatorio.</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-ticket')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveTicket()" id="btn-save-ticket">💾 Guardar ticket</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ CONFIRM ══════ -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-icon" id="confirm-icon">⚠️</div>
+    <div class="confirm-title" id="confirm-title">¿Confirmar acción?</div>
+    <div class="confirm-msg" id="confirm-msg">Esta acción no se puede deshacer.</div>
+    <div class="confirm-btns">
+      <button class="btn btn-outline" onclick="closeConfirm()">Cancelar</button>
+      <button class="btn btn-danger" id="confirm-ok-btn" onclick="executeConfirm()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+// ══════════════════════════════════════════════
+// CONFIGURACIÓN DE RUTAS API
+// ══════════════════════════════════════════════
+const API = {
+    empresas: '/api/empresas',
+    usuarios: '/api/usuarios',
+    pagos: '/api/pagos',
+    tickets: '/api/tickets',
+    dashboard: '/api/dashboard',
+};
+
+const STATE = {
+  empresas:  { data: [], filtered: [], page: 1, perPage: 10 },
+  usuarios:  { data: [], filtered: [], page: 1, perPage: 10 },
+  pagos:     { data: [], filtered: [], page: 1, perPage: 10 },
+  tickets:   { data: [], filtered: [] },
+};
+
+let confirmCallback = null;
+
+// ══════════════════════════════════════════════
+// FETCH CON MANEJO DE ERRORES ROBUSTO
+// Problema original: si el PHP devolvía HTML de error (ej. Warning de PHP)
+// junto al JSON, el parse fallaba silenciosamente.
+// Ahora se captura el texto crudo y se muestra en el panel de debug.
+// ══════════════════════════════════════════════
+async function apiFetch(url, options = {}) {
+  try {
+    const res  = await fetch(url, {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      ...options,
+    });
+
+    const rawText = await res.text();
+
+    // Intentar parsear JSON — si falla mostramos el raw en debug
+    try {
+      return JSON.parse(rawText);
+    } catch (_) {
+      // Mostrar panel de debug con la respuesta cruda del servidor
+      showDebug(rawText);
+      return { status: 'error', message: 'El servidor devolvió una respuesta inesperada. Revisa la consola.' };
+    }
+  } catch (err) {
+    console.error('API Fetch Error:', err);
+    return { status: 'error', message: 'Error de red: ' + err.message };
+  }
+}
+
+function showDebug(text) {
+  const panel   = document.getElementById('debug-panel');
+  const content = document.getElementById('debug-content');
+  if (panel && content) {
+    content.textContent = text.slice(0, 800); // Max 800 chars
+    panel.classList.add('show');
+  }
+}
+
+function hideDebug() {
+  const panel = document.getElementById('debug-panel');
+  if (panel) panel.classList.remove('show');
+}
+
+// ══════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════
+function toast(msg, type = 'success', duration = 3500) {
+  const icons = { success:'✅', error:'❌', warn:'⚠️', info:'ℹ️' };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span>${icons[type] ?? 'ℹ️'}</span><span>${msg}</span>`;
+  document.getElementById('toast-container').appendChild(el);
+  requestAnimationFrame(() => el.classList.add('show'));
+  setTimeout(() => {
+    el.classList.remove('show');
+    setTimeout(() => el.remove(), 400);
+  }, duration);
+}
+
+// ══════════════════════════════════════════════
+// MODALS
+// ══════════════════════════════════════════════
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
+
+// ══════════════════════════════════════════════
+// CONFIRM DIALOG
+// ══════════════════════════════════════════════
+function showConfirm(title, msg, cb, icon = '⚠️', btnClass = 'btn-danger', btnText = 'Eliminar') {
+  document.getElementById('confirm-icon').textContent  = icon;
+  document.getElementById('confirm-title').textContent = title;
+  document.getElementById('confirm-msg').textContent   = msg;
+  const btn = document.getElementById('confirm-ok-btn');
+  btn.className   = `btn ${btnClass}`;
+  btn.textContent = btnText;
+  confirmCallback = cb;
+  document.getElementById('confirm-overlay').classList.add('open');
+}
+function closeConfirm()  { document.getElementById('confirm-overlay').classList.remove('open'); confirmCallback = null; }
+function executeConfirm(){ if (confirmCallback) confirmCallback(); closeConfirm(); }
+
+// ══════════════════════════════════════════════
+// NAVEGACIÓN
+// ══════════════════════════════════════════════
+const viewTitles = {
+  dashboard: 'Dashboard',
+  empresas:  'Gestión de Empresas',
+  usuarios:  'Control de Usuarios',
+  pagos:     'Solicitudes de Pago',
+  soporte:   'Soporte Técnico',
+  config:    'Configuración',
+};
+
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('onclick')?.includes("'" + name + "'")) n.classList.add('active');
+  });
+  document.getElementById('topbar-title').textContent = viewTitles[name] ?? name;
+
+  if (name === 'empresas') loadEmpresas();
+  if (name === 'usuarios') loadUsuarios();
+  if (name === 'pagos')    loadPagos();
+  if (name === 'soporte')  loadTickets();
+}
+
+function showLoading(id) { const el = document.getElementById('loading-' + id); if (el) el.style.display = 'flex'; }
+function hideLoading(id) { const el = document.getElementById('loading-' + id); if (el) el.style.display = 'none'; }
+
+// ══════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════
+function fmtDate(d) {
+  if (!d) return '—';
+  const dt = new Date(d);
+  return isNaN(dt) ? d : dt.toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' });
+}
+
+function avatarColor(name = '') {
+  const colors = ['#2a5bff','#10b981','#f59e0b','#8b5cf6','#ef4444','#06b6d4'];
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
+  return colors[Math.abs(h) % colors.length];
+}
+
+function initials(name = '') {
+  return name.split(' ').slice(0,2).map(w => w[0] || '').join('').toUpperCase() || '?';
+}
+
+function planBadge(plan) {
+  const p   = (plan || '').toLowerCase();
+  const cls = p === 'business' ? 'plan-business' : p === 'enterprise' ? 'plan-enterprise' : 'plan-starter';
+  return `<span class="plan-badge ${cls}">${(plan || 'N/A').toUpperCase()}</span>`;
+}
+
+function statusBadge(estado) {
+  if (estado == 1 || estado === 'activo' || estado === 'aprobado')
+    return '<span class="badge badge-active">Activo</span>';
+  if (estado === 'pendiente')
+    return '<span class="badge badge-pending">Pendiente</span>';
+  if (estado === 'rechazado')
+    return '<span class="badge badge-rejected">Rechazado</span>';
+  return '<span class="badge badge-inactive">Inactivo</span>';
+}
+
+function showErr(id, show) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('show', show);
+}
+
+function clearFormErrors(modalId) {
+  document.querySelectorAll(`#${modalId} .form-error`).forEach(e => e.classList.remove('show'));
+  document.querySelectorAll(`#${modalId} .form-control`).forEach(e => e.classList.remove('error'));
+}
+
+function esc(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+// ══════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════
+async function loadDashboard() {
+  showLoading('dash');
+  const res = await apiFetch(API.dashboard);
+  hideLoading('dash');
+
+  if (res.status === 'success') {
+    const d = res.data;
+    document.getElementById('dash-total-empresas').textContent = d.total_empresas   ?? 0;
+    document.getElementById('dash-total-usuarios').textContent = d.total_usuarios   ?? 0;
+    document.getElementById('dash-pendientes').textContent     = d.pagos_pendientes ?? 0;
+    document.getElementById('dash-tickets').textContent        = d.tickets_abiertos ?? 0;
+
+    document.getElementById('badge-empresas').textContent = d.total_empresas   ?? 0;
+    document.getElementById('badge-usuarios').textContent  = d.total_usuarios   ?? 0;
+    document.getElementById('badge-pagos').textContent     = d.pagos_pendientes ?? 0;
+    document.getElementById('badge-soporte').textContent   = d.tickets_abiertos ?? 0;
+
+    const notifDot = document.getElementById('notif-dot');
+    notifDot.style.display = (d.pagos_pendientes > 0) ? '' : 'none';
+
+    renderDashEmpresas(d.empresas_recientes ?? []);
+    renderDashBars(d.registros_meses ?? []);
+    renderDashDonut(d.planes ?? {});
+
+    document.getElementById('tkt-abiertos').textContent = d.tickets_abiertos ?? 0;
+    document.getElementById('tkt-proceso').textContent  = d.tickets_proceso  ?? 0;
+    document.getElementById('tkt-cerrados').textContent = d.tickets_cerrados ?? 0;
+  } else {
+    // Fallback demo sin backend
+    document.getElementById('dash-total-empresas').textContent = '—';
+    document.getElementById('dash-total-usuarios').textContent = '—';
+    document.getElementById('dash-pendientes').textContent     = '—';
+    document.getElementById('dash-tickets').textContent        = '—';
+    document.getElementById('tkt-abiertos').textContent = '—';
+    document.getElementById('tkt-proceso').textContent  = '—';
+    document.getElementById('tkt-cerrados').textContent = '—';
+    document.getElementById('dash-empresas-tbody').innerHTML =
+      `<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">🔌</div><p>Conecta el backend para ver los datos reales</p></div></td></tr>`;
+    renderDashBars([4, 8, 12, 7, 15, 10, 18]);
+  }
+}
+
+function renderDashEmpresas(list) {
+  const tbody = document.getElementById('dash-empresas-tbody');
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">🏢</div><p>No hay empresas aún</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = list.slice(0, 5).map(e => `
+    <tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="table-avatar" style="background:${avatarColor(e.nombre)}">${initials(e.nombre)}</div>
+          <div>
+            <div class="cell-main">${esc(e.nombre)}</div>
+            <div class="cell-sub">${esc(e.email)}</div>
+          </div>
+        </div>
+      </td>
+      <td>${planBadge(e.plan_suscripcion)}</td>
+      <td>${statusBadge('activo')}</td>
+      <td style="color:rgba(255,255,255,0.4);font-size:12.5px;">${fmtDate(e.fecha_creacion)}</td>
+      <td>
+        <div class="actions-cell">
+          <button class="action-btn view-btn" onclick="viewEmpresa(${e.id_empresa})" title="Ver detalle">👁</button>
+          <button class="action-btn edit-btn" onclick="editEmpresaDash(${e.id_empresa})" title="Editar">✏️</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function renderDashBars(meses) {
+  const labels = ['Ene','Feb','Mar','Abr','May','Jun','Jul'];
+  const max    = Math.max(...meses, 1);
+  document.getElementById('dash-bars').innerHTML = meses.map((v, i) => `
+    <div class="bar-wrap">
+      <div class="bar" style="height:${Math.round((v / max) * 100)}%"></div>
+      <div class="bar-label">${labels[i] ?? ''}</div>
+    </div>`).join('');
+}
+
+function renderDashDonut(planes) {
+  const bus  = planes.business    ?? 45;
+  const sta  = planes.starter     ?? 30;
+  const ent  = planes.enterprise  ?? 15;
+  const none = Math.max(0, 100 - bus - sta - ent);
+  document.getElementById('dash-donut').style.background =
+    `conic-gradient(var(--electric) 0% ${bus}%, var(--success) ${bus}% ${bus+sta}%, var(--warning) ${bus+sta}% ${bus+sta+ent}%, var(--purple) ${bus+sta+ent}% 100%)`;
+}
+
+// Editar empresa desde el dashboard (carga datos primero si STATE está vacío)
+async function editEmpresaDash(id) {
+  if (!STATE.empresas.data.length) await loadEmpresasQuiet();
+  editEmpresa(id);
+}
+
+async function loadEmpresasQuiet() {
+  const res = await apiFetch(API.empresas + '?action=list');
+  if (res.status === 'success') STATE.empresas.data = res.data ?? [];
+}
+
+// ══════════════════════════════════════════════
+// EMPRESAS — LOAD
+// ══════════════════════════════════════════════
+// ✅ ESTO ES LO QUE TIENE QUE QUEDAR EN TU ARCHIVO
+async function loadEmpresas() {
+  showLoading('empresas');
+  hideDebug();
+  
+  try {
+    const response = await fetch('/admin/empresas/datos', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      credentials: 'include'
+    });
+
+    if (response.status === 401) {
+      console.warn('Usuario no autenticado.');
+      STATE.empresas.data = [];
+      hideLoading('empresas');
+      return;
+    }
+
+    if (!response.ok) {
+      throw new Error(`Error servidor: ${response.status}`);
+    }
+
+    const res = await response.json();
+    
+    if (res && res.data) {
+      STATE.empresas.data = res.data;
+    } else if (Array.isArray(res)) {
+      STATE.empresas.data = res;
+    } else {
+      STATE.empresas.data = [];
+    }
+
+  } catch (error) {
+    console.error(error);
+    STATE.empresas.data = [];
+  }
+
+  STATE.empresas.filtered = [...STATE.empresas.data];
+  STATE.empresas.page     = 1;
+  renderEmpresas();
+  hideLoading('empresas');
+}
+
+// ── FILTER ──
+function filterEmpresas() {
+  const q      = document.getElementById('empresaSearch').value.toLowerCase();
+  const plan   = document.getElementById('empresaFilterPlan').value.toLowerCase();
+  const sector = document.getElementById('empresaFilterSector').value.toLowerCase();
+
+  STATE.empresas.filtered = STATE.empresas.data.filter(e => {
+    const matchQ = !q || [e.nombre, e.nit, e.email, e.administrador]
+      .some(f => (f || '').toLowerCase().includes(q));
+    const matchP = !plan   || (e.plan_suscripcion || '').toLowerCase() === plan;
+    const matchS = !sector || (e.sector || '').toLowerCase() === sector;
+    return matchQ && matchP && matchS;
+  });
+
+  STATE.empresas.page = 1;
+  renderEmpresas();
+}
+
+// ── RENDER ──
+function renderEmpresas() {
+  const { filtered, page, perPage } = STATE.empresas;
+  const start  = (page - 1) * perPage;
+  const slice  = filtered.slice(start, start + perPage);
+  const tbody  = document.getElementById('empresas-tbody');
+
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">🏢</div><p>No se encontraron empresas</p></div></td></tr>`;
+  } else {
+    tbody.innerHTML = slice.map(e => `
+      <tr>
+        <td>
+          <div class="table-avatar" style="background:${avatarColor(e.nombre)};border-radius:8px;">
+            ${initials(e.nombre)}
+          </div>
+        </td>
+        <td>
+          <div class="cell-main">${esc(e.nombre)}</div>
+          <div class="cell-sub">${esc(e.email)}</div>
+        </td>
+        <td style="font-size:12.5px;color:rgba(255,255,255,0.5);">${esc(e.nit || '—')}</td>
+        <td style="font-size:12.5px;">${esc(e.sector || '—')}</td>
+        <td>${planBadge(e.plan_suscripcion)}</td>
+        <td style="font-size:13px;">${esc(e.administrador || '—')}</td>
+        <td style="font-size:12.5px;color:rgba(255,255,255,0.5);">${esc(e.num_empleados || '—')}</td>
+        <td style="font-size:12px;color:rgba(255,255,255,0.4);">${fmtDate(e.fecha_creacion)}</td>
+        <td>
+          <div class="actions-cell">
+            <button class="action-btn view-btn" onclick="viewEmpresa(${e.id_empresa})" title="Ver detalle">👁</button>
+            <button class="action-btn edit-btn" onclick="editEmpresa(${e.id_empresa})" title="Editar">✏️</button>
+            <button class="action-btn del-btn"  onclick="deleteEmpresa(${e.id_empresa},'${esc(e.nombre)}')" title="Eliminar">🗑</button>
+          </div>
+        </td>
+      </tr>`).join('');
+  }
+
+  const showing = filtered.length
+    ? `Mostrando ${start + 1}–${Math.min(start + perPage, filtered.length)} de ${filtered.length}`
+    : 'Sin resultados';
+  document.getElementById('empresas-count').textContent = showing;
+  renderPagination('empresas', filtered.length, page, perPage);
+}
+
+// ── MODAL CREAR/EDITAR ──
+function openEmpresaModal(data = null) {
+  document.getElementById('modal-empresa-title').textContent = data ? 'Editar Empresa' : 'Nueva Empresa';
+
+  // FIX: usar setValue para garantizar que los selects reflejen el valor correcto
+  setValue('emp-id',        data?.id_empresa          ?? '');
+  setValue('emp-nombre',    data?.nombre               ?? '');
+  setValue('emp-nit',       data?.nit                  ?? '');
+  setValue('emp-email',     data?.email                ?? '');
+  setValue('emp-telefono',  data?.telefono             ?? '');
+  setValue('emp-sector',    data?.sector               ?? '');
+  setValue('emp-plan',      (data?.plan_suscripcion || 'business').toLowerCase());
+  setValue('emp-admin',     data?.administrador        ?? '');
+  setValue('emp-empleados', data?.num_empleados        ?? '');
+  setValue('emp-direccion', data?.direccion            ?? '');
+
+  clearFormErrors('modal-empresa');
+  openModal('modal-empresa');
+}
+
+// Helper: asigna value a input o select de forma confiable
+function setValue(id, value) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.value = value;
+}
+
+function editEmpresa(id) {
+  const emp = STATE.empresas.data.find(e => String(e.id_empresa) === String(id));
+  if (emp) openEmpresaModal(emp);
+  else toast('Empresa no encontrada en memoria. Recarga la página.', 'error');
+}
+
+function viewEmpresa(id) {
+  const e = STATE.empresas.data.find(e => String(e.id_empresa) === String(id));
+  if (!e) return toast('Empresa no encontrada', 'error');
+
+  document.getElementById('detail-empresa-nombre').textContent = e.nombre;
+  document.getElementById('detail-empresa-body').innerHTML = `
+    <div class="detail-section">
+      <div class="detail-section-title">Información general</div>
+      <div class="detail-grid">
+        <div class="detail-item"><div class="dk">Nombre</div><div class="dv">${esc(e.nombre)}</div></div>
+        <div class="detail-item"><div class="dk">NIT / RUT</div><div class="dv">${esc(e.nit || '—')}</div></div>
+        <div class="detail-item"><div class="dk">Email</div><div class="dv">${esc(e.email)}</div></div>
+        <div class="detail-item"><div class="dk">Teléfono</div><div class="dv">${esc(e.telefono || '—')}</div></div>
+        <div class="detail-item"><div class="dk">Sector</div><div class="dv">${esc(e.sector || '—')}</div></div>
+        <div class="detail-item"><div class="dk">Empleados</div><div class="dv">${esc(e.num_empleados || '—')}</div></div>
+        <div class="detail-item"><div class="dk">Dirección</div><div class="dv">${esc(e.direccion || '—')}</div></div>
+        <div class="detail-item"><div class="dk">Administrador</div><div class="dv">${esc(e.administrador || '—')}</div></div>
+      </div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">Suscripción</div>
+      <div class="detail-grid">
+        <div class="detail-item"><div class="dk">Plan</div><div class="dv">${planBadge(e.plan_suscripcion)}</div></div>
+        <div class="detail-item"><div class="dk">Fecha registro</div><div class="dv">${fmtDate(e.fecha_creacion)}</div></div>
+        <div class="detail-item"><div class="dk">Usuarios totales</div><div class="dv">${esc(e.total_usuarios ?? '—')}</div></div>
+      </div>
+    </div>`;
+  document.getElementById('detail-edit-btn').onclick = () => {
+    closeModal('modal-empresa-detail');
+    editEmpresa(id);
+  };
+  openModal('modal-empresa-detail');
+}
+
+// ── SAVE (CREATE / UPDATE) ──
+// FIX PRINCIPAL: Se corrige el envío del FormData para que los nombres de los
+// campos coincidan exactamente con lo que espera el PHP del servidor.
+async function saveEmpresa() {
+  hideDebug();
+
+  const id     = document.getElementById('emp-id').value.trim();
+  const nombre = document.getElementById('emp-nombre').value.trim();
+  const nit    = document.getElementById('emp-nit').value.trim();
+  const email  = document.getElementById('emp-email').value.trim();
+
+  // Validación
+  let valid = true;
+  if (!nombre) { showErr('err-emp-nombre', true); valid = false; } else showErr('err-emp-nombre', false);
+  if (!nit)    { showErr('err-emp-nit',    true); valid = false; } else showErr('err-emp-nit',    false);
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showErr('err-emp-email', true); valid = false;
+  } else {
+    showErr('err-emp-email', false);
+  }
+  if (!valid) return toast('Completa los campos obligatorios', 'warn');
+
+  // FIX: construir FormData con los nombres exactos que espera el PHP
+  const fd = new FormData();
+  fd.append('action',        id ? 'update' : 'create');
+  fd.append('id_empresa',    id);                                                   // requerido en update
+  fd.append('nombre',        nombre);
+  fd.append('nit',           nit);
+  fd.append('email',         email);
+  fd.append('telefono',      document.getElementById('emp-telefono').value.trim());
+  fd.append('sector',        document.getElementById('emp-sector').value);
+  fd.append('plan',          document.getElementById('emp-plan').value);            // 'plan' → $plan en PHP
+  fd.append('administrador', document.getElementById('emp-admin').value.trim());
+  fd.append('num_empleados', document.getElementById('emp-empleados').value);
+  fd.append('direccion',     document.getElementById('emp-direccion').value.trim());
+
+  const btn = document.getElementById('btn-save-empresa');
+  btn.disabled    = true;
+  btn.textContent = 'Guardando…';
+
+  const res = await apiFetch(API.empresas, { method: 'POST', body: fd });
+
+  btn.disabled    = false;
+  btn.textContent = '💾 Guardar empresa';
+
+  if (res.status === 'success') {
+    toast(id ? 'Empresa actualizada correctamente ✓' : 'Empresa creada correctamente ✓', 'success');
+    closeModal('modal-empresa');
+    await loadEmpresas();
+    loadDashboard();
+  } else {
+    toast(res.message || 'Error al guardar la empresa', 'error');
+  }
+}
+
+// ── DELETE ──
+function deleteEmpresa(id, nombre) {
+  showConfirm(
+    '¿Eliminar empresa?',
+    `Se eliminará "${nombre}" y todos sus datos asociados. Esta acción es irreversible.`,
+    async () => {
+      const fd = new FormData();
+      fd.append('action',    'delete');
+      fd.append('id_empresa', id);
+      const res = await apiFetch(API.empresas, { method: 'POST', body: fd });
+      if (res.status === 'success') {
+        toast('Empresa eliminada correctamente', 'success');
+        await loadEmpresas();
+        loadDashboard();
+      } else {
+        toast(res.message || 'Error al eliminar', 'error');
+      }
+    },
+    '🗑️', 'btn-danger', 'Sí, eliminar'
+  );
+}
+
+// ══════════════════════════════════════════════
+// USUARIOS
+// ══════════════════════════════════════════════
+async function loadUsuarios() {
+  showLoading('usuarios');
+  const res = await apiFetch(API.usuarios + '?action=list');
+  STATE.usuarios.data     = res.status === 'success' ? (res.data ?? []) : [];
+  STATE.usuarios.filtered = [...STATE.usuarios.data];
+  STATE.usuarios.page     = 1;
+  renderUsuarios();
+  hideLoading('usuarios');
+}
+
+function filterUsuarios() {
+  const q      = document.getElementById('usuarioSearch').value.toLowerCase();
+  const rol    = document.getElementById('usuarioFilterRol').value;
+  const estado = document.getElementById('usuarioFilterEstado').value;
+  STATE.usuarios.filtered = STATE.usuarios.data.filter(u => {
+    const matchQ = !q || [`${u.nombres} ${u.apellidos}`, u.email, u.cargo]
+      .some(f => (f || '').toLowerCase().includes(q));
+    const matchR = !rol    || String(u.id_roles) === rol;
+    const matchE = estado === '' || String(u.estado) === estado;
+    return matchQ && matchR && matchE;
+  });
+  STATE.usuarios.page = 1;
+  renderUsuarios();
+}
+
+function renderUsuarios() {
+  const { filtered, page, perPage } = STATE.usuarios;
+  const start    = (page - 1) * perPage;
+  const slice    = filtered.slice(start, start + perPage);
+  const tbody    = document.getElementById('usuarios-tbody');
+  const rolNames = { 1:'Administrador', 2:'Empleado', 3:'Colaborador' };
+
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">👥</div><p>No se encontraron usuarios</p></div></td></tr>`;
+  } else {
+    tbody.innerHTML = slice.map(u => {
+      const fullName = `${u.nombres} ${u.apellidos}`;
+      return `
+        <tr>
+          <td><div class="table-avatar" style="background:${avatarColor(fullName)};border-radius:50%;">${initials(fullName)}</div></td>
+          <td>
+            <div class="cell-main">${esc(fullName)}</div>
+            <div class="cell-sub">${esc(u.cargo || '—')}</div>
+          </td>
+          <td style="font-size:12.5px;">${esc(u.email)}</td>
+          <td style="font-size:12.5px;color:rgba(255,255,255,0.5);">${esc(u.nombre_empresa || '—')}</td>
+          <td>
+            <span class="badge" style="background:rgba(42,91,255,0.1);color:var(--sky);border:1px solid rgba(42,91,255,0.2);">
+              ${rolNames[u.id_roles] ?? 'N/A'}
+            </span>
+          </td>
+          <td>${statusBadge(u.estado)}</td>
+          <td style="font-size:12.5px;color:rgba(255,255,255,0.4);">${esc(u.cargo || '—')}</td>
+          <td style="font-size:12px;color:rgba(255,255,255,0.35);">${fmtDate(u.fecha_creacion)}</td>
+          <td>
+            <div class="actions-cell">
+              <button class="action-btn edit-btn" onclick="editUsuario(${u.id_usuario})" title="Editar">✏️</button>
+              <button class="action-btn ${u.estado ? 'del-btn' : 'approve-btn'}"
+                onclick="toggleUsuario(${u.id_usuario},${u.estado},'${esc(fullName)}')"
+                title="${u.estado ? 'Desactivar' : 'Activar'}">${u.estado ? '🚫' : '✅'}</button>
+              <button class="action-btn del-btn" onclick="deleteUsuario(${u.id_usuario},'${esc(fullName)}')" title="Eliminar">🗑</button>
+            </div>
+          </td>
+        </tr>`;
+    }).join('');
+  }
+
+  document.getElementById('usuarios-count').textContent =
+    filtered.length
+      ? `Mostrando ${start + 1}–${Math.min(start + perPage, filtered.length)} de ${filtered.length}`
+      : 'Sin resultados';
+  renderPagination('usuarios', filtered.length, page, perPage);
+}
+
+async function openUsuarioModal(data = null) {
+  document.getElementById('modal-usuario-title').textContent = data ? 'Editar Usuario' : 'Nuevo Usuario';
+  setValue('usr-id',        data?.id_usuario ?? '');
+  setValue('usr-nombres',   data?.nombres    ?? '');
+  setValue('usr-apellidos', data?.apellidos  ?? '');
+  setValue('usr-email',     data?.email      ?? '');
+  setValue('usr-cargo',     data?.cargo      ?? '');
+  setValue('usr-telefono',  data?.telefono   ?? '');
+  setValue('usr-rol',       data?.id_roles   ?? 3);
+  setValue('usr-estado',    data?.estado     ?? 1);
+  document.getElementById('usr-password').value = '';
+
+  const hint = document.getElementById('pwd-hint');
+  hint.style.display = data ? '' : 'none';
+  document.getElementById('usr-password').placeholder = data ? 'Dejar vacío para no cambiar' : 'Mínimo 8 caracteres';
+
+  // Poblar select de empresas
+  const sel = document.getElementById('usr-empresa');
+  sel.innerHTML = '<option value="">Selecciona empresa…</option>';
+  if (!STATE.empresas.data.length) await loadEmpresasQuiet();
+  STATE.empresas.data.forEach(e => {
+    const opt = document.createElement('option');
+    opt.value       = e.id_empresa;
+    opt.textContent = e.nombre;
+    if (String(e.id_empresa) === String(data?.id_empresa)) opt.selected = true;
+    sel.appendChild(opt);
+  });
+
+  clearFormErrors('modal-usuario');
+  openModal('modal-usuario');
+}
+
+function editUsuario(id) {
+  const u = STATE.usuarios.data.find(u => String(u.id_usuario) === String(id));
+  if (u) openUsuarioModal(u);
+  else toast('Usuario no encontrado', 'error');
+}
+
+async function saveUsuario() {
+  const id        = document.getElementById('usr-id').value.trim();
+  const nombres   = document.getElementById('usr-nombres').value.trim();
+  const apellidos = document.getElementById('usr-apellidos').value.trim();
+  const email     = document.getElementById('usr-email').value.trim();
+  const empresa   = document.getElementById('usr-empresa').value;
+  const password  = document.getElementById('usr-password').value;
+  let valid = true;
+
+  if (!nombres)   { showErr('err-usr-nombres',   true); valid = false; } else showErr('err-usr-nombres',   false);
+  if (!apellidos) { showErr('err-usr-apellidos', true); valid = false; } else showErr('err-usr-apellidos', false);
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showErr('err-usr-email', true); valid = false; } else showErr('err-usr-email', false);
+  if (!empresa)   { showErr('err-usr-empresa',   true); valid = false; } else showErr('err-usr-empresa',   false);
+  if (!id && (!password || password.length < 8)) {
+    toast('La contraseña debe tener mínimo 8 caracteres', 'warn');
+    valid = false;
+  }
+  if (!valid) return;
+
+  const fd = new FormData();
+  fd.append('action',     id ? 'update' : 'create');
+  fd.append('id_usuario', id);
+  fd.append('nombres',    nombres);
+  fd.append('apellidos',  apellidos);
+  fd.append('email',      email);
+  if (password) fd.append('password', password);
+  fd.append('id_empresa', empresa);
+  fd.append('id_roles',   document.getElementById('usr-rol').value);
+  fd.append('id_perfil',  '1');
+  fd.append('cargo',      document.getElementById('usr-cargo').value.trim());
+  fd.append('telefono',   document.getElementById('usr-telefono').value.trim());
+  fd.append('estado',     document.getElementById('usr-estado').value);
+
+  const btn = document.getElementById('btn-save-usuario');
+  btn.disabled = true; btn.textContent = 'Guardando…';
+  const res = await apiFetch(API.usuarios, { method: 'POST', body: fd });
+  btn.disabled = false; btn.textContent = '💾 Guardar usuario';
+
+  if (res.status === 'success') {
+    toast(id ? 'Usuario actualizado ✓' : 'Usuario creado ✓', 'success');
+    closeModal('modal-usuario');
+    await loadUsuarios();
+    loadDashboard();
+  } else {
+    toast(res.message || 'Error al guardar el usuario', 'error');
+  }
+}
+
+async function toggleUsuario(id, estado, nombre) {
+  const nuevoEstado = estado ? 0 : 1;
+  const accion      = estado ? 'desactivar' : 'activar';
+  showConfirm(
+    `¿${accion.charAt(0).toUpperCase() + accion.slice(1)} usuario?`,
+    `Se va a ${accion} la cuenta de "${nombre}".`,
+    async () => {
+      const fd = new FormData();
+      fd.append('action',    'toggle');
+      fd.append('id_usuario', id);
+      fd.append('estado',    nuevoEstado);
+      const res = await apiFetch(API.usuarios, { method: 'POST', body: fd });
+      if (res.status === 'success') { toast(`Usuario ${accion}do correctamente`, 'success'); loadUsuarios(); }
+      else toast(res.message || 'Error', 'error');
+    },
+    estado ? '🚫' : '✅',
+    estado ? 'btn-danger' : 'btn-success',
+    estado ? 'Desactivar' : 'Activar'
+  );
+}
+
+function deleteUsuario(id, nombre) {
+  showConfirm(
+    '¿Eliminar usuario?',
+    `Se eliminará la cuenta de "${nombre}". Esta acción es irreversible.`,
+    async () => {
+      const fd = new FormData();
+      fd.append('action',    'delete');
+      fd.append('id_usuario', id);
+      const res = await apiFetch(API.usuarios, { method: 'POST', body: fd });
+      if (res.status === 'success') {
+        toast('Usuario eliminado', 'success');
+        await loadUsuarios();
+        loadDashboard();
+      } else {
+        toast(res.message || 'Error al eliminar', 'error');
+      }
+    },
+    '🗑️', 'btn-danger', 'Sí, eliminar'
+  );
+}
+
+// ══════════════════════════════════════════════
+// PAGOS
+// ══════════════════════════════════════════════
+async function loadPagos() {
+  showLoading('pagos');
+  const res = await apiFetch(API.pagos + '?action=list');
+  STATE.pagos.data     = res.status === 'success' ? (res.data ?? []) : [];
+  STATE.pagos.filtered = [...STATE.pagos.data];
+  STATE.pagos.page     = 1;
+  renderPagos();
+  hideLoading('pagos');
+}
+
+function filterPagos() {
+  const q = document.getElementById('pagoSearch').value.toLowerCase();
+  const e = document.getElementById('pagoFilterEstado').value;
+  STATE.pagos.filtered = STATE.pagos.data.filter(p => {
+    const matchQ = !q || [(p.nombre_empresa || ''), (p.referencia || '')].some(f => f.toLowerCase().includes(q));
+    const matchE = !e || p.estado === e;
+    return matchQ && matchE;
+  });
+  STATE.pagos.page = 1;
+  renderPagos();
+}
+
+function renderPagos() {
+  const { filtered, page, perPage } = STATE.pagos;
+  const start = (page - 1) * perPage;
+  const slice = filtered.slice(start, start + perPage);
+  const tbody = document.getElementById('pagos-tbody');
+
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">💳</div><p>No hay solicitudes de pago</p></div></td></tr>`;
+  } else {
+    tbody.innerHTML = slice.map(p => {
+      const estadoBadge = p.estado === 'aprobado'
+        ? '<span class="badge badge-active">Aprobado</span>'
+        : p.estado === 'rechazado'
+        ? '<span class="badge badge-rejected">Rechazado</span>'
+        : '<span class="badge badge-pending">Pendiente</span>';
+
+      const comprobante = p.ruta_comprobante
+        ? `<a href="../${esc(p.ruta_comprobante)}" target="_blank" class="btn btn-outline btn-sm">📎 Ver</a>`
+        : '<span style="color:rgba(255,255,255,0.2);font-size:12px;">—</span>';
+
+      const accionBtn = p.estado === 'pendiente' ? `
+        <button class="action-btn approve-btn" onclick="aprobarPago(${p.id_solicitud})" title="Aprobar">✅</button>
+        <button class="action-btn del-btn" onclick="rechazarPago(${p.id_solicitud})" title="Rechazar">❌</button>
+      ` : '';
+
+      return `
+        <tr>
+          <td style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--sky);">${esc(p.referencia || '—')}</td>
+          <td><div class="cell-main">${esc(p.nombre_empresa || '—')}</div></td>
+          <td>${planBadge(p.plan)}</td>
+          <td style="font-size:12.5px;">${esc(p.metodo_pago || '—')}</td>
+          <td>${estadoBadge}</td>
+          <td>${comprobante}</td>
+          <td style="font-size:12px;color:rgba(255,255,255,0.35);">${fmtDate(p.fecha_creacion)}</td>
+          <td><div class="actions-cell">${accionBtn}</div></td>
+        </tr>`;
+    }).join('');
+  }
+
+  document.getElementById('pagos-count').textContent =
+    filtered.length
+      ? `Mostrando ${start + 1}–${Math.min(start + perPage, filtered.length)} de ${filtered.length}`
+      : 'Sin resultados';
+  renderPagination('pagos', filtered.length, page, perPage);
+}
+
+async function aprobarPago(id) {
+  showConfirm('¿Aprobar pago?', 'Se activará la empresa asociada a este pago.',
+    async () => {
+      const fd = new FormData();
+      fd.append('action',      'aprobar');
+      fd.append('id_solicitud', id);
+      const res = await apiFetch(API.pagos, { method: 'POST', body: fd });
+      if (res.status === 'success') { toast('Pago aprobado. Empresa activada.', 'success'); loadPagos(); loadDashboard(); }
+      else toast(res.message || 'Error', 'error');
+    }, '✅', 'btn-success', 'Aprobar');
+}
+
+async function rechazarPago(id) {
+  showConfirm('¿Rechazar pago?', 'El comprobante será marcado como rechazado.',
+    async () => {
+      const fd = new FormData();
+      fd.append('action',      'rechazar');
+      fd.append('id_solicitud', id);
+      const res = await apiFetch(API.pagos, { method: 'POST', body: fd });
+      if (res.status === 'success') { toast('Pago rechazado.', 'warn'); loadPagos(); }
+      else toast(res.message || 'Error', 'error');
+    }, '❌', 'btn-danger', 'Rechazar');
+}
+
+// ══════════════════════════════════════════════
+// TICKETS DE SOPORTE
+// ══════════════════════════════════════════════
+async function loadTickets() {
+  const res = await apiFetch(API.tickets + '?action=list');
+  STATE.tickets.data     = res.status === 'success' ? (res.data ?? []) : [];
+  STATE.tickets.filtered = [...STATE.tickets.data];
+  renderTickets();
+}
+
+function filterTickets() {
+  const q    = document.getElementById('ticketSearch').value.toLowerCase();
+  const est  = document.getElementById('ticketFilterEstado').value;
+  const prio = document.getElementById('ticketFilterPrio').value;
+  STATE.tickets.filtered = STATE.tickets.data.filter(t => {
+    const matchQ = !q    || (t.asunto || '').toLowerCase().includes(q);
+    const matchE = !est  || t.estado === est;
+    const matchP = !prio || t.prioridad === prio;
+    return matchQ && matchE && matchP;
+  });
+  renderTickets();
+}
+
+function renderTickets() {
+  const list      = STATE.tickets.filtered;
+  const container = document.getElementById('tickets-list');
+  const prioClass = { alta:'prio-high', media:'prio-medium', baja:'prio-low' };
+  const estadoBadge = {
+    abierto: '<span class="badge badge-rejected">Abierto</span>',
+    proceso: '<span class="badge badge-pending">En proceso</span>',
+    cerrado: '<span class="badge badge-active">Cerrado</span>',
+  };
+
+  document.getElementById('tkt-abiertos').textContent = list.filter(t => t.estado === 'abierto').length;
+  document.getElementById('tkt-proceso').textContent  = list.filter(t => t.estado === 'proceso').length;
+  document.getElementById('tkt-cerrados').textContent = list.filter(t => t.estado === 'cerrado').length;
+
+  if (!list.length) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">🎧</div><p>No hay tickets de soporte</p></div>`;
+    return;
+  }
+
+  container.innerHTML = list.map(t => `
+    <div class="ticket-card">
+      <div class="ticket-card-header">
+        <div>
+          <div class="ticket-id">#${esc(String(t.id_ticket).padStart(4,'0'))}</div>
+          <div class="ticket-title">${esc(t.asunto)}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="ticket-priority ${prioClass[t.prioridad] ?? 'prio-low'}">${(t.prioridad || 'baja').toUpperCase()}</span>
+          ${estadoBadge[t.estado] ?? ''}
+        </div>
+      </div>
+      <div class="ticket-meta">
+        🏢 ${esc(t.nombre_empresa || 'Sin empresa')} &nbsp;·&nbsp;
+        📅 ${fmtDate(t.fecha_creacion)} &nbsp;·&nbsp;
+        ${esc((t.descripcion || '').slice(0,80))}${(t.descripcion || '').length > 80 ? '…' : ''}
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button class="btn btn-outline btn-sm" onclick="editTicket(${t.id_ticket})">✏️ Editar</button>
+        ${t.estado !== 'cerrado' ? `<button class="btn btn-success btn-sm" onclick="cerrarTicket(${t.id_ticket})">✅ Cerrar ticket</button>` : ''}
+        <button class="btn btn-danger btn-sm" onclick="deleteTicket(${t.id_ticket})">🗑</button>
+      </div>
+    </div>`).join('');
+}
+
+async function openTicketModal(data = null) {
+  document.getElementById('modal-ticket-title').textContent = data ? 'Editar Ticket' : 'Nuevo Ticket';
+  setValue('tkt-id',          data?.id_ticket   ?? '');
+  setValue('tkt-asunto',      data?.asunto       ?? '');
+  setValue('tkt-descripcion', data?.descripcion  ?? '');
+  setValue('tkt-prioridad',   data?.prioridad    ?? 'media');
+  setValue('tkt-estado',      data?.estado       ?? 'abierto');
+
+  const sel = document.getElementById('tkt-empresa');
+  sel.innerHTML = '<option value="">Sin empresa asociada</option>';
+  if (!STATE.empresas.data.length) await loadEmpresasQuiet();
+  STATE.empresas.data.forEach(e => {
+    const opt = document.createElement('option');
+    opt.value       = e.id_empresa;
+    opt.textContent = e.nombre;
+    if (String(e.id_empresa) === String(data?.id_empresa)) opt.selected = true;
+    sel.appendChild(opt);
+  });
+
+  clearFormErrors('modal-ticket');
+  openModal('modal-ticket');
+}
+
+function editTicket(id) {
+  const t = STATE.tickets.data.find(t => String(t.id_ticket) === String(id));
+  if (t) openTicketModal(t);
+}
+
+async function saveTicket() {
+  const id          = document.getElementById('tkt-id').value.trim();
+  const asunto      = document.getElementById('tkt-asunto').value.trim();
+  const descripcion = document.getElementById('tkt-descripcion').value.trim();
+  let valid = true;
+
+  if (!asunto)      { showErr('err-tkt-asunto',      true); valid = false; } else showErr('err-tkt-asunto',      false);
+  if (!descripcion) { showErr('err-tkt-descripcion', true); valid = false; } else showErr('err-tkt-descripcion', false);
+  if (!valid) return;
+
+  const fd = new FormData();
+  fd.append('action',      id ? 'update' : 'create');
+  fd.append('id_ticket',   id);
+  fd.append('asunto',      asunto);
+  fd.append('descripcion', descripcion);
+  fd.append('prioridad',   document.getElementById('tkt-prioridad').value);
+  fd.append('estado',      document.getElementById('tkt-estado').value);
+  fd.append('id_empresa',  document.getElementById('tkt-empresa').value);
+
+  const btn = document.getElementById('btn-save-ticket');
+  btn.disabled = true; btn.textContent = 'Guardando…';
+  const res = await apiFetch(API.tickets, { method: 'POST', body: fd });
+  btn.disabled = false; btn.textContent = '💾 Guardar ticket';
+
+  if (res.status === 'success') {
+    toast(id ? 'Ticket actualizado ✓' : 'Ticket creado ✓', 'success');
+    closeModal('modal-ticket');
+    loadTickets();
+  } else {
+    toast(res.message || 'Error al guardar', 'error');
+  }
+}
+
+async function cerrarTicket(id) {
+  const fd = new FormData();
+  fd.append('action',    'update');
+  fd.append('id_ticket',  id);
+  fd.append('estado',    'cerrado');
+  const res = await apiFetch(API.tickets, { method: 'POST', body: fd });
+  if (res.status === 'success') { toast('Ticket cerrado ✓', 'success'); loadTickets(); }
+  else toast(res.message || 'Error', 'error');
+}
+
+function deleteTicket(id) {
+  showConfirm('¿Eliminar ticket?', 'Esta acción es irreversible.',
+    async () => {
+      const fd = new FormData();
+      fd.append('action',   'delete');
+      fd.append('id_ticket', id);
+      const res = await apiFetch(API.tickets, { method: 'POST', body: fd });
+      if (res.status === 'success') { toast('Ticket eliminado', 'success'); loadTickets(); }
+      else toast(res.message || 'Error', 'error');
+    }, '🗑️', 'btn-danger', 'Eliminar');
+}
+
+// ══════════════════════════════════════════════
+// PAGINACIÓN
+// ══════════════════════════════════════════════
+function renderPagination(key, total, page, perPage) {
+  const totalPages = Math.ceil(total / perPage) || 1;
+  const container  = document.getElementById(key + '-pages');
+  if (!container) return;
+
+  let html = '';
+  html += `<div class="page-btn" onclick="gotoPage('${key}',${page-1})" ${page===1?'style="opacity:.3;pointer-events:none"':''}>‹</div>`;
+  for (let i = 1; i <= totalPages; i++) {
+    if (totalPages <= 7 || i === 1 || i === totalPages || (i >= page-1 && i <= page+1)) {
+      html += `<div class="page-btn ${i===page?'active':''}" onclick="gotoPage('${key}',${i})">${i}</div>`;
+    } else if (i === page-2 || i === page+2) {
+      html += `<div class="page-btn" style="pointer-events:none">…</div>`;
+    }
+  }
+  html += `<div class="page-btn" onclick="gotoPage('${key}',${page+1})" ${page===totalPages?'style="opacity:.3;pointer-events:none"':''}>›</div>`;
+  container.innerHTML = html;
+}
+
+function gotoPage(key, page) {
+  const state    = STATE[key];
+  const maxPage  = Math.ceil(state.filtered.length / state.perPage) || 1;
+  if (page < 1 || page > maxPage) return;
+  state.page = page;
+  if (key === 'empresas') renderEmpresas();
+  if (key === 'usuarios') renderUsuarios();
+  if (key === 'pagos')    renderPagos();
+}
+
+// ══════════════════════════════════════════════
+// BÚSQUEDA GLOBAL
+// ══════════════════════════════════════════════
+function handleGlobalSearch(q) {
+  if (!q) return;
+  const empMatch = STATE.empresas.data.some(e =>
+    [e.nombre, e.email, e.nit].some(f => (f || '').toLowerCase().includes(q.toLowerCase())));
+  const usrMatch = STATE.usuarios.data.some(u =>
+    [`${u.nombres} ${u.apellidos}`, u.email].some(f => (f || '').toLowerCase().includes(q.toLowerCase())));
+
+  if (empMatch) {
+    showView('empresas');
+    document.getElementById('empresaSearch').value = q;
+    filterEmpresas();
+  } else if (usrMatch) {
+    showView('usuarios');
+    document.getElementById('usuarioSearch').value = q;
+    filterUsuarios();
+  }
+}
+
+// ══════════════════════════════════════════════
+// EXPORTAR CSV
+// ══════════════════════════════════════════════
+function exportCSV(type) {
+  const data = STATE[type].filtered;
+  if (!data.length) return toast('No hay datos para exportar', 'warn');
+
+  const keys = Object.keys(data[0]);
+  const rows = [keys.join(',')];
+  data.forEach(row => {
+    rows.push(keys.map(k => `"${String(row[k] ?? '').replace(/"/g,'""')}"`).join(','));
+  });
+
+  const blob = new Blob(['\uFEFF' + rows.join('\n')], { type:'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = `xincronix_${type}_${Date.now()}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+  toast(`Exportando ${data.length} registros…`, 'info');
+}
+
+// ══════════════════════════════════════════════
+// CONFIG & MISC
+// ══════════════════════════════════════════════
+function saveConfig() { toast('Configuración guardada correctamente', 'success'); }
+
+async function reloadAll() {
+  await loadDashboard();
+  toast('Datos actualizados', 'info');
+}
+
+function confirmLogout() {
+  showConfirm('¿Cerrar sesión?', 'Se cerrará tu sesión de administrador.',
+    () => { window.location.href = '../../view/login.html'; },
+    '⏻', 'btn-danger', 'Cerrar sesión');
+}
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  loadEmpresas();
+});
+
+function loadEmpresas() {
+  showLoading('empresas');
+  hideDebug();
+  
+  try {
+    // Blade inyecta el objeto JSON directo aquí
+    const dataInicial = @json($empresasIniciales ?? []);
+    STATE.empresas.data = dataInicial;
+  } catch (error) {
+    console.error(error);
+    STATE.empresas.data = [];
+  }
+
+  STATE.empresas.filtered = [...STATE.empresas.data];
+  STATE.empresas.page     = 1;
+  renderEmpresas();
+  hideLoading('empresas');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+/* ============================================================
+   Tareas.css — Vista de listado y gestión de Tareas
+   ============================================================ */
+
+/* ── BARRA SUPERIOR DE TAREAS ── */
+.tareas-toolbar {
+  display: flex; gap: 10px; margin-bottom: 20px;
+  align-items: center; flex-wrap: wrap;
+}
+
+/* ── TABLA DE TAREAS ── */
+.tareas-table {
+  width: 100%; border-collapse: collapse;
+}
+.tareas-table thead th {
+  font-size: 11px; font-weight: 700; color: var(--gray-400);
+  text-transform: uppercase; letter-spacing: 0.5px;
+  padding: 10px 14px; border-bottom: 1px solid var(--gray-200);
+  background: var(--gray-100); text-align: left;
+}
+.tareas-table thead th:first-child { border-radius: 8px 0 0 0; }
+.tareas-table thead th:last-child  { border-radius: 0 8px 0 0; }
+
+.tareas-table tbody tr {
+  border-bottom: 1px solid var(--gray-100);
+  transition: background 0.12s;
+  cursor: pointer;
+}
+.tareas-table tbody tr:last-child { border-bottom: none; }
+.tareas-table tbody tr:hover { background: var(--blue-50); }
+
+.tareas-table tbody td {
+  padding: 12px 14px; font-size: 13px; color: var(--gray-700); vertical-align: middle;
+}
+
+/* ── CELDA TÍTULO ── */
+.tarea-titulo {
+  font-weight: 600; color: var(--gray-900);
+  display: flex; align-items: center; gap: 8px;
+}
+.tarea-titulo .check-circle {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid var(--gray-300); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.tarea-titulo .check-circle.done {
+  background: var(--success); border-color: var(--success); color: white; font-size: 10px;
+}
+
+/* ── CELDA PROYECTO ── */
+.tarea-proyecto {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--gray-500);
+}
+.tarea-proyecto-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── PRIORIDAD ── */
+.tarea-prioridad {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11.5px; font-weight: 600; padding: 3px 10px; border-radius: 20px;
+}
+.prioridad-alta   { background: rgba(239,68,68,0.1);  color: var(--danger); }
+.prioridad-media  { background: rgba(245,158,11,0.1); color: var(--warning); }
+.prioridad-baja   { background: rgba(16,185,129,0.1); color: var(--success); }
+
+/* ── ESTADO ── */
+.tarea-estado {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11.5px; font-weight: 600; padding: 3px 10px; border-radius: 20px;
+}
+.estado-pendiente  { background: var(--gray-100);           color: var(--gray-500); }
+.estado-progreso   { background: var(--blue-50);            color: var(--blue-600); }
+.estado-revision   { background: rgba(245,158,11,0.1);      color: var(--warning); }
+.estado-completada { background: rgba(16,185,129,0.1);      color: var(--success); }
+
+/* ── FECHA VENCIMIENTO ── */
+.tarea-fecha { font-size: 12px; color: var(--gray-400); white-space: nowrap; }
+.tarea-fecha.vencida { color: var(--danger); font-weight: 600; }
+
+/* ── RESUMEN STATS ── */
+.tareas-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 22px;
+}
+.tarea-stat-card {
+  background: white; border-radius: 10px; padding: 16px 18px;
+  border: 1px solid var(--gray-200);
+  display: flex; align-items: center; gap: 14px;
+}
+.tarea-stat-icon {
+  width: 36px; height: 36px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.tarea-stat-icon i { font-size: 16px; }
+.tarea-stat-num  { font-size: 22px; font-weight: 800; color: var(--gray-900); line-height: 1; }
+.tarea-stat-label{ font-size: 11px; color: var(--gray-400); font-weight: 500; margin-top: 2px; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .tareas-stats  { grid-template-columns: repeat(2, 1fr); }
+  .tareas-table thead th:nth-child(4),
+  .tareas-table tbody td:nth-child(4) { display: none; }
+}
+@media (max-width: 600px) {
+  .tareas-stats  { grid-template-columns: 1fr 1fr; }
+  .tareas-table thead th:nth-child(3),
+  .tareas-table tbody td:nth-child(3) { display: none; }
+}
