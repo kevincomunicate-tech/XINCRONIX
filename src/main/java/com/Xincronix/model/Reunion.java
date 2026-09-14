@@ -14,4 +14,8 @@ public class Reunion {
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "id_equipo") private Equipo equipo;
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "id_usuario") private Usuario usuario;
     public Integer getIdReunion() { return idReunion; }
+    public String getNombre() { return nombre; }
+    public String getEnlace() { return enlace; }
+    public LocalDateTime getFecha() { return fecha; }
+    public String getEstado() { return estado; }
 }

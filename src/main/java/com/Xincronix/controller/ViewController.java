@@ -66,14 +66,14 @@ public class ViewController {
                 .body("{\"success\":false,\"message\":\"El registro aún debe migrarse al servicio Spring Boot.\"}");
     }
 
-    @GetMapping({"/panel", "/Panel", "/Panel.html"})
-    public ResponseEntity<String> panel() throws IOException { return page("panel"); }
+        @GetMapping({"/panel", "/Panel", "/Panel.html"})
+        public String panel() { return "panel/Panel.blade"; }
 
-    @GetMapping({"/panel/admin", "/admin_panel"})
-    public ResponseEntity<String> panelAdmin() throws IOException { return page("panel-admin"); }
+        @GetMapping({"/panel/admin", "/admin_panel", "/admin/dashboard"})
+        public String panelAdmin() { return "panel/admin_panel.blade"; }
 
-    @GetMapping({"/panel/supervisor", "/supervisor_panel"})
-    public ResponseEntity<String> panelSupervisor() throws IOException { return page("panel-supervisor"); }
+        @GetMapping({"/panel/supervisor", "/supervisor_panel"})
+        public String panelSupervisor() { return "panel/supervisor_panel.blade"; }
 
     @GetMapping({"/proyectos", "/Proyecto", "/Proyecto.html"})
     public ResponseEntity<String> proyectos() throws IOException { return page("proyectos"); }
@@ -122,7 +122,7 @@ public class ViewController {
 
     private String normalizeLegacyReferences(String html) {
         String normalized = html
-                .replaceAll("\\{\\{\\s*asset\\('([^']+)'\\)\\s*}}", "/$1")
+                .replaceAll("\\{\\{\\s*asset\\('assets/([^']+)'\\)\\s*}}", "/$1")
                 .replace("{{ url('/api/login') }}", "/api/login")
                 .replace("{{ url('/Panel') }}", "/panel")
                 .replace("{{ url('/registro') }}", "/registro")

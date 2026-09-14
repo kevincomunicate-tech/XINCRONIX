@@ -2,16 +2,32 @@ spring:
   application:
     name: Xincronix
   datasource:
-    url: jdbc:mariadb://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:xincronix_bd}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: ${XNX_DB_URL:jdbc:mariadb://localhost:3307/xincronix_bd}
+    username: ${XNX_DB_USERNAME:root}
+    password: ${XNX_DB_PASSWORD:}
     driver-class-name: org.mariadb.jdbc.Driver
   jpa:
     hibernate:
-      # No modifica el esquema existente; usar update solo tras validar MariaDB en desarrollo.
-      ddl-auto: ${JPA_DDL_AUTO:validate}
-    show-sql: ${JPA_SHOW_SQL:true}
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
 
 server:
-  address: ${SERVER_ADDRESS:0.0.0.0}
-  port: ${SERVER_PORT:8080}
+  port: 8080
+
+xincronix:
+  uploads:
+    directory: uploads/comprobantes
+  jwt:
+    secret: ${XNX_JWT_SECRET:change-this-secret-in-production-32-bytes-min}
+    expiration-ms: ${XNX_JWT_EXPIRATION_MS:86400000}

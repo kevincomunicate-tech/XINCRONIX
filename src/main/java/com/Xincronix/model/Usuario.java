@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.PrePersist;
 
 @Entity
 @Table(name = "usuarios")
@@ -82,5 +83,11 @@ public class Usuario {
     public void setIdPerfil(Integer idPerfil) {
         if (idPerfil == null) { this.perfil = null; return; }
         PerfilEspecifico value = new PerfilEspecifico(); value.setIdPerfil(idPerfil); this.perfil = value;
+    }
+
+    @PrePersist
+    void onCreate() {
+        if (fechaCreacion == null) fechaCreacion = LocalDateTime.now();
+        if (estado == null) estado = Boolean.TRUE;
     }
 }

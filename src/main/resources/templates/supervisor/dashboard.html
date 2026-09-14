@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Xincronix — Panel Supervisor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+    <style>
+        :root {
+            --ink: #07101f; --navy: #0d1f3c; --electric: #2a5bff; --sky: #5b8bff;
+            --white: #ffffff; --muted: #6b7a9a; --success: #10b981; --warning: #f59e0b;
+            --purple: #8b5cf6; --gold: #f0c040; --border: rgba(255,255,255,0.08);
+            --glass: rgba(255,255,255,0.04); --sidebar-w: 260px;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'DM Sans',sans-serif; background:var(--ink); color:var(--white); min-height:100vh; }
+        .app { display:flex; min-height:100vh; }
+        .sidebar {
+            width:var(--sidebar-w); background:linear-gradient(180deg,#0a1728 0%,#060f1e 100%);
+            border-right:1px solid var(--border); position:fixed; top:0; left:0; height:100vh;
+            display:flex; flex-direction:column; z-index:100;
+        }
+        .sidebar-header { padding:24px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+        .logo-icon {
+            width:36px; height:36px; border-radius:9px; background:rgba(42,91,255,0.2);
+            border:1px solid rgba(42,91,255,0.35); display:flex; align-items:center; justify-content:center;
+            font-family:'Syne',sans-serif; font-weight:800; color:var(--sky);
+        }
+        .logo-text { font-family:'Syne',sans-serif; font-size:18px; font-weight:800; }
+        .logo-text span { color:var(--sky); }
+        .sidebar-badge {
+            margin:14px 16px 6px; padding:6px 12px; background:rgba(240,192,64,0.12);
+            border:1px solid rgba(240,192,64,0.3); border-radius:8px; font-size:10.5px;
+            font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--gold);
+        }
+        .nav-section-label {
+            font-size:9.5px; font-weight:700; letter-spacing:2px; text-transform:uppercase;
+            color:rgba(255,255,255,0.2); padding:14px 20px 6px;
+        }
+        .nav-item {
+            display:flex; align-items:center; gap:11px; padding:10px 16px; margin:2px 8px;
+            border-radius:9px; font-size:13.5px; font-weight:500; color:rgba(255,255,255,0.45);
+            text-decoration:none; transition:all 0.18s;
+        }
+        .nav-item:hover, .nav-item.active { background:rgba(42,91,255,0.12); color:var(--white); }
+        .nav-item.active { border-left:3px solid var(--electric); }
+        .sidebar-footer { margin-top:auto; padding:16px; border-top:1px solid var(--border); }
+        .user-chip { display:flex; align-items:center; gap:10px; padding:10px; border-radius:10px; background:var(--glass); }
+        .user-avatar {
+            width:36px; height:36px; border-radius:50%;
+            background:linear-gradient(135deg,var(--electric),var(--purple));
+            display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px;
+        }
+        .user-name { font-size:13px; font-weight:600; }
+        .user-role { font-size:11px; color:var(--muted); }
+        .main { margin-left:var(--sidebar-w); flex:1; padding:28px 32px; }
+        .page-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:28px; }
+        .page-title { font-family:'Syne',sans-serif; font-size:26px; font-weight:800; }
+        .page-subtitle { color:var(--muted); font-size:14px; margin-top:4px; }
+        .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:28px; }
+        .kpi-card {
+            background:var(--glass); border:1px solid var(--border); border-radius:14px; padding:20px;
+            transition:transform 0.2s, border-color 0.2s;
+        }
+        .kpi-card:hover { transform:translateY(-2px); border-color:rgba(42,91,255,0.3); }
+        .kpi-label { font-size:12px; color:var(--muted); margin-bottom:8px; }
+        .kpi-value { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; }
+        .kpi-icon {
+            width:40px; height:40px; border-radius:10px; display:flex; align-items:center;
+            justify-content:center; font-size:18px; margin-bottom:12px;
+        }
+        .kpi-empleados .kpi-icon { background:rgba(42,91,255,0.15); }
+        .kpi-proyectos .kpi-icon { background:rgba(16,185,129,0.15); }
+        .kpi-tareas .kpi-icon { background:rgba(245,158,11,0.15); }
+        .kpi-equipos .kpi-icon { background:rgba(139,92,246,0.15); }
+        .card { background:var(--glass); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+        .card-header {
+            padding:16px 20px; border-bottom:1px solid var(--border);
+            display:flex; justify-content:space-between; align-items:center;
+        }
+        .card-title { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; }
+        table { width:100%; border-collapse:collapse; }
+        th {
+            text-align:left; padding:12px 20px; font-size:11px; font-weight:600;
+            letter-spacing:0.8px; text-transform:uppercase; color:var(--muted);
+            border-bottom:1px solid var(--border);
+        }
+        td { padding:14px 20px; font-size:13.5px; border-bottom:1px solid var(--border); }
+        tr:last-child td { border-bottom:none; }
+        tr:hover td { background:rgba(255,255,255,0.02); }
+        .badge {
+            display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600;
+        }
+        .badge-success { background:rgba(16,185,129,0.15); color:var(--success); }
+        .badge-warning { background:rgba(245,158,11,0.15); color:var(--warning); }
+        .badge-muted { background:rgba(107,122,154,0.15); color:var(--muted); }
+        .btn {
+            display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:8px;
+            font-size:13px; font-weight:600; border:none; cursor:pointer; text-decoration:none;
+        }
+        .btn-primary { background:var(--electric); color:white; }
+        .btn-ghost { background:transparent; border:1px solid var(--border); color:var(--white); }
+        @media (max-width:900px) {
+            .sidebar { transform:translateX(-100%); }
+            .main { margin-left:0; }
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-icon">X</div>
+            <div class="logo-text">Xin<span>cronix</span></div>
+        </div>
+        <div class="sidebar-badge">Supervisor</div>
+
+        <div class="nav-section-label">Principal</div>
+        <a th:href="@{/supervisor/dashboard}" class="nav-item active"><span>📊</span> Dashboard</a>
+        <a th:href="@{/supervisor/empleados}" class="nav-item"><span>👥</span> Empleados</a>
+        <a th:href="@{/supervisor/equipos}" class="nav-item"><span>🗂️</span> Equipos</a>
+        <a th:href="@{/supervisor/proyectos}" class="nav-item"><span>📁</span> Proyectos</a>
+
+        <div class="nav-section-label">Gestión</div>
+        <a href="#" class="nav-item"><span>✅</span> Tareas</a>
+        <a href="#" class="nav-item"><span>📅</span> Calendario</a>
+        <a href="#" class="nav-item"><span>📈</span> Reportes</a>
+
+        <div class="sidebar-footer">
+            <div class="user-chip">
+                <div class="user-avatar" th:text="${#strings.substring(nombreCompleto,0,1)}">S</div>
+                <div>
+                    <div class="user-name" th:text="${nombreCompleto}">Supervisor</div>
+                    <div class="user-role" th:text="${rol}">Supervisor</div>
+                </div>
+            </div>
+            <form th:action="@{/logout}" method="post" style="margin-top:10px;">
+                <button type="submit" class="btn btn-ghost" style="width:100%; justify-content:center;">
+                    Cerrar sesión
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <main class="main">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Dashboard</h1>
+                <p class="page-subtitle">
+                    Bienvenido, <span th:text="${nombreCompleto}">Supervisor</span> —
+                    <span th:text="${empresaNombre}">Empresa</span>
+                </p>
+            </div>
+            <a th:href="@{/supervisor/empleados}" class="btn btn-primary">+ Nuevo empleado</a>
+        </div>
+
+        <div class="kpi-grid">
+            <div class="kpi-card kpi-empleados">
+                <div class="kpi-icon">👥</div>
+                <div class="kpi-label">Empleados</div>
+                <div class="kpi-value" th:text="${totalEmpleados}">0</div>
+            </div>
+            <div class="kpi-card kpi-proyectos">
+                <div class="kpi-icon">📁</div>
+                <div class="kpi-label">Proyectos</div>
+                <div class="kpi-value" th:text="${totalProyectos}">0</div>
+            </div>
+            <div class="kpi-card kpi-tareas">
+                <div class="kpi-icon">✅</div>
+                <div class="kpi-label">Tareas</div>
+                <div class="kpi-value" th:text="${totalTareas}">0</div>
+            </div>
+            <div class="kpi-card kpi-equipos">
+                <div class="kpi-icon">🗂️</div>
+                <div class="kpi-label">Equipos</div>
+                <div class="kpi-value" th:text="${totalEquipos}">0</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Empleados de la empresa</h2>
+                <a th:href="@{/supervisor/empleados}" class="btn btn-ghost">Ver todos</a>
+            </div>
+            <table>
+                <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Cargo</th>
+                    <th>Rol</th>
+                    <th>Estado</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="emp, stat : ${empleados}" th:if="${stat.index} < 8">
+                    <td th:text="${emp.nombres + ' ' + emp.apellidos}">Nombre</td>
+                    <td th:text="${emp.email}">email@empresa.com</td>
+                    <td th:text="${emp.cargo != null ? emp.cargo : '—'}">Cargo</td>
+                    <td>
+                        <span class="badge badge-muted"
+                              th:text="${emp.rol != null ? emp.rol.nombre : 'Empleado'}">Rol</span>
+                    </td>
+                    <td>
+                        <span th:if="${emp.estado}" class="badge badge-success">Activo</span>
+                        <span th:unless="${emp.estado}" class="badge badge-warning">Inactivo</span>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(empleados)}">
+                    <td colspan="5" style="text-align:center; color:var(--muted); padding:30px;">
+                        Aún no hay empleados registrados en tu empresa.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+</body>
+</html>

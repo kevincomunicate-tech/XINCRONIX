@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta name="csrf-token" content="{{ csrf_token() }}">
+<meta name="csrf-token" content="" />
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Xincronix — Panel Super Administrador</title>
@@ -600,7 +600,7 @@ textarea.form-control { resize:vertical; min-height:80px; }
 <!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-header">
-    <div class="logo-icon"><img src="{{ asset('assets/img/logo xincronix.png') }}" alt="Xincronix" style="width:100%;height:100%;object-fit:contain;"></div>
+    <div class="logo-icon"><img th:src="@{'/img/logo xincronix.png'}" src="/img/logo xincronix.png" alt="Xincronix" style="width:100%;height:100%;object-fit:contain;"></div>
     <div class="logo-text">Xin<span>cronix</span></div>
   </div>
 
@@ -2289,7 +2289,7 @@ async function reloadAll() {
 
 function confirmLogout() {
   showConfirm('¿Cerrar sesión?', 'Se cerrará tu sesión de administrador.',
-    () => { window.location.href = '../../view/login.html'; },
+    () => { window.location.href = '/login'; },
     '⏻', 'btn-danger', 'Cerrar sesión');
 }
 
@@ -2306,7 +2306,7 @@ function loadEmpresas() {
   
   try {
     // Blade inyecta el objeto JSON directo aquí
-    const dataInicial = @json($empresasIniciales ?? []);
+    const dataInicial = [];
     STATE.empresas.data = dataInicial;
   } catch (error) {
     console.error(error);

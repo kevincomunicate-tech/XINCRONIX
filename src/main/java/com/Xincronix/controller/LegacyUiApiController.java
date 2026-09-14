@@ -10,6 +10,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.Xincronix.model.Usuario;
+import com.Xincronix.repository.ProyectoRepository;
+import com.Xincronix.repository.TareaRepository;
+import com.Xincronix.repository.UsuarioRepository;
+
 /**
  * Transitional JSON endpoints used by the migrated screens.
  *
@@ -25,11 +30,41 @@ public class LegacyUiApiController {
             "iniciales", "XN", "nombres", "Usuario", "apellidos", "Xincronix",
             "nombre_rol", "Usuario", "cargo", "Usuario");
 
+            private final ProyectoRepository proyectos;
+            private final TareaRepository tareasRepository;
+            private final UsuarioRepository usuarios;
+
+            public LegacyUiApiController(ProyectoRepository proyectos, TareaRepository tareasRepository,
+                         UsuarioRepository usuarios) {
+            this.proyectos = proyectos;
+            this.tareasRepository = tareasRepository;
+            this.usuarios = usuarios;
+            }
+
     @GetMapping("/dashboard")
-    public Map<String, Object> dashboard() {
+            public Map<String, Object> dashboard(@org.springframework.security.core.annotation.AuthenticationPrincipal
+                             org.springframework.security.core.userdetails.UserDetails principal) {
+            Usuario usuario = usuarios.findByEmail(principal.getUsername()).orElseThrow();
+            Integer empresaId = usuario.getIdEmpresa();
+            var proyectosEmpresa = empresaId == null ? List.<com.Xincronix.model.Proyecto>of()
+                : proyectos.findByEmpresaIdEmpresa(empresaId);
+            Map<String, Object> usuarioData = Map.of(
+                "nombre", (usuario.getNombres() + " " + usuario.getApellidos()).trim(),
+                "rol", usuario.getRol() != null ? usuario.getRol().getNombre() : "Usuario",
+                "cargo", usuario.getCargo() == null ? "Usuario" : usuario.getCargo());
         return Map.of("status", "success", "data", Map.of(
-                "usuario", Map.of("nombre", "Usuario Xincronix", "rol", "Usuario"),
-                "estadisticas", Map.of(), "actividades", List.of(), "proyectos", List.of()));
+                "usuario", usuarioData,
+                "estadisticas", Map.of(
+                    "proyectos_activos", proyectosEmpresa.size(),
+                    "proyectos_este_mes", proyectosEmpresa.size(),
+                    "tareas_completadas", tareasRepository.count(),
+                    "tareas_esta_semana", tareasRepository.count(),
+                    "agentes_activos", 0,
+                    "agentes_en_espera", 0,
+                    "issues_abiertos", 0),
+                "actividades", List.of(), "proyectos", proyectosEmpresa.stream()
+                    .map(proyecto -> Map.of("nombre", proyecto.getNombre(), "porcentaje", 0))
+                    .toList()));
     }
 
     @GetMapping("/tareas")
@@ -56,17 +91,6 @@ public class LegacyUiApiController {
     public ResponseEntity<Map<String, Object>> mutationPendingMigration() {
         return ResponseEntity.status(501).body(Map.of("success", false,
                 "message", "Esta operación aún debe migrarse al servicio Spring Boot."));
-    }
-
-    @PostMapping("/auth/logout")
-    public Map<String, Object> logout() {
-        return Map.of("success", true, "message", "Sesión cerrada");
-    }
-
-    @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> loginPendingMigration() {
-        return ResponseEntity.status(501).body(Map.of("success", false,
-                "message", "La autenticación aún debe migrarse al servicio Spring Boot."));
     }
 
     /** Keeps the supervisor shell on Spring while its individual services move. */

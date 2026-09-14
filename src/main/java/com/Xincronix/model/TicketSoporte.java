@@ -14,4 +14,18 @@ public class TicketSoporte {
     @Column(name = "fecha_creacion", nullable = false) private LocalDateTime fechaCreacion;
     @Column(name = "fecha_cierre") private LocalDateTime fechaCierre;
     public Integer getIdTicket() { return idTicket; }
+    public String getAsunto() { return asunto; }
+    public String getDescripcion() { return descripcion; }
+    public String getPrioridad() { return prioridad; }
+    public String getEstado() { return estado; }
+    public Empresa getEmpresa() { return empresa; }
+    public LocalDateTime getFechaCreacion() { return fechaCreacion; }
+    public void setAsunto(String asunto) { this.asunto = asunto; }
+    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+    public void setPrioridad(String prioridad) { this.prioridad = prioridad; }
+    public void setEstado(String estado) { this.estado = estado; }
+    public void setFechaCreacion(LocalDateTime fechaCreacion) { this.fechaCreacion = fechaCreacion; }
+
+    @PrePersist
+    void onCreate() { if (fechaCreacion == null) fechaCreacion = LocalDateTime.now(); }
 }

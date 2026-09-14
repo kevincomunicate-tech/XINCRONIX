@@ -294,7 +294,7 @@ input[type=file]{display:none;}
     <div class="sidebar-glow"></div>
 
     <div class="s-logo">
-      <div class="s-logo-icon"><img src="{{ asset('assets/img/logo xincronix.png') }}" alt="Xincronix" style="width:100%;height:100%;object-fit:contain;"></div>
+      <div class="s-logo-icon"><img src="/img/logo xincronix.png" alt="Xincronix" style="width:100%;height:100%;object-fit:contain;"></div>
       <div class="s-logo-text">Xin<span>cronix</span></div>
     </div>
 
@@ -715,7 +715,7 @@ input[type=file]{display:none;}
 </div>
 
 <script>
-const REGISTER_ENDPOINT = '/registro';
+const REGISTER_ENDPOINT = '/api/auth/register';
 
 /* ─── ESTADO ─── */
 let currentStep = 1;
@@ -929,7 +929,7 @@ async function submitRegistration() {
   fd.append('nombre', document.getElementById('companyName').value.trim());
   fd.append('nit',            document.getElementById('nit').value.trim());
   fd.append('sector',         document.getElementById('sector').value);
-  fd.append('num_empleados',  document.getElementById('employees').value);
+  fd.append('numEmpleados',   document.getElementById('employees').value);
   fd.append('nombres',        document.getElementById('adminName').value.trim().split(' ').slice(0, -1).join(' ') || document.getElementById('adminName').value.trim());
   fd.append('apellidos',      document.getElementById('adminName').value.trim().split(' ').slice(-1)[0] || '');
   fd.append('cargo',          document.getElementById('adminRole').value.trim());
@@ -937,19 +937,16 @@ async function submitRegistration() {
   fd.append('telefono',       document.getElementById('adminPhone').value.trim());
   fd.append('password',       document.getElementById('regPwd').value);
   fd.append('plan',           selectedPlan);
-  fd.append('metodo_pago',    selectedPayMethod);
+  fd.append('metodoPago',     selectedPayMethod);
   fd.append('referencia',     payRef);
   fd.append('notas',          document.getElementById('payNotes').value.trim());
   fd.append('comprobante',    uploadedFile, uploadedFile.name);
 
   try {
-    const response = await fetch('/registro', { 
+    const response = await fetch(REGISTER_ENDPOINT, {
         method: 'POST', 
         body: fd,
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        }
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
     });
 
     const data = await response.json(); 
