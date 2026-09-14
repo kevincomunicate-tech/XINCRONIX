@@ -54,7 +54,6 @@
         <a href="Asistente" class="xnx-sidebar-item"><i class="bi bi-chat-dots"></i> Asistente virtual</a>
         <a href="Automatizaciones" class="xnx-sidebar-item"><i class="bi bi-arrow-repeat"></i> Automatizaciones</a>
       </div>
-      <a href="supervisor_panel" class="xnx-sidebar-item"><i class="bi bi-arrow-repeat"></i> Automatizaciones</a>
 
       <div class="xnx-sidebar-section">
         <div class="xnx-sidebar-section-label">Reportes</div>
@@ -75,7 +74,7 @@
           </div>
           <button class="btn btn-sm ms-auto p-0 text-white-50 border-0 bg-transparent" 
                   data-bs-toggle="tooltip" title="Cerrar sesión" 
-                  onclick="window.location.href='Login'">
+              onclick="cerrarSesion()">
             <i class="bi bi-box-arrow-right"></i>
           </button>
         </div>
@@ -254,35 +253,32 @@
   async function cargarDashboard() {
     try {
         console.log('🔄 Cargando dashboard...');
+
+      const headers = {
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      };
         
         const response = await fetch(DASHBOARD_ENDPOINT, {
             method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
+        headers,
             credentials: 'include'
         });
 
         console.log('📡 Status:', response.status);
 
-        if (response.status === 401) {
-            console.warn('⚠️ No hay sesión activa o el token expiró. Redirigiendo al login...');
-            localStorage.removeItem('usuarioActual');
-            window.location.href = '/login';
-            return;
-        }
-
-        if (!response.ok) {
-            throw new Error(`Error HTTP: ${response.status}`);
-        }
-
         const result = await response.json();
         console.log('✅ Datos recibidos:', result);
 
-        if (result.status === 'error') {
-            throw new Error(result.message || 'Error al cargar datos');
+        if (!response.ok || result.status !== 'success' || !result.data) {
+          if (response.status === 401) {
+            console.warn('⚠️ No hay sesión activa o el token expiró. Redirigiendo al login...');
+            localStorage.removeItem('xincronix_token');
+            localStorage.removeItem('usuarioActual');
+            window.location.href = '/login';
+            return;
+          }
+          throw new Error(result.message || 'Error al cargar datos');
         }
 
         usuarioActual = result.data.usuario;

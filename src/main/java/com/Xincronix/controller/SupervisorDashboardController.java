@@ -54,11 +54,14 @@ public class SupervisorDashboardController {
         long totalTareas = 0;
         long totalEquipos = 0;
 
-        try {
-            totalProyectos = proyectoRepository.count();
-            totalTareas = tareaRepository.count();
-            totalEquipos = equipoRepository.count();
-        } catch (Exception ignored) {}
+        if (empresaId != null) {
+            var proyectosEmpresa = proyectoRepository.findByEmpresaIdEmpresa(empresaId);
+            totalProyectos = proyectosEmpresa.size();
+            totalTareas = proyectosEmpresa.stream()
+                    .mapToLong(proyecto -> tareaRepository.findByProyectoIdProyecto(proyecto.getIdProyecto()).size())
+                    .sum();
+            totalEquipos = equipoRepository.findByEmpresaIdEmpresa(empresaId).size();
+        }
 
         model.addAttribute("usuario", actor);
         model.addAttribute("nombreCompleto", actor.getNombres() + " " + actor.getApellidos());
@@ -94,7 +97,8 @@ public class SupervisorDashboardController {
         Usuario actor = usuarioRepository.findByEmail(userDetails.getUsername()).orElseThrow();
         model.addAttribute("usuario", actor);
         model.addAttribute("nombreCompleto", actor.getNombres() + " " + actor.getApellidos());
-        model.addAttribute("proyectos", proyectoRepository.findAll());
+        model.addAttribute("proyectos", actor.getIdEmpresa() == null
+            ? java.util.List.of() : proyectoRepository.findByEmpresaIdEmpresa(actor.getIdEmpresa()));
         return "supervisor/proyectos";
     }
 
@@ -103,7 +107,8 @@ public class SupervisorDashboardController {
         Usuario actor = usuarioRepository.findByEmail(userDetails.getUsername()).orElseThrow();
         model.addAttribute("usuario", actor);
         model.addAttribute("nombreCompleto", actor.getNombres() + " " + actor.getApellidos());
-        model.addAttribute("equipos", equipoRepository.findAll());
+        model.addAttribute("equipos", actor.getIdEmpresa() == null
+            ? java.util.List.of() : equipoRepository.findByEmpresaIdEmpresa(actor.getIdEmpresa()));
         return "supervisor/equipos";
     }
 }

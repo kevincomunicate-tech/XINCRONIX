@@ -12,6 +12,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import java.nio.charset.StandardCharsets;
 
 import java.util.List;
 import java.util.Map;
@@ -48,6 +52,37 @@ public class AdminApiController {
         List<Map<String, Object>> data = tickets.findAll().stream().map(this::ticketData).toList();
         return Map.of("success", true, "data", data);
     }
+
+    /** Server-side CSV export. Filters are evaluated on the same data the administrator can see. */
+    @GetMapping(value = "/reportes/{tipo}.csv", produces = "text/csv")
+    public ResponseEntity<byte[]> reporte(@org.springframework.web.bind.annotation.PathVariable String tipo,
+                                          @RequestParam(required = false) String q,
+                                          @RequestParam(required = false) String sector,
+                                          @RequestParam(required = false) String plan,
+                                          @RequestParam(required = false) String estado,
+                                          @RequestParam(required = false) String prioridad) {
+        String csv;
+        switch (tipo.toLowerCase()) {
+            case "empresas" -> csv = empresas.findAll().stream()
+                    .filter(e -> matches(q, e.getNombre(), e.getEmail(), e.getNit()))
+                    .filter(e -> matchesExact(sector, e.getSector())).filter(e -> matchesExact(plan, e.getPlanSuscripcion()))
+                    .map(this::empresaData).collect(java.util.stream.Collectors.collectingAndThen(java.util.stream.Collectors.toList(), this::csv));
+            case "pagos" -> csv = pagos.findAll().stream()
+                    .filter(p -> matches(q, p.getReferencia(), p.getPlan(), p.getEmpresa() == null ? null : p.getEmpresa().getNombre()))
+                    .filter(p -> matchesExact(estado, p.getEstado())).filter(p -> matchesExact(plan, p.getPlan()))
+                    .map(this::pagoData).collect(java.util.stream.Collectors.collectingAndThen(java.util.stream.Collectors.toList(), this::csv));
+            case "tickets" -> csv = tickets.findAll().stream()
+                    .filter(t -> matches(q, t.getAsunto(), t.getDescripcion())).filter(t -> matchesExact(estado, t.getEstado())).filter(t -> matchesExact(prioridad, t.getPrioridad()))
+                    .map(this::ticketData).collect(java.util.stream.Collectors.collectingAndThen(java.util.stream.Collectors.toList(), this::csv));
+            default -> throw new IllegalArgumentException("Tipo de reporte no soportado");
+        }
+        return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=xincronix_" + tipo + ".csv")
+                .contentType(new MediaType("text", "csv", StandardCharsets.UTF_8)).body(("\uFEFF" + csv).getBytes(StandardCharsets.UTF_8));
+    }
+
+    private boolean matches(String q, String... values) { if (q == null || q.isBlank()) return true; String needle = q.toLowerCase(); return java.util.Arrays.stream(values).filter(java.util.Objects::nonNull).anyMatch(v -> v.toLowerCase().contains(needle)); }
+    private boolean matchesExact(String filter, String value) { return filter == null || filter.isBlank() || (value != null && value.equalsIgnoreCase(filter)); }
+    private String csv(List<Map<String, Object>> rows) { if (rows.isEmpty()) return ""; List<String> headers = new java.util.ArrayList<>(rows.getFirst().keySet()); StringBuilder out = new StringBuilder(String.join(",", headers)); for (Map<String, Object> row : rows) { out.append('\n'); for (int i = 0; i < headers.size(); i++) { if (i > 0) out.append(','); out.append('"').append(String.valueOf(row.get(headers.get(i))).replace("\"", "\"\"")).append('"'); } } return out.toString(); }
 
     @PostMapping("/empresas")
     public Map<String, Object> modificarEmpresa(@RequestParam Map<String, String> form) {

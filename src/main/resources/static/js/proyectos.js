@@ -3,7 +3,7 @@
  * Ubicación: /Assets/js/proyectos.js
  */
 
-const PROYECTOS_ENDPOINT = '../controller/proyectos.php';
+const PROYECTOS_ENDPOINT = '/api/proyectos';
 let proyectoSeleccionado = null;
 let toastInstance = null;
 let proyectosCache = [];
@@ -64,9 +64,9 @@ function cargarDatosUsuario() {
 
 function cerrarSesion() {
     localStorage.removeItem('usuarioActual');
-    fetch('../controller/logout.php', { method: 'POST' })
+    fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
         .catch(() => {})
-        .finally(() => window.location.href = 'Login.html');
+        .finally(() => window.location.href = '/login');
 }
 
 // ═══════════════════════════════════════════
@@ -405,11 +405,8 @@ function eliminarProyecto(idProyecto) {
     
     fetch(`${PROYECTOS_ENDPOINT}?action=eliminar`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-            id_proyecto: idProyecto,
-            _method: 'DELETE'
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_proyecto: idProyecto })
     })
     .then(res => res.json())
     .then(data => {

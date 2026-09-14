@@ -2,13 +2,13 @@ package com.Xincronix.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,6 +55,16 @@ public class JwtService {
         return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
     }
 
+    public String generateShortLivedToken(String subject, Map<String, Object> claims, long expirationMillis) {
+        return Jwts.builder().claims(claims).subject(subject)
+                .issuedAt(new Date()).expiration(new Date(System.currentTimeMillis() + expirationMillis))
+                .signWith(getSignInKey()).compact();
+    }
+
+    public boolean hasClaim(String token, String name, String expectedValue) {
+        return expectedValue.equals(extractClaim(token, claims -> claims.get(name, String.class)));
+    }
+
     private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
@@ -72,9 +82,8 @@ public class JwtService {
     }
 
     private SecretKey getSignInKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(
-                java.util.Base64.getEncoder().encodeToString(secretKey.getBytes())
-        );
+        byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
+        if (keyBytes.length < 32) throw new IllegalStateException("XNX_JWT_SECRET debe tener al menos 32 caracteres");
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }

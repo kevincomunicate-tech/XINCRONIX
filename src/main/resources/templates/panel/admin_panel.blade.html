@@ -857,6 +857,7 @@ textarea.form-control { resize:vertical; min-height:80px; }
           <option value="aprobado">Aprobado</option>
           <option value="rechazado">Rechazado</option>
         </select>
+        <button class="btn btn-outline btn-sm" onclick="exportCSV('pagos')">⬇ Exportar CSV</button>
       </div>
       <div class="table-wrap" style="position:relative;">
         <div class="loading-overlay" id="loading-pagos"><div class="spinner"></div></div>
@@ -910,6 +911,10 @@ textarea.form-control { resize:vertical; min-height:80px; }
           <option value="proceso">En proceso</option>
           <option value="cerrado">Cerrado</option>
         </select>
+        <select class="filter-select" id="ticketFilterPrioridad" onchange="filterTickets()">
+          <option value="">Todas las prioridades</option><option value="alta">Alta</option><option value="media">Media</option><option value="baja">Baja</option>
+        </select>
+        <button class="btn btn-outline btn-sm" onclick="exportCSV('tickets')">⬇ Exportar CSV</button>
         <select class="filter-select" id="ticketFilterPrio" onchange="filterTickets()">
           <option value="">Todas las prioridades</option>
           <option value="alta">Alta</option>
@@ -2067,7 +2072,7 @@ async function loadTickets() {
 function filterTickets() {
   const q    = document.getElementById('ticketSearch').value.toLowerCase();
   const est  = document.getElementById('ticketFilterEstado').value;
-  const prio = document.getElementById('ticketFilterPrio').value;
+  const prio = document.getElementById('ticketFilterPrioridad').value;
   STATE.tickets.filtered = STATE.tickets.data.filter(t => {
     const matchQ = !q    || (t.asunto || '').toLowerCase().includes(q);
     const matchE = !est  || t.estado === est;
@@ -2260,6 +2265,18 @@ function handleGlobalSearch(q) {
 // EXPORTAR CSV
 // ══════════════════════════════════════════════
 function exportCSV(type) {
+  // El servidor aplica todos los criterios antes de generar el archivo: no se exportan datos fuera del filtro.
+  const params = new URLSearchParams();
+  const mapping = {
+    empresas: { q: 'empresaSearch', plan: 'empresaFilterPlan', sector: 'empresaFilterSector' },
+    pagos: { q: 'pagoSearch', estado: 'pagoFilterEstado' },
+    tickets: { q: 'ticketSearch', estado: 'ticketFilterEstado', prioridad: 'ticketFilterPrioridad' }
+  }[type];
+  if (mapping) Object.entries(mapping).forEach(([key, id]) => { const el = document.getElementById(id); if (el && el.value) params.set(key, el.value); });
+  if (['empresas', 'pagos', 'tickets'].includes(type)) {
+    const a = document.createElement('a'); a.href = `/api/reportes/${type}.csv?${params}`; a.download = `xincronix_${type}.csv`; a.click();
+    return toast('Generando reporte con los filtros seleccionados…', 'info');
+  }
   const data = STATE[type].filtered;
   if (!data.length) return toast('No hay datos para exportar', 'warn');
 

@@ -127,7 +127,8 @@ public class UsuarioService {
     }
 
     private void exigirMismoAlcance(Usuario actor, Usuario objetivo) {
-        if (!esAdministrador(actor) && (actor == null || !actor.getIdEmpresa().equals(objetivo.getIdEmpresa()))) {
+        if (!esAdministrador(actor) && (actor == null || actor.getIdEmpresa() == null
+                || !actor.getIdEmpresa().equals(objetivo.getIdEmpresa()))) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permiso para acceder al usuario");
         }
     }

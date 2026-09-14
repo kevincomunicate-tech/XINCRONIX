@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 public class ViewController {
 
     private static final Map<String, String> VIEW_FILES = Map.ofEntries(
-            Map.entry("home", "templates/welcome.html"),
+            Map.entry("home", "templates/index.html"),
             Map.entry("login", "templates/auth/Login.html"),
             Map.entry("registro", "templates/auth/registro.html"),
             Map.entry("panel", "templates/panel/Panel.blade.html"),
@@ -52,7 +52,18 @@ public class ViewController {
             Map.entry("informacion-ventas", "templates/información/ventas-empresariales.html"));
 
     @GetMapping({"/", "/inicio", "/index.html"})
-    public ResponseEntity<String> home() throws IOException { return login(); }
+    public ResponseEntity<String> home() throws IOException { return page("home"); }
+
+    @GetMapping("/reset-password")
+    public ResponseEntity<String> resetPassword() {
+        return ResponseEntity.ok().contentType(MediaType.TEXT_HTML).body("""
+            <!doctype html><html lang='es'><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'>
+            <title>Restablecer contraseña | Xincronix</title><body style='font-family:system-ui;max-width:420px;margin:10vh auto;padding:24px'>
+            <h1>Restablecer contraseña</h1><p>Elige una contraseña nueva de al menos 8 caracteres.</p>
+            <form id='form'><input id='password' type='password' minlength='8' required placeholder='Nueva contraseña' style='width:100%;padding:12px'><button style='margin-top:12px;padding:12px'>Actualizar contraseña</button></form><p id='message'></p>
+            <script>document.getElementById('form').onsubmit=async e=>{e.preventDefault();let r=await fetch('/api/auth/password/reset',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:new URLSearchParams(location.search).get('token'),password:document.getElementById('password').value})});let d=await r.json();document.getElementById('message').textContent=d.message;if(r.ok)setTimeout(()=>location='/login',1200)}</script></body></html>
+            """);
+    }
 
     @GetMapping({"/login", "/Login", "/Login.html", "/auth/Login.html"})
     public ResponseEntity<String> login() throws IOException { return page("login"); }
@@ -67,13 +78,13 @@ public class ViewController {
     }
 
         @GetMapping({"/panel", "/Panel", "/Panel.html"})
-        public String panel() { return "panel/Panel.blade"; }
+        public ResponseEntity<String> panel() throws IOException { return page("panel"); }
 
         @GetMapping({"/panel/admin", "/admin_panel", "/admin/dashboard"})
-        public String panelAdmin() { return "panel/admin_panel.blade"; }
+        public ResponseEntity<String> panelAdmin() throws IOException { return page("panel-admin"); }
 
         @GetMapping({"/panel/supervisor", "/supervisor_panel"})
-        public String panelSupervisor() { return "panel/supervisor_panel.blade"; }
+        public ResponseEntity<String> panelSupervisor() throws IOException { return page("panel-supervisor"); }
 
     @GetMapping({"/proyectos", "/Proyecto", "/Proyecto.html"})
     public ResponseEntity<String> proyectos() throws IOException { return page("proyectos"); }
@@ -159,6 +170,10 @@ public class ViewController {
                 .replace("../index.html", "/")
                 .replace("../../Agentes.html", "/agentes")
                 .replace("../login.html", "/login")
+                .replace("view/login.html", "/login")
+                .replace("view/registro.html", "/registro")
+                .replace("Assets/css/", "/css/")
+                .replace("Assets/js/", "/js/")
                 .replace("href=\"equipo.html\"", "href=\"/informacion/equipo\"")
                 .replace("href=\"blog.html\"", "href=\"/informacion/blog\"")
                 .replace("href=\"exito.html\"", "href=\"/informacion/casos-de-exito\"")

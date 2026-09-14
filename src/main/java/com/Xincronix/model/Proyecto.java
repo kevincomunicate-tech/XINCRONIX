@@ -25,8 +25,24 @@ public class Proyecto {
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }
     public Integer getNivelImportancia() { return nivelImportancia; }
+    public void setNivelImportancia(Integer nivelImportancia) { this.nivelImportancia = nivelImportancia; }
+    public String getTipoProyecto() { return tipoProyecto; }
+    public void setTipoProyecto(String tipoProyecto) { this.tipoProyecto = tipoProyecto; }
+    public LocalDate getFechaInicio() { return fechaInicio; }
+    public void setFechaInicio(LocalDate fechaInicio) { this.fechaInicio = fechaInicio; }
+    public LocalDate getFechaFin() { return fechaFin; }
+    public void setFechaFin(LocalDate fechaFin) { this.fechaFin = fechaFin; }
+    public LocalDateTime getFechaCreacion() { return fechaCreacion; }
+    public void setFechaCreacion(LocalDateTime fechaCreacion) { this.fechaCreacion = fechaCreacion; }
     public Equipo getEquipo() { return equipo; }
     public void setEquipo(Equipo equipo) { this.equipo = equipo; }
     public Empresa getEmpresa() { return empresa; }
     public void setEmpresa(Empresa empresa) { this.empresa = empresa; }
+
+    @PrePersist
+    void onCreate() {
+        if (fechaCreacion == null) fechaCreacion = LocalDateTime.now();
+        if (nivelImportancia == null) nivelImportancia = 1;
+        if (estado == null || estado.isBlank()) estado = "Activo";
+    }
 }

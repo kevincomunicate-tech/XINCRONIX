@@ -24,10 +24,22 @@ public class Tarea {
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }
     public String getPrioridad() { return prioridad; }
+    public void setPrioridad(String prioridad) { this.prioridad = prioridad; }
+    public LocalDateTime getFechaCreacion() { return fechaCreacion; }
+    public void setFechaCreacion(LocalDateTime fechaCreacion) { this.fechaCreacion = fechaCreacion; }
+    public LocalDate getFechaVencimiento() { return fechaVencimiento; }
+    public void setFechaVencimiento(LocalDate fechaVencimiento) { this.fechaVencimiento = fechaVencimiento; }
     public Proyecto getProyecto() { return proyecto; }
     public void setProyecto(Proyecto proyecto) { this.proyecto = proyecto; }
     public Usuario getUsuario() { return usuario; }
     public void setUsuario(Usuario usuario) { this.usuario = usuario; }
     public Equipo getEquipo() { return equipo; }
     public void setEquipo(Equipo equipo) { this.equipo = equipo; }
+
+    @PrePersist
+    void onCreate() {
+        if (fechaCreacion == null) fechaCreacion = LocalDateTime.now();
+        if (estado == null || estado.isBlank()) estado = "Por Hacer";
+        if (prioridad == null || prioridad.isBlank()) prioridad = "Media";
+    }
 }

@@ -10,6 +10,7 @@ import com.Xincronix.model.Usuario;
 public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
     boolean existsByEmail(String email);
     Optional<com.Xincronix.model.Usuario> findByEmail(String email);
+    Optional<Usuario> findByEmailIgnoreCase(String email);
     List<Usuario> findAllByOrderByNombresAscApellidosAsc();
     List<Usuario> findByEmpresaIdEmpresaOrderByNombresAscApellidosAsc(Integer idEmpresa);
 }

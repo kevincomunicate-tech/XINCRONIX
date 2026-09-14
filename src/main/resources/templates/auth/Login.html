@@ -242,7 +242,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--ink);col
     <div class="form-title">Bienvenido de vuelta</div>
     <div class="form-sub">Accede a tu espacio de trabajo corporativo</div>
 
-    <form id="loginForm" novalidate>
+    <form id="loginForm" method="post" action="/api/auth/login" novalidate>
       <div class="field">
         <label for="loginEmail">Correo corporativo *</label>
         <div class="field-wrap">
@@ -264,6 +264,15 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--ink);col
         <div class="field-error" id="pwdError">La contraseña debe tener al menos 6 caracteres.</div>
       </div>
 
+      <div class="field" id="emailCodeField" hidden>
+        <label for="emailCode" id="verificationCodeLabel">Código de verificación</label>
+        <div class="field-wrap">
+          <span class="field-icon">✉️</span>
+          <input type="text" id="emailCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="Código de 6 dígitos"/>
+        </div>
+        <div class="field-error" id="codeError">Ingresa el código de 6 dígitos enviado a tu correo.</div>
+      </div>
+
       <div class="form-options">
         <label class="remember">
           <input type="checkbox" id="rememberMe" name="remember"/> Recordar sesión
@@ -279,9 +288,9 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--ink);col
 
     <div class="divider">o continúa con</div>
 
-    <button type="button" class="btn-google" id="btnGoogle">
+    <a href="/oauth2/authorization/google" class="btn-google" id="btnGoogle">
       Continuar con Google
-    </button>
+    </a>
 
     <div class="form-footer">
       ¿No tienes cuenta? <a href="/registro">Solicitar acceso empresarial →</a>
@@ -297,6 +306,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--ink);col
 <script>
 /* Endpoint real de Spring Boot */
 const LOGIN_ENDPOINT = '/api/auth/login';
+let emailChallenge = null;
 
 document.getElementById('togglePwd').addEventListener('click', () => {
   const inp = document.getElementById('loginPassword');
@@ -335,6 +345,11 @@ document.getElementById('loginEmail').addEventListener('input', () => setError('
 document.getElementById('loginPassword').addEventListener('input', () => setError('loginPassword', 'pwdError', false));
 
 function validateLogin() {
+  if (emailChallenge) {
+    const code = document.getElementById('emailCode').value.trim();
+    setError('emailCode', 'codeError', !/^\d{6}$/.test(code));
+    return /^\d{6}$/.test(code);
+  }
   const email = document.getElementById('loginEmail').value.trim();
   const pwd = document.getElementById('loginPassword').value;
   let valid = true;
@@ -344,6 +359,15 @@ function validateLogin() {
 }
 
 function redirectByRole(rol) {
+  const normalizedRole = String(rol || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase()
+    .replace(/\s+/g, '_');
+  if (normalizedRole === 'ADMIN' || normalizedRole === 'ADMINISTRADOR') return '/panel/admin';
+  if (normalizedRole === 'SUPERVISOR' || normalizedRole === 'MANAGER' || normalizedRole === 'GERENTE') {
+    return '/panel/supervisor';
+  }
   return '/panel';
 }
 
@@ -359,13 +383,12 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
   btn.classList.add('loading');
   btn.disabled = true;
 
-  const payload = {
-    email: document.getElementById('loginEmail').value.trim(),
-    password: document.getElementById('loginPassword').value
-  };
+  const payload = emailChallenge
+    ? { challenge: emailChallenge, code: document.getElementById('emailCode').value.trim() }
+    : { email: document.getElementById('loginEmail').value.trim(), password: document.getElementById('loginPassword').value };
 
   try {
-    const res = await fetch(LOGIN_ENDPOINT, {
+    const res = await fetch(emailChallenge ? '/api/auth/email-verification/verify' : LOGIN_ENDPOINT, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -383,9 +406,22 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
       throw new Error('Respuesta inesperada del servidor.');
     }
 
-    if (res.ok && data.success === true) {
+    if (res.status === 202 && data.requiresEmailVerification) {
+      emailChallenge = data.challenge;
+      document.getElementById('emailCodeField').hidden = false;
+      document.getElementById('verificationCodeLabel').textContent = 'Código enviado al correo';
+      document.getElementById('emailCode').placeholder = 'Código de 6 dígitos del correo';
+      document.getElementById('codeError').textContent = 'Ingresa el código de 6 dígitos enviado a tu correo.';
+      document.getElementById('loginEmail').disabled = true;
+      document.getElementById('loginPassword').disabled = true;
+      document.querySelector('#btnLogin .btn-label').textContent = 'Verificar código →';
+      document.getElementById('emailCode').focus();
+      showToast(data.message, 'success');
+      return;
+    }
+    if (data.success === true && data.data) {
       const info = data.data || {};
-      const token = info.accessToken || info.token;
+      const token = info.token || info.accessToken;
       if (token) {
         localStorage.setItem('xincronix_token', token);
       }
@@ -417,14 +453,20 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
   }
 });
 
-document.getElementById('btnGoogle').addEventListener('click', () => {
-  showToast('Inicio con Google próximamente disponible.', 'info');
+document.getElementById('forgotLink').addEventListener('click', async (e) => {
+  e.preventDefault();
+  const email = prompt('Escribe el correo de tu cuenta para enviarte el enlace de recuperación:');
+  if (!email) return;
+  try {
+    const r = await fetch('/api/auth/password/forgot', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email})});
+    const data = await r.json(); showToast(data.message || 'Revisa tu correo.', r.ok ? 'success' : 'error');
+  } catch { showToast('No fue posible solicitar la recuperación.', 'error'); }
 });
 
-document.getElementById('forgotLink').addEventListener('click', (e) => {
-  e.preventDefault();
-  showToast('Recuperación de contraseña próximamente.', 'info');
-});
+const loginError = new URLSearchParams(window.location.search).get('error');
+if (loginError === 'google_user_not_found') showToast('Tu correo de Google no tiene una cuenta registrada en Xincronix.', 'error');
+if (loginError === 'google_no_email') showToast('Google no compartió un correo válido para iniciar sesión.', 'error');
+if (loginError === 'google') showToast('No fue posible completar el inicio con Google.', 'error');
 </script>
 </body>
 </html>

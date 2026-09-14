@@ -28,6 +28,8 @@ public class Usuario {
     @Column(length = 300) private String avatar;
     @Column(nullable = false) private Boolean estado;
     @Column(name = "fecha_creacion", nullable = false) private LocalDateTime fechaCreacion;
+    @Column(name = "two_factor_secret", length = 64) private String twoFactorSecret;
+    @Column(name = "two_factor_enabled", nullable = false) private Boolean twoFactorEnabled = Boolean.FALSE;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id_empresa", nullable = false)
@@ -61,6 +63,10 @@ public class Usuario {
     public void setEstado(Boolean estado) { this.estado = estado; }
     public LocalDateTime getFechaCreacion() { return fechaCreacion; }
     public void setFechaCreacion(LocalDateTime fechaCreacion) { this.fechaCreacion = fechaCreacion; }
+    public String getTwoFactorSecret() { return twoFactorSecret; }
+    public void setTwoFactorSecret(String twoFactorSecret) { this.twoFactorSecret = twoFactorSecret; }
+    public Boolean getTwoFactorEnabled() { return twoFactorEnabled; }
+    public void setTwoFactorEnabled(Boolean twoFactorEnabled) { this.twoFactorEnabled = twoFactorEnabled; }
     public Empresa getEmpresa() { return empresa; }
     public void setEmpresa(Empresa empresa) { this.empresa = empresa; }
     public Rol getRol() { return rol; }
@@ -89,5 +95,6 @@ public class Usuario {
     void onCreate() {
         if (fechaCreacion == null) fechaCreacion = LocalDateTime.now();
         if (estado == null) estado = Boolean.TRUE;
+        if (twoFactorEnabled == null) twoFactorEnabled = Boolean.FALSE;
     }
 }

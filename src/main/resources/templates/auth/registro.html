@@ -461,7 +461,7 @@ input[type=file]{display:none;}
           <span class="btn-label-text">Continuar → Elegir plan</span>
         </button>
         <span style="font-size:12px;color:var(--muted);">
-          ¿Ya tienes cuenta? <a href="{{ route('login') }}" style="color:var(--sky);font-weight:600;text-decoration:none;">Inicia sesión</a>
+          ¿Ya tienes cuenta? <a href="/login" style="color:var(--sky);font-weight:600;text-decoration:none;">Inicia sesión</a>
         </span>
       </div>
     </div>
@@ -698,7 +698,7 @@ input[type=file]{display:none;}
           </div>
         </div>
 
-        <a href="{{ route('login') }}" class="btn-portal">Ir al inicio de sesión →</a>
+        <a href="/login" class="btn-portal">Ir al inicio de sesión →</a>
         <div style="margin-top:20px;font-size:12.5px;color:var(--muted);">
           ¿Tienes dudas? <a href="mailto:contacto@xincronix.com" style="color:var(--sky);text-decoration:none;font-weight:600;">contacto@xincronix.com</a>
         </div>
@@ -951,7 +951,19 @@ async function submitRegistration() {
 
     const data = await response.json(); 
 
-    if (response.ok) {
+    if (response.ok && data.success === true && data.data) {
+        const auth = data.data;
+        const token = auth.accessToken || auth.token;
+        if (token) localStorage.setItem('xincronix_token', token);
+        localStorage.setItem('usuarioActual', JSON.stringify({
+          id: auth.userId,
+          nombre: auth.nombreCompleto,
+          email: auth.email,
+          rol: auth.rol,
+          empresaId: auth.empresaId,
+          empresaNombre: auth.empresaNombre
+        }));
+
         // Código de éxito original
         document.getElementById('stp4').classList.remove('active');
         document.getElementById('stp4').classList.add('done');
@@ -960,6 +972,15 @@ async function submitRegistration() {
         document.getElementById('panel5').classList.add('active');
         document.getElementById('progressBar').style.width = '100%';
         window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        const rol = String(auth.rol || '').toUpperCase().replace(/\s+/g, '_');
+        const destino = ['ADMIN', 'ADMINISTRADOR'].includes(rol)
+          ? '/panel/admin'
+          : ['SUPERVISOR', 'MANAGER', 'GERENTE'].includes(rol)
+            ? '/panel/supervisor'
+            : '/panel';
+        showToast('Registro exitoso. Redirigiendo al panel...', 'success');
+        setTimeout(() => { window.location.href = destino; }, 1200);
     } else {
         // Si hay error de validación (422)
         console.error("Detalles del error:", data.errors);

@@ -3,7 +3,7 @@
  * Versión simplificada y funcional
  */
 
-const DASHBOARD_ENDPOINT = '../controller/dashboard.php';
+const DASHBOARD_ENDPOINT = '/api/dashboard';
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Panel cargado');
