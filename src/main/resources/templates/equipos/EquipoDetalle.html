@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Xincronix — Equipo</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+  <link rel="stylesheet" href="/css/Index.css" />
+  <link rel="stylesheet" href="/css/equipos.css" />
+  <style>
+    .equipo-detail-hero {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 22px;
+      background: linear-gradient(135deg, #eef4ff, #f7f5ff);
+      border: 1px solid #dbe5f5;
+      border-radius: 16px;
+    }
+
+    .equipo-detail-icon {
+      width: 58px;
+      height: 58px;
+      display: grid;
+      place-items: center;
+      flex: none;
+      border-radius: 16px;
+      color: #fff;
+      background: linear-gradient(135deg, #2563eb, #6366f1);
+      font-size: 26px;
+      box-shadow: 0 8px 18px rgba(37, 99, 235, .2);
+    }
+
+    .equipo-member-list .list-group-item {
+      padding: 15px 18px;
+      border-color: var(--gray-100);
+    }
+
+    @media (max-width: 700px) {
+      .equipo-detail-hero {
+        align-items: flex-start;
+      }
+
+      .equipo-detail-actions {
+        width: 100%;
+        margin-top: 14px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-shell">
+    <aside class="xnx-sidebar">
+      <div class="xnx-sidebar-logo">
+        <div class="xnx-logo">
+          <img src="/img/logo xincronix.png"
+            onerror="this.outerHTML='<svg width=\'28\' height=\'28\' viewBox=\'0 0 36 36\' fill=\'none\'><rect width=\'36\' height=\'36\' rx=\'8\' fill=\'rgba(37,99,235,0.2)\'/><line x1=\'5\' y1=\'10\' x2=\'15\' y2=\'26\' stroke=\'#3b82f6\' stroke-width=\'2.5\' stroke-linecap=\'round\'/><line x1=\'15\' y1=\'10\' x2=\'5\' y2=\'26\' stroke=\'#3b82f6\' stroke-width=\'2.5\' stroke-linecap=\'round\'/><line x1=\'15\' y1=\'18\' x2=\'21\' y2=\'18\' stroke=\'rgba(59,130,246,0.4)\' stroke-width=\'1.5\' stroke-dasharray=\'2 2\' stroke-linecap=\'round\'/><line x1=\'21\' y1=\'10\' x2=\'31\' y2=\'26\' stroke=\'#93c5fd\' stroke-width=\'2.5\' stroke-linecap=\'round\'/><line x1=\'31\' y1=\'10\' x2=\'21\' y2=\'26\' stroke=\'#93c5fd\' stroke-width=\'2.5\' stroke-linecap=\'round\'/></svg>'"
+            alt="" />
+          <div class="xnx-logo-text">Xin<span>cronix</span></div>
+        </div>
+      </div>
+
+      <div class="xnx-sidebar-section">
+        <div class="xnx-sidebar-section-label">General</div>
+        <a href="/Panel" class="xnx-sidebar-item"><i class="bi bi-grid"></i>Dashboard</a>
+        <a href="/Proyecto" class="xnx-sidebar-item"><i class="bi bi-kanban"></i>Proyectos</a>
+        <a href="/Tareas" class="xnx-sidebar-item"><i class="bi bi-clock"></i>Tareas</a>
+        <a href="/Equipos" class="xnx-sidebar-item active"><i class="bi bi-people"></i>Equipo</a>
+      </div>
+      <div class="xnx-sidebar-section">
+        <div class="xnx-sidebar-section-label">IA &amp; Automatización</div>
+        <a href="/Asistente" class="xnx-sidebar-item"><i class="bi bi-chat-dots"></i>Asistente virtual</a>
+        <a href="/Automatizaciones" class="xnx-sidebar-item"><i class="bi bi-arrow-repeat"></i>Automatizaciones</a>
+      </div>
+      <div class="xnx-sidebar-section">
+        <div class="xnx-sidebar-section-label">Reportes</div>
+        <a href="/Analytics" class="xnx-sidebar-item"><i class="bi bi-bar-chart-line"></i>Analytics</a>
+      </div>
+      <div class="xnx-sidebar-bottom">
+        <div class="xnx-sidebar-user">
+          <div class="xnx-avatar" id="sidebarAvatar">--</div>
+          <div>
+            <div class="user-name" id="sidebarNombre">Cargando…</div>
+            <div class="user-role" id="sidebarRol">—</div>
+          </div>
+          <button class="btn btn-sm ms-auto p-0 text-white-50 border-0 bg-transparent" data-bs-toggle="tooltip"
+            title="Cerrar sesión" onclick="window.location.href='/Login'">
+            <i class="bi bi-box-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="xnx-main">
+      <div class="xnx-topbar">
+        <div>
+          <span class="xnx-topbar-title" id="teamName">Equipo</span>
+          <span class="xnx-topbar-sub" id="teamMeta">Cargando…</span>
+        </div>
+        <div class="xnx-topbar-right">
+          <a href="/Equipos" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Volver a equipos
+          </a>
+          <button class="btn btn-primary btn-sm px-3" id="btnAdd">
+            <i class="bi bi-person-plus me-1"></i>Agregar miembro
+          </button>
+        </div>
+      </div>
+
+      <div class="xnx-content">
+        <div class="equipo-detail-hero mb-4">
+          <div class="equipo-detail-icon"><i class="bi bi-people-fill"></i></div>
+          <div class="flex-grow-1">
+            <h4 class="mb-1" id="heroName">Cargando equipo…</h4>
+            <p class="text-muted mb-0" id="teamDescription">Cargando descripción…</p>
+          </div>
+          <div class="equipo-detail-actions">
+            <span class="badge rounded-pill text-bg-light border" id="memberCount">0 integrantes</span>
+          </div>
+        </div>
+
+        <div class="xnx-card">
+          <div class="xnx-card-header">
+            <span class="xnx-card-title"><i class="bi bi-people me-2"></i>Integrantes del equipo</span>
+            <span class="text-muted small">Personas que forman parte de este equipo</span>
+          </div>
+          <div id="members" class="list-group list-group-flush equipo-member-list">
+            <div class="p-4 text-center text-muted">Cargando integrantes…</div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="modal fade" id="memberModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <form class="modal-content" id="memberForm">
+        <div class="modal-header">
+          <h5 class="modal-title">Agregar miembro</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <label for="userSelect" class="form-label">Usuario de la empresa</label>
+          <select id="userSelect" class="form-select" required></select>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Agregar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/session-user.js"></script>
+  <script>
+    const id = Number(location.pathname.split('/').filter(Boolean).pop());
+    const modal = new bootstrap.Modal(document.getElementById('memberModal'));
+    let usuarioActualId = null;
+    const esc = value => {
+      const element = document.createElement('div');
+      element.textContent = value || '';
+      return element.innerHTML;
+    };
+
+    async function cargar() {
+      const [teamRes, membersRes, sessionRes] = await Promise.all([
+        fetch(`/api/equipos/${id}`, { credentials: 'same-origin' }),
+        fetch(`/api/equipos/${id}/miembros`, { credentials: 'same-origin' }),
+        fetch('/api/auth/me', { credentials: 'same-origin' })
+      ]);
+      if (!teamRes.ok || !membersRes.ok) {
+        throw new Error('No se pudo cargar el equipo');
+      }
+
+      const teamPayload = await teamRes.json();
+      const membersPayload = await membersRes.json();
+      if (sessionRes.ok) {
+        const sessionPayload = await sessionRes.json();
+        usuarioActualId = Number(sessionPayload.data?.idUsuario || sessionPayload.data?.id_usuario) || null;
+      }
+      const team = teamPayload.data.equipo;
+      const members = membersPayload.data.miembros || [];
+      const nombre = team.nombre || 'Equipo';
+
+      document.getElementById('teamName').textContent = nombre;
+      document.getElementById('heroName').textContent = nombre;
+      document.getElementById('teamMeta').textContent = `${members.length} integrantes`;
+      document.getElementById('memberCount').textContent = `${members.length} integrantes`;
+      document.getElementById('teamDescription').textContent = team.descripcion || 'Sin descripción';
+      document.getElementById('members').innerHTML = members.length
+        ? members.map(member => {
+          const fullName = member.nombre || `${member.nombres || ''} ${member.apellidos || ''}`.trim() || 'Usuario';
+          const userId = member.idUsuario || member.id_usuario;
+          return `<div class="list-group-item d-flex align-items-center gap-3">
+            <div class="xnx-avatar">${esc(fullName.slice(0, 1).toUpperCase())}</div>
+            <div class="flex-grow-1">
+              <strong>${esc(fullName)}</strong>
+              <div class="small text-muted">${esc(member.rolEnEquipo || member.cargo || 'Miembro')}</div>
+            </div>
+            ${usuarioActualId === Number(userId) ? '<span class="badge text-bg-light border">Tú</span>' : `<button class="btn btn-sm btn-outline-danger" onclick="quitar(${userId})" title="Quitar miembro">
+              <i class="bi bi-person-dash"></i>
+            </button>`}
+          </div>`;
+        }).join('')
+        : '<div class="p-4 text-center text-muted">Este equipo aún no tiene integrantes.</div>';
+    }
+
+    async function quitar(userId) {
+      if (!confirm('¿Quitar este miembro del equipo?')) return;
+      const response = await fetch(`/api/equipos/${id}/miembros/${userId}`, {
+        method: 'DELETE',
+        credentials: 'same-origin'
+      });
+      if (!response.ok) {
+        alert('No se pudo quitar el miembro.');
+        return;
+      }
+      await cargar();
+    }
+
+    document.getElementById('btnAdd').onclick = async () => {
+      const response = await fetch('/api/usuarios', { credentials: 'same-origin' });
+      if (!response.ok) {
+        alert('No se pudieron cargar los usuarios.');
+        return;
+      }
+      const payload = await response.json();
+      const miembrosResponse = await fetch(`/api/equipos/${id}/miembros`, { credentials: 'same-origin' });
+      const miembrosPayload = miembrosResponse.ok ? await miembrosResponse.json() : { data: { miembros: [] } };
+      const idsMiembros = new Set((miembrosPayload.data.miembros || []).map(member => Number(member.idUsuario)));
+      document.getElementById('userSelect').innerHTML = (payload.data || [])
+        .filter(user => !idsMiembros.has(Number(user.idUsuario)))
+        .map(user => `<option value="${user.idUsuario}">${esc(user.nombres)} ${esc(user.apellidos)} — ${esc(user.email)}</option>`)
+        .join('');
+      if (!document.getElementById('userSelect').options.length) {
+        alert('Todas las cuentas de tu empresa ya pertenecen a este equipo.');
+        return;
+      }
+      modal.show();
+    };
+
+    document.getElementById('memberForm').onsubmit = async event => {
+      event.preventDefault();
+      const response = await fetch(`/api/equipos/${id}/miembros`, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          idUsuario: Number(document.getElementById('userSelect').value),
+          rolEnEquipo: 'Miembro'
+        })
+      });
+      if (!response.ok) {
+        alert('No se pudo agregar el miembro.');
+        return;
+      }
+      modal.hide();
+      await cargar();
+    };
+
+    cargar().catch(error => {
+      console.error(error);
+      document.getElementById('members').innerHTML =
+        '<div class="p-4 text-center text-danger">No se pudo cargar este equipo.</div>';
+    });
+  </script>
+</body>
+
+</html>

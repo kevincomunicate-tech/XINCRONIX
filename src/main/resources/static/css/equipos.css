@@ -1,0 +1,94 @@
+/* ============================================================
+   Equipo.css — Vista de gestión del Equipo
+   ============================================================ */
+
+/* ── GRID DE MIEMBROS ── */
+.equipo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+.equipos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+.equipo-summary-card { display:flex; align-items:center; gap:13px; background:#fff; border:1px solid var(--gray-200); border-radius:14px; padding:16px; transition:transform .15s, box-shadow .15s; }
+.equipo-summary-card:hover { transform:translateY(-2px); box-shadow:0 7px 20px rgba(15,23,42,.08); }
+.equipo-summary-icon { width:42px; height:42px; border-radius:12px; display:grid; place-items:center; color:#fff; font-size:20px; flex:none; }
+.equipo-summary-card h6 { margin:0 0 3px; font-weight:700; color:var(--gray-900); }
+.equipo-summary-card p { margin:0 0 7px; color:var(--gray-500); font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:190px; }
+.equipo-empty { grid-column:1/-1; text-align:center; padding:38px 20px; border:1px dashed #cbd5e1; border-radius:18px; background:linear-gradient(135deg,#f8fbff,#f5f3ff); }
+.equipo-empty h5 { margin:15px 0 5px; color:var(--gray-900); }
+.equipo-empty p { color:var(--gray-500); font-size:13px; margin:0 auto 17px; max-width:420px; }
+.equipo-empty-art { width:78px; height:78px; margin:auto; border-radius:24px; display:grid; place-items:center; position:relative; background:#e0e7ff; color:#4f46e5; font-size:35px; animation:equipoPulse 2.4s ease-in-out infinite; }
+.equipo-empty-art span { position:absolute; width:8px; height:8px; border-radius:50%; background:#38bdf8; animation:equipoFloat 2s ease-in-out infinite; }
+.equipo-empty-art span:nth-child(2){top:5px;right:10px}.equipo-empty-art span:nth-child(3){bottom:10px;left:2px;background:#a78bfa}.equipo-empty-art span:nth-child(4){top:28px;left:-8px;background:#34d399}
+@keyframes equipoPulse { 50% { transform:translateY(-4px) rotate(2deg); box-shadow:0 12px 24px rgba(79,70,229,.16); } }
+@keyframes equipoFloat { 50% { transform:translateY(-6px); opacity:.55; } }
+
+/* ── CARD DE MIEMBRO ── */
+.miembro-card {
+  background: white; border-radius: 14px; padding: 22px 20px;
+  border: 1px solid var(--gray-200);
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+.miembro-card:hover {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+}
+
+.miembro-avatar-wrap { position: relative; margin-bottom: 12px; }
+.miembro-status-dot {
+  position: absolute; bottom: 1px; right: 1px;
+  width: 11px; height: 11px; border-radius: 50%;
+  border: 2px solid white;
+}
+.miembro-status-dot.online  { background: var(--success); }
+.miembro-status-dot.away    { background: var(--warning); }
+.miembro-status-dot.offline { background: var(--gray-300); }
+
+.miembro-nombre { font-size: 14px; font-weight: 700; color: var(--gray-900); margin-bottom: 3px; }
+.miembro-rol    { font-size: 12px; color: var(--gray-500); margin-bottom: 12px; }
+
+.miembro-tags   { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-bottom: 14px; }
+
+.miembro-stats  {
+  width: 100%; display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px; padding: 12px; background: var(--gray-100); border-radius: 8px; margin-bottom: 14px;
+}
+.miembro-stat-val   { font-size: 15px; font-weight: 800; color: var(--gray-900); }
+.miembro-stat-label { font-size: 10px; color: var(--gray-400); font-weight: 500; margin-top: 1px; }
+
+.miembro-actions { display: flex; gap: 8px; width: 100%; }
+
+/* ── TABLA RESUMEN (vista compacta) ── */
+.equipo-table { width: 100%; border-collapse: collapse; }
+.equipo-table thead th {
+  font-size: 11px; font-weight: 700; color: var(--gray-400);
+  text-transform: uppercase; letter-spacing: 0.5px;
+  padding: 10px 14px; border-bottom: 1px solid var(--gray-200);
+  background: var(--gray-100); text-align: left;
+}
+.equipo-table tbody tr {
+  border-bottom: 1px solid var(--gray-100); transition: background 0.12s; cursor: pointer;
+}
+.equipo-table tbody tr:last-child { border-bottom: none; }
+.equipo-table tbody tr:hover { background: var(--blue-50); }
+.equipo-table tbody td { padding: 12px 14px; font-size: 13px; color: var(--gray-700); vertical-align: middle; }
+
+.equipo-miembro-cell { display: flex; align-items: center; gap: 10px; }
+.equipo-miembro-cell .nombre { font-weight: 600; color: var(--gray-900); font-size: 13px; }
+.equipo-miembro-cell .email  { font-size: 11px; color: var(--gray-400); }
+
+/* ── WORKLOAD BAR ── */
+.workload-wrap { display: flex; align-items: center; gap: 8px; }
+.workload-wrap .xnx-progress { flex: 1; }
+.workload-pct { font-size: 11px; font-weight: 600; color: var(--gray-700); white-space: nowrap; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1100px) {
+  .equipo-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  .equipo-grid { grid-template-columns: 1fr; }
+}

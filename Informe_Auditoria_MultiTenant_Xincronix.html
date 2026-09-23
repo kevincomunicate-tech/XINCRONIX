@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Informe de auditoría multi-tenant — Xincronix</title>
+  <style>
+    @page { size: A4; margin: 18mm; }
+    body { font-family: Arial, sans-serif; color: #18212f; font-size: 10.5pt; line-height: 1.45; }
+    h1 { color: #143c6b; font-size: 22pt; margin: 0 0 4px; }
+    h2 { color: #143c6b; border-bottom: 1px solid #cdd9e8; font-size: 14pt; margin: 22px 0 8px; }
+    h3 { color: #24558d; font-size: 11.5pt; margin: 15px 0 5px; }
+    .meta, .note { color: #536274; }
+    .status { padding: 10px 13px; border-left: 4px solid #287d4d; background: #eef8f1; }
+    .warning { padding: 10px 13px; border-left: 4px solid #b87b12; background: #fff8e9; }
+    table { border-collapse: collapse; width: 100%; margin: 8px 0 14px; }
+    th { background: #eaf1f8; text-align: left; }
+    th, td { border: 1px solid #cdd9e8; padding: 7px; vertical-align: top; }
+    code { font-family: "Courier New", monospace; font-size: 9pt; }
+    ul { margin-top: 5px; padding-left: 22px; }
+    .footer { margin-top: 28px; font-size: 9pt; color: #66778a; }
+  </style>
+</head>
+<body>
+  <h1>Auditoría Multi-Tenant — Xincronix</h1>
+  <p class="meta">Informe de continuación · 15 de septiembre de 2026 · Alcance: equipos y miembros de equipo</p>
+
+  <p class="status"><strong>Resultado:</strong> se completaron los endpoints pendientes de bajo riesgo para consultar y administrar miembros de equipos. El código compila con Java 21 mediante Maven Wrapper.</p>
+
+  <h2>Resumen de cambios realizados</h2>
+  <table>
+    <tr><th>Archivo</th><th>Cambio</th><th>Estado</th></tr>
+    <tr><td><code>controller/EquipoApiController.java</code></td><td>Se añadieron rutas para obtener un equipo, listar miembros, agregar un miembro y quitar un miembro.</td><td>Implementado</td></tr>
+    <tr><td><code>dto/MiembroEquipoRequest.java</code></td><td>Nuevo DTO validado: <code>idUsuario</code> obligatorio y <code>rolEnEquipo</code> opcional, máximo 80 caracteres.</td><td>Implementado</td></tr>
+    <tr><td><code>dto/MiembroEquipoResponse.java</code></td><td>Nueva proyección de miembro: identificador, nombres, apellidos, cargo, rol y fecha de ingreso.</td><td>Implementado</td></tr>
+  </table>
+
+  <h2>Rutas disponibles</h2>
+  <table>
+    <tr><th>Método y ruta</th><th>Resultado</th><th>Controles aplicados</th></tr>
+    <tr><td><code>GET /api/equipos/{id}</code></td><td>Devuelve el equipo solicitado.</td><td>Solo si pertenece a la empresa del actor.</td></tr>
+    <tr><td><code>GET /api/equipos/{id}/miembros</code></td><td>Lista los miembros del equipo.</td><td>Primero valida el tenant del equipo; no exporta contraseña ni correo.</td></tr>
+    <tr><td><code>POST /api/equipos/{id}/miembros</code></td><td>Agrega un usuario concreto al equipo.</td><td>Equipo y usuario deben pertenecer a la empresa del actor; rechaza duplicados.</td></tr>
+    <tr><td><code>DELETE /api/equipos/{id}/miembros/{idUsuario}</code></td><td>Quita el miembro indicado.</td><td>Solo opera después de validar que el equipo es del tenant del actor.</td></tr>
+  </table>
+  <p>Ejemplo de alta: <code>{"idUsuario": 42, "rolEnEquipo": "Desarrollador"}</code>.</p>
+
+  <h2>Qué funciona y cómo se verificó</h2>
+  <ul>
+    <li>La compilación de producción terminó correctamente con <code>./mvnw compile -DskipTests</code>.</li>
+    <li>Se generaron las clases <code>EquipoApiController.class</code>, <code>MiembroEquipoRequest.class</code> y <code>MiembroEquipoResponse.class</code>.</li>
+    <li>Los cuatro endpoints nuevos tienen una comprobación explícita de pertenencia del equipo a la empresa del usuario autenticado.</li>
+    <li>El alta de miembro comprueba la empresa del usuario destino y el repositorio evita relaciones duplicadas por equipo/usuario.</li>
+    <li>Se preservan los CRUD existentes de equipos y la sincronización completa de miembros.</li>
+  </ul>
+
+  <h2>Qué falta</h2>
+  <div class="warning"><strong>No implica fallo de compilación:</strong> son elementos fuera del alcance documentado o que requieren una decisión funcional.</div>
+  <ul>
+    <li><strong>Pruebas de integración multi-tenant:</strong> falta una prueba con dos empresas y dos usuarios que confirme respuestas 404/400 ante IDs ajenos y que compruebe los cuatro endpoints en una aplicación autenticada.</li>
+    <li><strong>Autorización por rol:</strong> no se añadió <code>@PreAuthorize</code>. Se conserva el patrón existente: cualquier usuario autenticado de la empresa puede operar equipos. Debe confirmarse si solo <code>ROLE_ADMINISTRADOR</code> puede crear, editar o administrar miembros.</li>
+    <li><strong>CRUD de IA, métricas, reuniones, mensajes y notificaciones:</strong> no se implementaron porque no hay contrato de UI ni reglas verificables de alcance.</li>
+    <li><strong>Superadministración:</strong> no se creó endpoint ni bypass de tenant; no existe una definición verificable del rol o de sus permisos.</li>
+    <li><strong>Controles operativos opcionales:</strong> auditoría de cambios y rate limiting no están implementados en estos endpoints.</li>
+  </ul>
+
+  <h2>Restricciones respetadas</h2>
+  <ul>
+    <li>No se modificaron <code>SecurityConfig.java</code>, <code>JwtService.java</code>, <code>AuthCookieService.java</code>, login/2FA ni <code>application.yaml</code>.</li>
+    <li>No se modificaron migraciones Flyway V1/V2, nombres de tablas/columnas, <code>ViewController.normalizeLegacyReferences()</code> ni <code>AssetFallbackController</code>.</li>
+    <li>No se creó migración nueva: los repositorios y la restricción única de miembros ya cubrían esta ampliación.</li>
+  </ul>
+
+  <h2>Estado previo preservado</h2>
+  <p>Se conservaron los cambios ya presentes al iniciar esta etapa: template de restablecimiento de contraseña, manejador de excepciones HTTP, eliminación del comprobante en rollback, CRUD base de equipos, respuesta legada de equipos y herencia de empresa para tickets.</p>
+
+  <h2>Preguntas abiertas</h2>
+  <ol>
+    <li>¿Qué roles pueden crear, editar, borrar equipos y administrar sus miembros?</li>
+    <li>¿Cuál es el contrato y el alcance por empresa/equipo/proyecto para IA, métricas y reuniones?</li>
+    <li>¿Existe un rol de superadministración y qué permisos específicos tiene?</li>
+  </ol>
+
+  <p class="footer">Este documento registra el estado del repositorio y las verificaciones ejecutadas en esta continuación. No sustituye pruebas funcionales contra una base de datos con dos tenants reales.</p>
+</body>
+</html>

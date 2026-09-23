@@ -1,0 +1,15 @@
+/* Agentes.css — estilos específicos para la página Agentes IA */
+.agentes-stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+.agente-stat-card { background: white; border: 1px solid var(--gray-200); border-radius: 12px; padding: 14px 16px; }
+.agente-stat-card .stat-label { font-size: 11px; color: var(--gray-400); text-transform: uppercase; margin-bottom: 4px; }
+.agente-stat-card .stat-value { font-size: 26px; font-weight: 800; color: var(--gray-900); }
+.agente-stat-card .stat-trend { font-size: 12px; color: var(--gray-500); display: flex; align-items: center; gap: 4px; margin-top: 6px; }
+
+.agentes-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.agente-card { background: white; border: 1px solid var(--gray-200); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+.agente-header { display: flex; align-items: center; justify-content: space-between; font-size: 14px; font-weight: 700; }
+.agente-body { font-size: 13px; color: var(--gray-600); }
+.agente-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+@media (max-width: 1024px) { .agentes-grid { grid-template-columns: 1fr; } }
+@media (max-width: 700px) { .agentes-stats-row { grid-template-columns: 1fr; } }

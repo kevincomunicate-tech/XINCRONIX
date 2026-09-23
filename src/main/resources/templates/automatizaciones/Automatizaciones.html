@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Xincronix — Automatizaciones</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+  <link rel="stylesheet" href="/css/Index.css" />
+  <link rel="stylesheet" href="/css/automatizaciones.css" />
+</head>
+
+<body>
+  <div class="app-shell">
+
+     <aside class="xnx-sidebar">
+      <div class="xnx-sidebar-logo">
+        <div class="xnx-logo">
+          <img src="/img/logo xincronix.png"
+            onerror="this.outerHTML='<svg width=\'28\' height=\'28\' viewBox=\'0 0 36 36\' fill=\'none\'><rect width=\'36\' height=\'36\' rx=\'8\' fill=\'rgba(37,99,235,0.2)\'/><line x1=\'5\' y1=\'10\' x2=\'15\' y2=\'26\' stroke=\'#3b82f6\' stroke-width=\'2.5\' stroke-linecap=\'round\'/><line x1=\'15\' y1=\'10\' x2=\'5\' y2=\'26\' stroke=\'#3b82f6\' stroke-width=\'2.5\' stroke-linecap=\'round\'/><line x1=\'15\' y1=\'18\' x2=\'21\' y2=\'18\' stroke=\'rgba(59,130,246,0.4)\' stroke-width=\'1.5\' stroke-dasharray=\'2 2\' stroke-linecap=\'round\'/><line x1=\'21\' y1=\'10\' x2=\'31\' y2=\'26\' stroke=\'#93c5fd\' stroke-width=\'2.5\' stroke-linecap=\'round\'/><line x1=\'31\' y1=\'10\' x2=\'21\' y2=\'26\' stroke=\'#93c5fd\' stroke-width=\'2.5\' stroke-linecap=\'round\'/></svg>'"
+            alt="" />
+          <div class="xnx-logo-text">Xin<span>cronix</span></div>
+        </div>
+      </div>
+      <div class="xnx-sidebar-section">
+        <div class="xnx-sidebar-section-label">General</div>
+        <a href="Panel" class="xnx-sidebar-item"><i class="bi bi-grid"></i> Dashboard</a>
+        <a href="Proyecto" class="xnx-sidebar-item">
+          <i class="bi bi-kanban"></i> Proyectos
+        </a>
+        <a href="Tareas" class="xnx-sidebar-item">
+          <i class="bi bi-clock"></i> Tareas 
+        </a>
+        <a href="Equipos" class="xnx-sidebar-item"><i class="bi bi-people"></i> Equipo</a>
+      </div>
+      <div class="xnx-sidebar-section">
+        <div class="xnx-sidebar-section-label">IA &amp; Automatizacion</div>
+        <a href="Asistente" class="xnx-sidebar-item "><i class="bi bi-chat-dots"></i> Asistente virtual</a>
+        <a href="Automatizaciones" class="xnx-sidebar-item active"><i class="bi bi-arrow-repeat"></i> Automatizaciones</a>
+      </div>
+      <div class="xnx-sidebar-section">
+        <div class="xnx-sidebar-section-label">Reportes</div>
+        <a href="Analytics" class="xnx-sidebar-item"><i class="bi bi-bar-chart-line"></i> Analytics</a>
+      </div>
+      <div class="xnx-sidebar-bottom">
+        <div class="xnx-sidebar-user">
+          <div class="xnx-avatar" id="sidebarAvatar">--</div>
+          <div>
+            <div class="user-name" id="sidebarNombre">Cargando…</div>
+            <div class="user-role" id="sidebarRol">—</div>
+          </div>
+          <button class="btn btn-sm ms-auto p-0 text-white-50 border-0 bg-transparent" data-bs-toggle="tooltip"
+            title="Cerrar sesión" onclick="window.location.href='Login'">
+            <i class="bi bi-box-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="xnx-main">
+      <div class="xnx-topbar">
+        <div>
+          <span class="xnx-topbar-title">Automatizaciones</span>
+          <span class="xnx-topbar-sub" id="topbarSub">Cargando flujos…</span>
+        </div>
+        <div class="xnx-topbar-right">
+          <button class="btn btn-primary btn-sm px-3" id="btnNuevoFlujo"><i class="bi bi-plus-lg me-1"></i>Nuevo flujo</button>
+        </div>
+      </div>
+
+      <div class="xnx-content">
+
+        <form id="formNuevoFlujo" class="xnx-card mb-3 d-none">
+          <div class="xnx-card-header">
+            <span class="xnx-card-title">Crear flujo</span>
+          </div>
+          <div class="xnx-card-body automation-form-grid">
+            <label>Nombre del flujo<input class="form-control" name="nombre" maxlength="150" required placeholder="Ej. Aviso de vencimiento" /></label>
+            <label>Disparador<input class="form-control" name="disparador" maxlength="150" required placeholder="Ej. Tarea a 24 h de vencimiento" /></label>
+            <label class="automation-form-wide">Descripción<textarea class="form-control" name="descripcion" maxlength="5000" rows="3" placeholder="Qué debe hacer el flujo cuando se active"></textarea></label>
+            <div class="automation-form-actions automation-form-wide">
+              <button class="btn btn-primary btn-sm" type="submit">Guardar flujo</button>
+              <button class="btn btn-outline-secondary btn-sm" type="button" id="btnCancelarFlujo">Cancelar</button>
+            </div>
+          </div>
+        </form>
+
+        <div class="automation-stats-row" id="automationStats"></div>
+
+        <div class="automation-workflow-grid" id="workflowGrid"></div>
+        <div id="sinFlujos" class="alert alert-info d-none mb-0">Aún no hay flujos para tu empresa. Crea el primero para comenzar.</div>
+
+      </div>
+    </main>
+  </div>
+  <script src="/js/session-user.js"></script>
+  <script>
+    const API_URL = '/api/automatizaciones';
+    const $ = selector => document.querySelector(selector);
+
+    function escapeHtml(value) {
+      const node = document.createElement('div');
+      node.textContent = value ?? '';
+      return node.innerHTML;
+    }
+
+    async function cargarFlujos() {
+      try {
+        const response = await fetch(API_URL, { credentials: 'same-origin' });
+        const json = await response.json();
+        if (response.status === 401) { window.location.href = '/login'; return; }
+        if (!json.success) throw new Error(json.message || 'No fue posible cargar los flujos.');
+        const { usuario, stats, flujos, tiene_datos } = json.data;
+        $('#sidebarAvatar').textContent = usuario.iniciales;
+        $('#sidebarNombre').textContent = usuario.nombre;
+        $('#sidebarRol').textContent = usuario.cargo || usuario.rol;
+        $('#topbarSub').textContent = 'Flujos de tu empresa · actualizado ahora';
+        pintarStats(stats);
+          window.flujosActuales = flujos;
+        pintarFlujos(flujos);
+        $('#sinFlujos').classList.toggle('d-none', tiene_datos);
+      } catch (error) {
+        console.error(error);
+        $('#topbarSub').textContent = 'No fue posible cargar los flujos';
+      }
+    }
+
+    function pintarStats(stats) {
+      $('#automationStats').innerHTML = stats.map(stat => `
+        <div class="automation-stat-card">
+          <div class="stat-label">${escapeHtml(stat.label)}</div>
+          <div class="stat-value">${escapeHtml(stat.valor)}</div>
+          <div class="stat-trend">${escapeHtml(stat.detalle)}</div>
+        </div>`).join('');
+    }
+
+    function pintarFlujos(flujos) {
+      $('#workflowGrid').innerHTML = flujos.map(flujo => `
+        <article class="workflow-card">
+          <div class="workflow-title">${escapeHtml(flujo.nombre)}</div>
+          <div class="workflow-meta">Disparador: ${escapeHtml(flujo.disparador)}</div>
+          <div class="workflow-detail">${escapeHtml(flujo.descripcion || 'Sin descripción')}<br>Última ejecución: ${escapeHtml(flujo.ultima_ejecucion)} · ${escapeHtml(flujo.resultado)} · Creado por ${escapeHtml(flujo.creador)}</div>
+          <div class="workflow-actions">
+            <button class="btn btn-sm btn-outline-primary" data-edit-flow="${flujo.id}"><i class="bi bi-pencil"></i> Editar</button>
+            <button class="btn btn-sm btn-outline-danger" data-delete-flow="${flujo.id}"><i class="bi bi-trash"></i> Eliminar</button>
+            <button class="btn btn-sm ${flujo.activa ? 'btn-success' : 'btn-warning'}" data-toggle-flow="${flujo.id}" data-activa="${!flujo.activa}">
+              ${flujo.activa ? 'Activado — pausar' : 'Pausado — activar'}
+            </button>
+          </div>
+        </article>`).join('');
+    }
+
+    $('#btnNuevoFlujo').addEventListener('click', () => $('#formNuevoFlujo').classList.remove('d-none'));
+    $('#btnCancelarFlujo').addEventListener('click', () => {
+      $('#formNuevoFlujo').reset();
+      $('#formNuevoFlujo').classList.add('d-none');
+    });
+
+    $('#formNuevoFlujo').addEventListener('submit', async event => {
+      event.preventDefault();
+      const form = new FormData(event.currentTarget);
+      const response = await fetch(API_URL, {
+        method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(Object.fromEntries(form))
+      });
+      const json = await response.json();
+      if (!response.ok || !json.success) { alert(json.message || 'No fue posible crear el flujo.'); return; }
+      event.currentTarget.reset();
+      event.currentTarget.classList.add('d-none');
+      cargarFlujos();
+    });
+
+    $('#workflowGrid').addEventListener('click', async event => {
+      const edit = event.target.closest('[data-edit-flow]');
+      if (edit) {
+        const flujo = window.flujosActuales.find(item => String(item.id) === edit.dataset.editFlow);
+        if (!flujo) return;
+        const nombre = prompt('Nombre de la automatización:', flujo.nombre);
+        if (nombre === null) return;
+        const disparador = prompt('Disparador:', flujo.disparador);
+        if (disparador === null) return;
+        const descripcion = prompt('Descripción:', flujo.descripcion || '');
+        if (descripcion === null) return;
+        const response = await fetch(`${API_URL}/${flujo.id}`, { method: 'PUT', credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nombre, disparador, descripcion }) });
+        const json = await response.json();
+        if (!response.ok || !json.success) { alert(json.message || 'No fue posible actualizar.'); return; }
+        cargarFlujos(); return;
+      }
+      const remove = event.target.closest('[data-delete-flow]');
+      if (remove) {
+        if (!confirm('¿Eliminar esta automatización? Esta acción no se puede deshacer.')) return;
+        const response = await fetch(`${API_URL}/${remove.dataset.deleteFlow}`, { method: 'DELETE', credentials: 'same-origin' });
+        const json = await response.json();
+        if (!response.ok || !json.success) { alert(json.message || 'No fue posible eliminar.'); return; }
+        cargarFlujos(); return;
+      }
+      const button = event.target.closest('[data-toggle-flow]');
+      if (!button) return;
+      const response = await fetch(`${API_URL}/${button.dataset.toggleFlow}/estado`, {
+        method: 'PATCH', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ activa: button.dataset.activa === 'true' })
+      });
+      const json = await response.json();
+      if (!response.ok || !json.success) { alert(json.message || 'No fue posible cambiar el estado.'); return; }
+      cargarFlujos();
+    });
+
+    cargarFlujos();
+  </script>
+</body>
+
+</html>

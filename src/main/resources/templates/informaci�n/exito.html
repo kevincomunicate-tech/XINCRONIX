@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Casos de Éxito — Xincronix</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --ink:     #07101f;
+  --navy:    #0d1f3c;
+  --cobalt:  #1a3a7c;
+  --electric:#2a5bff;
+  --sky:     #5b8bff;
+  --frost:   #adc6ff;
+  --cream:   #f5f3ee;
+  --warm:    #e8e4db;
+  --accent:  #ff6b35;
+  --gold:    #f0c040;
+  --white:   #ffffff;
+  --text:    #1a2540;
+  --muted:   #6b7a9a;
+  --border:  rgba(26,58,124,0.12);
+  --green:   #10b981;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--ink);
+  color:var(--text);
+  overflow-x:hidden;
+  cursor:none;
+}
+
+/* ── CURSOR ── */
+.cursor{position:fixed;width:12px;height:12px;background:var(--electric);border-radius:50%;pointer-events:none;z-index:9999;transition:transform 0.1s ease;mix-blend-mode:multiply;}
+.cursor-ring{position:fixed;width:36px;height:36px;border:1.5px solid var(--electric);border-radius:50%;pointer-events:none;z-index:9998;transition:transform 0.18s ease,opacity 0.18s;opacity:0.5;}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 48px;height:68px;display:flex;align-items:center;justify-content:space-between;background:rgba(7,16,31,0.0);backdrop-filter:blur(0px);transition:background 0.4s,backdrop-filter 0.4s,border-bottom 0.4s;}
+nav.scrolled{background:rgba(7,16,31,0.88);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.07);}
+.nav-logo{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--white);letter-spacing:-0.5px;text-decoration:none;}
+.nav-logo span{color:var(--sky);}
+.nav-links{display:flex;gap:32px;list-style:none;}
+.nav-links a{font-size:13.5px;font-weight:500;color:rgba(255,255,255,0.65);transition:color 0.2s;text-decoration:none;}
+.nav-links a:hover{color:var(--white);}
+.nav-cta{display:flex;gap:10px;align-items:center;}
+.btn-ghost{padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;color:rgba(255,255,255,0.8);border:1px solid rgba(255,255,255,0.2);background:transparent;cursor:pointer;transition:all 0.2s;font-family:'DM Sans',sans-serif;}
+.btn-ghost:hover{background:rgba(255,255,255,0.1);color:var(--white);}
+.btn-primary{padding:8px 20px;border-radius:8px;font-size:13px;font-weight:600;background:var(--electric);color:var(--white);border:none;cursor:pointer;transition:all 0.2s;font-family:'DM Sans',sans-serif;box-shadow:0 0 24px rgba(42,91,255,0.4);}
+.btn-primary:hover{background:#3d6aff;transform:translateY(-1px);box-shadow:0 4px 28px rgba(42,91,255,0.55);}
+
+/* ── HERO ── */
+#hero-exito{
+  min-height:65vh;
+  background:var(--ink);
+  position:relative;overflow:hidden;
+  display:flex;align-items:center;
+  padding-top:68px;
+}
+.hero-grid{
+  position:absolute;inset:0;
+  background-image:linear-gradient(rgba(42,91,255,0.07) 1px,transparent 1px),linear-gradient(90deg,rgba(42,91,255,0.07) 1px,transparent 1px);
+  background-size:60px 60px;
+  mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 40%,transparent 100%);
+}
+.hero-glow{position:absolute;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(42,91,255,0.22) 0%,transparent 65%);top:-200px;left:-150px;pointer-events:none;animation:pulse-glow 6s ease-in-out infinite;}
+.hero-glow2{position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(16,185,129,0.1) 0%,transparent 65%);bottom:-100px;right:-100px;pointer-events:none;animation:pulse-glow 8s ease-in-out infinite reverse;}
+@keyframes pulse-glow{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.08);opacity:0.7;}}
+
+.hero-exito-content{
+  position:relative;z-index:2;
+  max-width:1200px;margin:0 auto;
+  padding:80px 48px;
+  text-align:center;
+}
+.hero-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);padding:6px 14px;border-radius:100px;font-size:12px;font-weight:600;color:#6ee7b7;margin-bottom:22px;animation:fade-up 0.7s ease both;}
+.hero-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.hero-exito-headline{font-family:'Syne',sans-serif;font-size:clamp(36px,5vw,64px);font-weight:800;line-height:1.07;color:var(--white);margin-bottom:22px;animation:fade-up 0.7s 0.1s ease both;}
+.hero-exito-headline em{font-style:normal;background:linear-gradient(135deg,var(--green),#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.hero-exito-sub{font-size:18px;line-height:1.7;color:rgba(255,255,255,0.5);max-width:580px;margin:0 auto 52px;animation:fade-up 0.7s 0.2s ease both;}
+
+/* MÉTRICAS HERO */
+.hero-metrics{
+  display:flex;gap:0;justify-content:center;flex-wrap:wrap;
+  animation:fade-up 0.7s 0.3s ease both;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:18px;
+  max-width:720px;margin:0 auto;
+  overflow:hidden;
+}
+.hero-metric{
+  flex:1;min-width:160px;
+  padding:28px 20px;
+  text-align:center;
+  position:relative;
+}
+.hero-metric:not(:last-child)::after{
+  content:'';position:absolute;right:0;top:20%;height:60%;
+  width:1px;background:rgba(255,255,255,0.07);
+}
+.hero-metric-num{font-family:'Syne',sans-serif;font-size:34px;font-weight:800;color:var(--white);line-height:1;}
+.hero-metric-num span{font-size:20px;color:var(--green);}
+.hero-metric-lbl{font-size:12px;color:rgba(255,255,255,0.38);margin-top:6px;}
+
+@keyframes fade-up{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+.reveal{opacity:0;transform:translateY(30px);transition:opacity 0.7s ease,transform 0.7s ease;}
+.reveal.visible{opacity:1;transform:none;}
+
+/* ── UTILIDADES ── */
+.section-eyebrow{font-size:11.5px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--electric);margin-bottom:12px;}
+.section-title{font-family:'Syne',sans-serif;font-size:clamp(28px,4vw,46px);font-weight:800;line-height:1.1;margin-bottom:16px;}
+.section-sub{font-size:16px;line-height:1.7;}
+.max-w{max-width:1200px;margin:0 auto;}
+
+/* ── FILTROS ── */
+#filtros-casos{
+  padding:48px 48px 0;
+  background:var(--ink);
+  position:relative;z-index:2;
+}
+.filtros-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:16px;
+}
+.filtros-grupo{display:flex;gap:8px;flex-wrap:wrap;}
+.filtro-btn{
+  padding:8px 18px;border-radius:100px;
+  font-size:12.5px;font-weight:600;
+  border:1px solid rgba(255,255,255,0.12);
+  background:transparent;color:rgba(255,255,255,0.45);
+  cursor:pointer;transition:all 0.2s;font-family:'DM Sans',sans-serif;
+}
+.filtro-btn:hover{border-color:rgba(42,91,255,0.4);color:var(--frost);}
+.filtro-btn.active{background:var(--electric);border-color:var(--electric);color:var(--white);box-shadow:0 0 18px rgba(42,91,255,0.4);}
+.filtros-resultado{font-size:13px;color:rgba(255,255,255,0.3);}
+.filtros-resultado span{color:var(--white);font-weight:600;}
+
+/* ── CASO DESTACADO ── */
+#caso-featured{
+  padding:40px 48px 0;
+  background:var(--ink);
+  position:relative;
+}
+#caso-featured::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(42,91,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(42,91,255,0.04) 1px,transparent 1px);background-size:40px 40px;}
+
+.caso-featured-card{
+  position:relative;z-index:1;
+  background:rgba(255,255,255,0.02);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:24px;overflow:hidden;
+  display:grid;grid-template-columns:1.1fr 1fr;
+  text-decoration:none;
+  transition:all 0.35s;
+}
+.caso-featured-card:hover{border-color:rgba(42,91,255,0.35);box-shadow:0 30px 80px rgba(0,0,0,0.4);transform:translateY(-4px);}
+
+/* Panel izquierdo - visual */
+.caso-feat-visual{
+  position:relative;
+  min-height:480px;
+  padding:52px 48px;
+  display:flex;flex-direction:column;justify-content:space-between;
+  overflow:hidden;
+}
+.caso-feat-bg{position:absolute;inset:0;}
+.caso-feat-pattern{
+  position:absolute;inset:0;
+  background-image:linear-gradient(rgba(255,255,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.04) 1px,transparent 1px);
+  background-size:30px 30px;
+}
+.caso-feat-glow{
+  position:absolute;width:350px;height:350px;border-radius:50%;
+  background:radial-gradient(circle,rgba(16,185,129,0.25) 0%,transparent 65%);
+  bottom:-80px;right:-80px;
+}
+.caso-feat-logo{
+  position:relative;z-index:1;
+  display:inline-flex;align-items:center;gap:12px;
+}
+.caso-feat-logo-icon{
+  width:56px;height:56px;border-radius:16px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;
+  border:1px solid rgba(255,255,255,0.15);
+}
+.caso-feat-logo-name{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--white);}
+.caso-feat-logo-sector{font-size:12px;color:rgba(255,255,255,0.4);margin-top:2px;}
+
+.caso-feat-quote-block{position:relative;z-index:1;}
+.caso-feat-quote-mark{font-family:'Syne',sans-serif;font-size:72px;line-height:0.8;color:rgba(16,185,129,0.25);margin-bottom:12px;}
+.caso-feat-quote{font-size:18px;line-height:1.6;color:rgba(255,255,255,0.75);font-style:italic;margin-bottom:20px;}
+.caso-feat-quoter{display:flex;align-items:center;gap:10px;}
+.caso-feat-quoter-avatar{width:36px;height:36px;border-radius:50%;background:rgba(16,185,129,0.2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#6ee7b7;font-family:'Syne',sans-serif;}
+.caso-feat-quoter-name{font-size:13px;font-weight:600;color:rgba(255,255,255,0.7);}
+.caso-feat-quoter-role{font-size:11.5px;color:rgba(255,255,255,0.3);}
+
+/* Panel derecho - contenido */
+.caso-feat-content{
+  padding:52px 48px;
+  display:flex;flex-direction:column;justify-content:center;
+  background:rgba(255,255,255,0.015);
+  border-left:1px solid rgba(255,255,255,0.06);
+}
+.caso-feat-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);
+  padding:4px 12px;border-radius:100px;
+  font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+  color:#6ee7b7;margin-bottom:22px;width:fit-content;
+}
+.caso-feat-title{font-family:'Syne',sans-serif;font-size:clamp(18px,2vw,26px);font-weight:800;color:var(--white);line-height:1.2;margin-bottom:16px;}
+.caso-feat-desc{font-size:14px;color:rgba(255,255,255,0.45);line-height:1.7;margin-bottom:32px;}
+
+.caso-feat-resultados{display:flex;flex-direction:column;gap:14px;margin-bottom:32px;}
+.resultado-item{display:flex;align-items:center;gap:14px;padding:14px 16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;transition:all 0.2s;}
+.resultado-item:hover{background:rgba(16,185,129,0.06);border-color:rgba(16,185,129,0.2);}
+.resultado-num{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--green);min-width:64px;}
+.resultado-desc{font-size:12.5px;color:rgba(255,255,255,0.5);line-height:1.5;}
+
+.caso-feat-footer{display:flex;align-items:center;gap:12px;}
+.btn-caso-main{
+  padding:11px 24px;border-radius:10px;font-size:13px;font-weight:700;
+  background:var(--electric);color:var(--white);border:none;cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:all 0.2s;
+  box-shadow:0 0 24px rgba(42,91,255,0.4);
+}
+.btn-caso-main:hover{background:#3d6aff;transform:translateY(-1px);box-shadow:0 4px 28px rgba(42,91,255,0.55);}
+.btn-caso-sec{
+  padding:11px 20px;border-radius:10px;font-size:13px;font-weight:600;
+  background:transparent;color:rgba(255,255,255,0.6);
+  border:1.5px solid rgba(255,255,255,0.15);cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:all 0.2s;
+}
+.btn-caso-sec:hover{background:rgba(255,255,255,0.07);color:var(--white);}
+
+/* ── CASOS GRID ── */
+#casos-grid{
+  padding:60px 48px 100px;
+  background:var(--ink);
+  position:relative;
+}
+#casos-grid::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(42,91,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(42,91,255,0.04) 1px,transparent 1px);background-size:40px 40px;}
+
+.casos-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;position:relative;z-index:1;}
+.casos-header-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--white);}
+.casos-count{font-size:13px;color:rgba(255,255,255,0.35);}
+
+.casos-masonry{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:22px;
+  position:relative;z-index:1;
+}
+
+.caso-card{
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:20px;overflow:hidden;
+  transition:all 0.35s;cursor:pointer;
+  text-decoration:none;display:block;
+}
+.caso-card:hover{background:rgba(42,91,255,0.06);border-color:rgba(42,91,255,0.28);transform:translateY(-7px);box-shadow:0 28px 70px rgba(0,0,0,0.35);}
+
+.caso-card-header{
+  padding:28px 26px 22px;
+  position:relative;overflow:hidden;
+  min-height:140px;
+  display:flex;flex-direction:column;justify-content:space-between;
+}
+.caso-card-header-bg{position:absolute;inset:0;}
+.caso-card-header-pattern{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);background-size:20px 20px;}
+.caso-card-header-glow{position:absolute;width:180px;height:180px;border-radius:50%;bottom:-50px;right:-30px;}
+
+.caso-card-logo{position:relative;z-index:1;display:flex;align-items:center;gap:10px;}
+.caso-card-logo-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;border:1px solid rgba(255,255,255,0.12);}
+.caso-card-logo-info{}
+.caso-card-company{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:var(--white);}
+.caso-card-sector{font-size:11px;color:rgba(255,255,255,0.38);margin-top:1px;}
+
+.caso-card-sector-badge{
+  position:relative;z-index:1;width:fit-content;
+  font-size:9.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+  padding:3px 10px;border-radius:100px;
+}
+
+.caso-card-body{padding:22px 26px 26px;}
+.caso-card-challenge{font-size:13px;font-weight:600;color:rgba(255,255,255,0.6);margin-bottom:8px;}
+.caso-card-desc{font-size:12.5px;color:rgba(255,255,255,0.35);line-height:1.65;margin-bottom:20px;}
+
+.caso-card-metricas{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;
+}
+.caso-metrica{
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.06);
+  border-radius:10px;padding:12px 14px;text-align:center;
+  transition:all 0.2s;
+}
+.caso-card:hover .caso-metrica{border-color:rgba(42,91,255,0.15);}
+.caso-metrica-num{font-family:'Syne',sans-serif;font-size:19px;font-weight:800;line-height:1;}
+.caso-metrica-lbl{font-size:10px;color:rgba(255,255,255,0.3);margin-top:3px;line-height:1.3;}
+
+.caso-card-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  padding-top:16px;border-top:1px solid rgba(255,255,255,0.06);
+}
+.caso-card-tag-list{display:flex;gap:6px;flex-wrap:wrap;}
+.caso-tag{font-size:10px;font-weight:600;color:rgba(255,255,255,0.35);background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);padding:3px 8px;border-radius:5px;}
+.caso-card-arrow{font-size:16px;color:rgba(255,255,255,0.2);transition:color 0.2s,transform 0.2s;}
+.caso-card:hover .caso-card-arrow{color:var(--sky);transform:translateX(4px);}
+
+/* ── TESTIMONIOS ── */
+#testimonios{
+  padding:100px 48px;
+  background:var(--cream);
+}
+#testimonios .section-title{color:var(--navy);}
+#testimonios .section-eyebrow{color:var(--electric);}
+#testimonios .section-sub{color:var(--muted);max-width:520px;margin:0 auto;}
+
+.testimonios-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:22px;
+  margin-top:56px;
+}
+.testimonio-card{
+  background:white;border-radius:18px;
+  padding:30px 28px;
+  border:1.5px solid var(--border);
+  transition:all 0.3s;
+  position:relative;
+}
+.testimonio-card::before{content:'';position:absolute;inset:0;border-radius:18px;background:radial-gradient(ellipse at top left,rgba(42,91,255,0.04) 0%,transparent 60%);}
+.testimonio-card:hover{transform:translateY(-5px);box-shadow:0 20px 50px rgba(13,31,60,0.1);border-color:rgba(42,91,255,0.22);}
+.test-stars{display:flex;gap:3px;margin-bottom:16px;}
+.test-star{font-size:14px;}
+.test-quote{font-size:14px;color:var(--muted);line-height:1.75;margin-bottom:22px;font-style:italic;}
+.test-footer{display:flex;align-items:center;gap:12px;padding-top:16px;border-top:1px solid var(--border);}
+.test-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;font-family:'Syne',sans-serif;flex-shrink:0;}
+.test-name{font-family:'Syne',sans-serif;font-size:13.5px;font-weight:800;color:var(--navy);}
+.test-role{font-size:11.5px;color:var(--muted);margin-top:1px;}
+.test-company{font-size:11px;color:var(--electric);font-weight:600;margin-top:2px;}
+
+/* ── INDUSTRIAS ── */
+#industrias{
+  padding:100px 48px;
+  background:var(--navy);
+  position:relative;overflow:hidden;
+}
+#industrias::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(42,91,255,0.06) 1px,transparent 1px),linear-gradient(90deg,rgba(42,91,255,0.06) 1px,transparent 1px);background-size:40px 40px;}
+#industrias .section-title{color:var(--white);}
+#industrias .section-eyebrow{color:var(--frost);}
+#industrias .section-sub{color:rgba(255,255,255,0.45);max-width:520px;margin:0 auto;}
+
+.industrias-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:52px;
+  position:relative;z-index:1;
+}
+.industria-card{
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:16px;padding:28px 22px;
+  text-align:center;transition:all 0.3s;cursor:pointer;
+}
+.industria-card:hover{background:rgba(42,91,255,0.1);border-color:rgba(42,91,255,0.3);transform:translateY(-5px);}
+.industria-icon{font-size:32px;margin-bottom:14px;}
+.industria-nombre{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:var(--white);margin-bottom:6px;}
+.industria-casos{font-size:11.5px;color:rgba(255,255,255,0.35);}
+.industria-bar{height:3px;background:rgba(255,255,255,0.07);border-radius:100px;margin-top:14px;overflow:hidden;}
+.industria-bar-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--electric),var(--sky));transition:width 1s ease;}
+
+/* ── PROCESO ── */
+#proceso{
+  padding:100px 48px;
+  background:var(--cream);
+}
+#proceso .section-title{color:var(--navy);}
+#proceso .section-sub{color:var(--muted);max-width:520px;margin:0 auto;}
+
+.proceso-steps{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:0;
+  margin-top:60px;position:relative;
+}
+.proceso-steps::before{
+  content:'';position:absolute;
+  top:44px;left:calc(12.5% + 22px);right:calc(12.5% + 22px);
+  height:2px;background:linear-gradient(90deg,var(--electric),var(--sky));
+  z-index:0;
+}
+.proceso-step{text-align:center;position:relative;z-index:1;padding:0 16px;}
+.proceso-step-num{
+  width:44px;height:44px;border-radius:50%;
+  background:var(--electric);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--white);
+  margin:0 auto 18px;
+  box-shadow:0 0 0 6px rgba(42,91,255,0.15),0 0 30px rgba(42,91,255,0.3);
+}
+.proceso-step-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:var(--navy);margin-bottom:8px;}
+.proceso-step-desc{font-size:12px;color:var(--muted);line-height:1.6;}
+
+/* ── CTA ── */
+#cta{
+  padding:120px 48px;
+  background:var(--cream);
+  text-align:center;
+  position:relative;overflow:hidden;
+}
+.cta-glow{position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(42,91,255,0.1) 0%,transparent 65%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;}
+.cta-box{
+  position:relative;z-index:1;
+  background:var(--navy);border-radius:28px;padding:80px 60px;
+  max-width:800px;margin:0 auto;
+  border:1px solid rgba(42,91,255,0.2);
+  box-shadow:0 40px 100px rgba(13,31,60,0.25);overflow:hidden;
+}
+.cta-box::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 0% 0%,rgba(42,91,255,0.2) 0%,transparent 50%),radial-gradient(ellipse at 100% 100%,rgba(16,185,129,0.1) 0%,transparent 50%);pointer-events:none;}
+.cta-eyebrow{font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--frost);margin-bottom:14px;}
+.cta-title{font-family:'Syne',sans-serif;font-size:clamp(28px,4vw,46px);font-weight:800;color:var(--white);margin-bottom:16px;line-height:1.1;}
+.cta-title em{font-style:normal;color:var(--sky);}
+.cta-sub{font-size:16px;color:rgba(255,255,255,0.45);margin-bottom:40px;line-height:1.7;}
+.cta-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+.btn-cta-main{padding:15px 36px;border-radius:12px;font-size:15px;font-weight:700;background:var(--electric);color:var(--white);border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;box-shadow:0 0 40px rgba(42,91,255,0.5);}
+.btn-cta-main:hover{transform:translateY(-2px);box-shadow:0 8px 50px rgba(42,91,255,0.65);}
+.btn-cta-sec{padding:15px 28px;border-radius:12px;font-size:15px;font-weight:600;background:transparent;color:rgba(255,255,255,0.75);border:1.5px solid rgba(255,255,255,0.2);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+.btn-cta-sec:hover{background:rgba(255,255,255,0.08);color:var(--white);}
+
+/* ── FOOTER ── */
+footer{background:var(--ink);border-top:1px solid rgba(255,255,255,0.06);}
+.footer-top{padding:72px 48px 52px;}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1.2fr;gap:48px;align-items:start;}
+.footer-logo-text{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--white);letter-spacing:-0.5px;text-decoration:none;}
+.footer-logo-text span{color:var(--sky);}
+.footer-brand-desc{font-size:13px;color:rgba(255,255,255,0.38);line-height:1.7;max-width:240px;margin-bottom:22px;margin-top:16px;}
+.footer-socials{display:flex;gap:9px;}
+.social-btn{width:36px;height:36px;border-radius:9px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.09);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.45);transition:all 0.2s;text-decoration:none;}
+.social-btn:hover{background:var(--electric);border-color:var(--electric);color:white;}
+.footer-col-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:16px;}
+.footer-col-links{list-style:none;display:flex;flex-direction:column;gap:9px;}
+.footer-col-links a{font-size:13px;color:rgba(255,255,255,0.5);transition:color 0.2s;text-decoration:none;}
+.footer-col-links a:hover{color:rgba(255,255,255,0.85);}
+.footer-bottom{border-top:1px solid rgba(255,255,255,0.06);padding:18px 48px;}
+.footer-bottom-inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.footer-copy{font-size:12px;color:rgba(255,255,255,0.22);}
+.footer-bottom-links{display:flex;gap:20px;}
+.footer-bottom-links a{font-size:12px;color:rgba(255,255,255,0.28);transition:color 0.2s;text-decoration:none;}
+.footer-bottom-links a:hover{color:rgba(255,255,255,0.6);}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  nav{padding:0 24px;}
+  .nav-links{display:none;}
+  .hero-exito-content{padding:80px 24px 60px;}
+  .caso-featured-card{grid-template-columns:1fr;}
+  .caso-feat-visual{min-height:280px;}
+  .casos-masonry{grid-template-columns:1fr;}
+  .testimonios-grid{grid-template-columns:1fr;}
+  .industrias-grid{grid-template-columns:1fr 1fr;}
+  .proceso-steps{grid-template-columns:1fr 1fr;gap:32px;}
+  .proceso-steps::before{display:none;}
+  #filtros-casos,#caso-featured,#casos-grid,#testimonios,#industrias,#proceso,#cta{padding-left:24px;padding-right:24px;}
+  .footer-grid{grid-template-columns:1fr 1fr;gap:36px;}
+  .footer-brand{grid-column:1/-1;}
+  .footer-top{padding:48px 24px 36px;}
+  .footer-bottom{padding:16px 24px;}
+  .cta-box{padding:48px 24px;}
+  .hero-metrics{flex-direction:column;}
+  .hero-metric:not(:last-child)::after{display:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+<nav id="mainNav">
+  <a href="../../index.html" class="nav-logo">Xin<span>cronix</span></a>
+  <ul class="nav-links">
+    <li><a href="../../index.html#features">Plataforma</a></li>
+    <li><a href="../../index.html#how">¿Cómo funciona?</a></li>
+    <li><a href="../../index.html#pricing">Planes</a></li>
+    <li><a href="#" style="color:var(--white)">Casos de éxito</a></li>
+  </ul>
+  <div class="nav-cta">
+    <a href="../login.html"><button class="btn-ghost">Iniciar sesión</button></a>
+    <a href="../../index.html#pricing"><button class="btn-primary">Ver planes</button></a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero-exito">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-glow2"></div>
+  <div class="hero-exito-content">
+    <div class="hero-badge"><span class="dot"></span> Empresas que ya operan diferente</div>
+    <h1 class="hero-exito-headline">Resultados reales de<br>empresas <em>reales</em></h1>
+    <p class="hero-exito-sub">No prometemos magia. Mostramos números. Descubre cómo empresas latinoamericanas transformaron su operación con Xincronix.</p>
+    <div class="hero-metrics">
+      <div class="hero-metric">
+        <div class="hero-metric-num">+68<span>%</span></div>
+        <div class="hero-metric-lbl">Eficiencia operativa promedio</div>
+      </div>
+      <div class="hero-metric">
+        <div class="hero-metric-num">-41<span>%</span></div>
+        <div class="hero-metric-lbl">Reducción de tareas manuales</div>
+      </div>
+      <div class="hero-metric">
+        <div class="hero-metric-num">3.2<span>x</span></div>
+        <div class="hero-metric-lbl">ROI promedio en 90 días</div>
+      </div>
+      <div class="hero-metric">
+        <div class="hero-metric-num">12<span>+</span></div>
+        <div class="hero-metric-lbl">Empresas transformadas</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FILTROS -->
+<section id="filtros-casos">
+  <div class="max-w">
+    <div class="filtros-bar reveal">
+      <div class="filtros-grupo">
+        <button class="filtro-btn active" onclick="filtrarCasos('todos',this)">Todos los casos</button>
+        <button class="filtro-btn" onclick="filtrarCasos('logistica',this)">Logística</button>
+        <button class="filtro-btn" onclick="filtrarCasos('retail',this)">Retail</button>
+        <button class="filtro-btn" onclick="filtrarCasos('servicios',this)">Servicios</button>
+        <button class="filtro-btn" onclick="filtrarCasos('salud',this)">Salud</button>
+        <button class="filtro-btn" onclick="filtrarCasos('fintech',this)">Fintech</button>
+      </div>
+      <div class="filtros-resultado">Mostrando <span id="casoCount">6</span> casos</div>
+    </div>
+  </div>
+</section>
+
+<!-- CASO DESTACADO -->
+<section id="caso-featured">
+  <div class="max-w reveal">
+    <a href="#" class="caso-featured-card">
+      <!-- Visual izquierdo -->
+      <div class="caso-feat-visual">
+        <div class="caso-feat-bg">
+          <div style="position:absolute;inset:0;background:linear-gradient(145deg,#0a1a2e,#0d2d1a);"></div>
+          <div class="caso-feat-pattern"></div>
+          <div class="caso-feat-glow"></div>
+        </div>
+        <div class="caso-feat-logo">
+          <div class="caso-feat-logo-icon" style="background:rgba(16,185,129,0.15);">🚚</div>
+          <div>
+            <div class="caso-feat-logo-name">TransAndes S.A.S</div>
+            <div class="caso-feat-logo-sector">Logística · Transporte</div>
+          </div>
+        </div>
+        <div class="caso-feat-quote-block">
+          <div class="caso-feat-quote-mark">"</div>
+          <div class="caso-feat-quote">Xincronix nos dio visibilidad total de nuestra operación en tiempo real. Lo que antes tomaba días de consolidación, ahora lo tenemos en segundos.</div>
+          <div class="caso-feat-quoter">
+            <div class="caso-feat-quoter-avatar">MA</div>
+            <div>
+              <div class="caso-feat-quoter-name">María Arbeláez</div>
+              <div class="caso-feat-quoter-role">Directora de Operaciones · TransAndes</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Contenido derecho -->
+      <div class="caso-feat-content">
+        <div class="caso-feat-badge">⭐ Caso destacado</div>
+        <h2 class="caso-feat-title">Cómo TransAndes redujo su tiempo de despacho en un 54% en solo 8 semanas</h2>
+        <p class="caso-feat-desc">Con más de 200 rutas activas y operaciones en 4 departamentos, TransAndes luchaba con procesos manuales, errores de asignación y cero visibilidad en tiempo real. Xincronix unificó toda su operación en una sola plataforma con agentes de IA.</p>
+        <div class="caso-feat-resultados">
+          <div class="resultado-item">
+            <div class="resultado-num">-54%</div>
+            <div class="resultado-desc">Reducción en tiempo de despacho y asignación de rutas</div>
+          </div>
+          <div class="resultado-item">
+            <div class="resultado-num">+89%</div>
+            <div class="resultado-desc">Visibilidad operativa en tiempo real sobre toda la flota</div>
+          </div>
+          <div class="resultado-item">
+            <div class="resultado-num">$48M</div>
+            <div class="resultado-desc">COP ahorrados en costos operativos durante el primer trimestre</div>
+          </div>
+        </div>
+        <div class="caso-feat-footer">
+          <button class="btn-caso-main">Ver caso completo →</button>
+          <button class="btn-caso-sec">Ver demo similar</button>
+        </div>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- CASOS GRID -->
+<section id="casos-grid">
+  <div class="max-w">
+    <div class="casos-header reveal">
+      <div class="casos-header-title">Más casos de éxito</div>
+      <div class="casos-count" id="casoCountGrid">6 empresas</div>
+    </div>
+    <div class="casos-masonry reveal" id="casosGrid">
+
+      <!-- Caso 1 - Retail -->
+      <a href="#" class="caso-card" data-industria="retail">
+        <div class="caso-card-header" style="">
+          <div class="caso-card-header-bg">
+            <div style="position:absolute;inset:0;background:linear-gradient(145deg,#1a0a10,#4d1525);"></div>
+            <div class="caso-card-header-pattern"></div>
+            <div class="caso-card-header-glow" style="background:radial-gradient(circle,rgba(255,107,53,0.25) 0%,transparent 70%);"></div>
+          </div>
+          <div class="caso-card-logo">
+            <div class="caso-card-logo-icon" style="background:rgba(255,107,53,0.15);">🛍️</div>
+            <div class="caso-card-logo-info">
+              <div class="caso-card-company">ModaHub Colombia</div>
+              <div class="caso-card-sector">Retail · Moda</div>
+            </div>
+          </div>
+          <div class="caso-card-sector-badge" style="background:rgba(255,107,53,0.15);color:#ff9a70;border:1px solid rgba(255,107,53,0.25);">Retail</div>
+        </div>
+        <div class="caso-card-body">
+          <div class="caso-card-challenge">Desafío: Inventario descentralizado en 12 tiendas</div>
+          <div class="caso-card-desc">Unificaron la gestión de inventario, ventas y proveedores con automatizaciones que eliminaron el 80% de sus reportes manuales.</div>
+          <div class="caso-card-metricas">
+            <div class="caso-metrica">
+              <div class="caso-metrica-num" style="color:#ff6b35;">-73%</div>
+              <div class="caso-metrica-lbl">Errores de inventario</div>
+            </div>
+            <div class="caso-metrica">
+              <div class="caso-metrica-num" style="color:#ff6b35;">+31%</div>
+              <div class="caso-metrica-lbl">Ventas trimestrales</div>
+            </div>
+          </div>
+          <div class="caso-card-footer">
+            <div class="caso-card-tag-list">
+              <span class="caso-tag">Inventario</span>
+              <span class="caso-tag">Automatización</span>
+            </div>
+            <span class="caso-card-arrow">→</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Caso 2 - Servicios -->
+      <a href="#" class="caso-card" data-industria="servicios">
+        <div class="caso-card-header">
+          <div class="caso-card-header-bg">
+            <div style="position:absolute;inset:0;background:linear-gradient(145deg,#0d1a30,#1a3560);"></div>
+            <div class="caso-card-header-pattern"></div>
+            <div class="caso-card-header-glow" style="background:radial-gradient(circle,rgba(42,91,255,0.3) 0%,transparent 70%);"></div>
+          </div>
+          <div class="caso-card-logo">
+            <div class="caso-card-logo-icon" style="background:rgba(42,91,255,0.15);">⚖️</div>
+            <div class="caso-card-logo-info">
+              <div class="caso-card-company">LegalPro Bogotá</div>
+              <div class="caso-card-sector">Servicios · Legal</div>
+            </div>
+          </div>
+          <div class="caso-card-sector-badge" style="background:rgba(42,91,255,0.15);color:var(--frost);border:1px solid rgba(42,91,255,0.25);">Servicios</div>
+        </div>
+        <div class="caso-card-body">
+          <div class="caso-card-challenge">Desafío: Gestión de 300+ casos activos sin sistema</div>
+          <div class="caso-card-desc">Un despacho jurídico con 18 abogados pasó de hojas de Excel a una operación completamente trazable con recordatorios automáticos de vencimientos.</div>
+          <div class="caso-card-metricas">
+            <div class="caso-metrica">
+              <div class="caso-metrica-num" style="color:var(--sky);">0</div>
+              <div class="caso-metrica-lbl">Vencimientos perdidos</div>
+            </div>
+            <div class="caso-metrica">
+              <div class="caso-metrica-num" style="color:var(--sky);">+55%</div>
+              <div class="caso-metrica-lbl">Casos gestionados</div>
+            </div>
+          </div>
+          <div class="caso-card-footer">
+            <div class="caso-card-tag-list">
+              <span class="caso-tag">Gestión de casos</span>
+              <span class="caso-tag">IA</span>
+            </div>
+            <span class="caso-card-arrow">→</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Caso 3 - Salud -->
+      <a href="#" class="caso-card" data-industria="salud">
+        <div class="caso-card-header">
+          <div class="caso-card-header-bg">
+            <div style="position:absolute;inset:0;background:linear-gradient(145deg,#0a1a14,#0d3322);"></div>
+            <div class="caso-card-header-pattern"></div>
+            <div class="caso-card-header-glow" style="background:radial-gradient(circle,rgba(16,185,129,0.25) 0%,transparent 70%);"></div>
+          </div>
+          <div class="caso-card-logo">
+            <div class="caso-card-logo-icon" style="background:rgba(16,185,129,0.15);">🏥</div>
+            <div class="caso-card-logo-info">
+              <div class="caso-card-company">Clínica Nova Salud</div>
+              <div class="caso-card-sector">Salud · Diagnóstico</div>
+            </div>
+          </div>
+          <div class="caso-card-sector-badge" style="background:rgba(16,185,129,0.12);color:#6ee7b7;border:1px solid rgba(16,185,129,0.25);">Salud</div>
+        </div>
+        <div class="caso-card-body">
+          <div class="caso-card-challenge">Desafío: Agendamiento manual y alta tasa de cancelaciones</div>
+          <div class="caso-card-desc">Con un agente de IA para agendamiento y recordatorios automáticos, la clínica redujo drásticamente sus no-shows y liberó al equipo de recepción.</div>
+          <div class="caso-card-metricas">
+            <div class="caso-metrica">
+              <div class="caso-metrica-num" style="color:#34d399;">-62%</div>
+              <div class="caso-metrica-lbl">Citas canceladas</div>
+            </div>
+            <div class="caso-metrica">
+              <div class="caso-metrica-num" style="color:#34d399;">+44%</div>
+              <div class="caso-metrica-lbl">Ocupación promedio</div>
+            </div>
+          </div>
+          <div class="caso-card-footer">
+            <div class="caso-card-tag-list">
+              <span class="caso-tag">Agentes IA</span>
+              <span class="caso-tag">Agendamiento</span>
+            </div>
+            <span class="caso-card-arrow">→</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Caso 4 - Fintech -->
+      <a href="#" class="caso-card" data-industria="fintech">
+        <div class="caso-card-header">
+          <div class="caso-card-header-bg">
+            <div style="position:absolute;inset:0;background:linear-gradient(145deg,#1a1500,#3d3000);"></div>
+            <div class="caso-card-header-pattern"></div>
+            <div class="caso-card-header-glow" style="background:radial-gradient(circle,rgba(240,192,64,0.2) 0%,transparent 70%);"></div>
+          </div>
+          <div class="caso-card-logo">
+            <div class="caso-card-logo-icon" style="background:rgba(240,192,64,0.12);">💳</div>
+            <div class="caso-card-logo-info">
+              <div class="caso-card-company">Pagafast LATAM</div>
+              <div class="caso-card-sector">Fintech · Pagos</div>
+            </div>
+          </div>
+          <div class="caso-card-sector-badge" style="background:rgba(240,192,64,0.1);color:#f0c040;border:1px solid rgba(240,192,64,0.25);">Fintech</div>
+        </div>
+        <div class="caso-card-body">
+          <div class="caso-card-challenge">Desafío: Reconciliación financiera con múltiples pasarelas</div>
+          <div class="caso-card-desc">Automatizaron la reconciliación de pagos entre 6 pasarelas distintas, eliminando errores y reduciendo el tiempo de cierre contable de 5 días a 4 horas.</div>
+          <div class="caso-card-metricas">
+            <div class="caso-metrica">
+              <div class="caso-metrica-num" style="color:#f0c040;">-96%</div>
+              <div class="caso-metrica-lbl">Tiempo de reconciliación</div>
+            </div>
+            <div class="caso-metrica">
+              <div class="caso-metrica-num" style="color:#f0c040;">0</div>
+              <div class="caso-metrica-lbl">Errores en cierre mensual</div>
+            </div>
+          </div>
+          <div class="caso-card-footer">
+            <div class="caso-card-tag-list">
+              <span class="caso-tag">Finanzas</span>
+              <span class="caso-tag">Automatización</span>
+            </div>
+            <span class="caso-card-arrow">→</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Caso 5 - Logística -->
+      <a href="#" class="caso-card" data-industria="logistica">
+        <div class="caso-card-header">
+          <div class="caso-card-header-bg">
+            <div style="position:absolute;inset:0;background:linear-gradient(145deg,#0f1a2e,#1e3355);"></div>
+            <div class="caso-card-header-pattern"></div>
+            <div class="caso-card-header-glow" style="background:radial-gradient(circle,rgba(91,139,255,0.2) 0%,transparent 70%);"></div>
+          </div>
+          <div class="caso-card-logo">
+            <div class="caso-card-logo-icon" style="background:rgba(91,139,255,0.15);">📦</div>
+            <div class="caso-card-logo-info">
+              <div class="caso-card-company">FullStock Venezuela</div>
+              <div class="caso-card-sector">Logística · Almacenaje</div>
+            </div>
+          </div>
+          <div class="caso-card-sector-badge" style="background:rgba(42,91,255,0.12);color:var(--frost);border:1px solid rgba(42,91,255,0.2);">Logística</div>
+        </div>
+        <div class="caso-card-body">
+          <div class="caso-card-challenge">Desafío: Control de almacén con pérdidas invisibles</div>
+          <div class="caso-card-desc">Implementaron trazabilidad completa de stock con alertas automáticas de reposición y dashboards en tiempo real para el equipo de bodega.</div>
+          <div class="caso-card-metricas">
+            <div class="caso-metrica">
+              <div class="caso-metrica-num" style="color:var(--sky);">-88%</div>
+              <div class="caso-metrica-lbl">Pérdidas por descontrol</div>
+            </div>
+            <div class="caso-metrica">
+              <div class="caso-metrica-num" style="color:var(--sky);">+3.8x</div>
+              <div class="caso-metrica-lbl">ROI primer trimestre</div>
+            </div>
+          </div>
+          <div class="caso-card-footer">
+            <div class="caso-card-tag-list">
+              <span class="caso-tag">Almacén</span>
+              <span class="caso-tag">Analytics</span>
+            </div>
+            <span class="caso-card-arrow">→</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Caso 6 - Servicios -->
+      <a href="#" class="caso-card" data-industria="servicios">
+        <div class="caso-card-header">
+          <div class="caso-card-header-bg">
+            <div style="position:absolute;inset:0;background:linear-gradient(145deg,#150d20,#2e1550);"></div>
+            <div class="caso-card-header-pattern"></div>
+            <div class="caso-card-header-glow" style="background:radial-gradient(circle,rgba(139,92,246,0.2) 0%,transparent 70%);"></div>
+          </div>
+          <div class="caso-card-logo">
+            <div class="caso-card-logo-icon" style="background:rgba(139,92,246,0.15);">🎓</div>
+            <div class="caso-card-logo-info">
+              <div class="caso-card-company">EduTech Andina</div>
+              <div class="caso-card-sector">Servicios · Educación</div>
+            </div>
+          </div>
+          <div class="caso-card-sector-badge" style="background:rgba(139,92,246,0.12);color:#c4b5fd;border:1px solid rgba(139,92,246,0.25);">Servicios</div>
+        </div>
+        <div class="caso-card-body">
+          <div class="caso-card-challenge">Desafío: Seguimiento de 2.000+ estudiantes en 8 programas</div>
+          <div class="caso-card-desc">Centralizaron la gestión de estudiantes, instructores y contenidos. El agente de IA genera reportes de avance automáticos para cada tutor.</div>
+          <div class="caso-card-metricas">
+            <div class="caso-metrica">
+              <div class="caso-metrica-num" style="color:#c4b5fd;">+78%</div>
+              <div class="caso-metrica-lbl">Tasa de finalización</div>
+            </div>
+            <div class="caso-metrica">
+              <div class="caso-metrica-num" style="color:#c4b5fd;">-67%</div>
+              <div class="caso-metrica-lbl">Carga admin del equipo</div>
+            </div>
+          </div>
+          <div class="caso-card-footer">
+            <div class="caso-card-tag-list">
+              <span class="caso-tag">Educación</span>
+              <span class="caso-tag">Reportes IA</span>
+            </div>
+            <span class="caso-card-arrow">→</span>
+          </div>
+        </div>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIOS -->
+<section id="testimonios">
+  <div class="max-w">
+    <div class="reveal" style="text-align:center;max-width:540px;margin:0 auto;">
+      <div class="section-eyebrow">Lo que dicen</div>
+      <h2 class="section-title">Las palabras de quienes<br>ya operan diferente</h2>
+      <p class="section-sub">No son frases de marketing. Son conversaciones reales de equipos que cambiaron su forma de trabajar.</p>
+    </div>
+    <div class="testimonios-grid reveal">
+
+      <div class="testimonio-card">
+        <div class="test-stars">
+          <span class="test-star">⭐</span><span class="test-star">⭐</span><span class="test-star">⭐</span><span class="test-star">⭐</span><span class="test-star">⭐</span>
+        </div>
+        <div class="test-quote">"Antes de Xincronix pasaba dos horas al día consolidando información de distintas fuentes. Ahora abro un dashboard y tengo todo. Esas dos horas las dedico a pensar estrategia."</div>
+        <div class="test-footer">
+          <div class="test-avatar" style="background:rgba(255,107,53,0.15);color:#cc4a15;">CR</div>
+          <div>
+            <div class="test-name">Carlos Rueda</div>
+            <div class="test-role">Gerente General</div>
+            <div class="test-company">ModaHub Colombia</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonio-card">
+        <div class="test-stars">
+          <span class="test-star">⭐</span><span class="test-star">⭐</span><span class="test-star">⭐</span><span class="test-star">⭐</span><span class="test-star">⭐</span>
+        </div>
+        <div class="test-quote">"El equipo de Xincronix nos acompañó desde el día uno. No fue solo vender el software; fue entender nuestra operación y ayudarnos a rediseñarla. Eso marca la diferencia."</div>
+        <div class="test-footer">
+          <div class="test-avatar" style="background:rgba(16,185,129,0.15);color:#059669;">LP</div>
+          <div>
+            <div class="test-name">Laura Pérez</div>
+            <div class="test-role">Directora Médica</div>
+            <div class="test-company">Clínica Nova Salud</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonio-card">
+        <div class="test-stars">
+          <span class="test-star">⭐</span><span class="test-star">⭐</span><span class="test-star">⭐</span><span class="test-star">⭐</span><span class="test-star">⭐</span>
+        </div>
+        <div class="test-quote">"Implementamos Xincronix en menos de dos semanas. Sin trauma, sin consultoría externa, sin meses de migración. La plataforma es intuitiva y el soporte respondió siempre el mismo día."</div>
+        <div class="test-footer">
+          <div class="test-avatar" style="background:rgba(240,192,64,0.15);color:#92650a;">JM</div>
+          <div>
+            <div class="test-name">Jorge Montoya</div>
+            <div class="test-role">CTO</div>
+            <div class="test-company">Pagafast LATAM</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonio-card">
+        <div class="test-stars">
+          <span class="test-star">⭐</span><span class="test-star">⭐</span><span class="test-star">⭐</span><span class="test-star">⭐</span><span class="test-star">⭐</span>
+        </div>
+        <div class="test-quote">"Llevamos 4 meses usando Xincronix y no me imagino volver atrás. El agente de IA que resume el estado de cada caso jurídico nos ahorra horas de trabajo de revisión cada semana."</div>
+        <div class="test-footer">
+          <div class="test-avatar" style="background:rgba(42,91,255,0.15);color:#1d4ed8;">AV</div>
+          <div>
+            <div class="test-name">Andrés Valencia</div>
+            <div class="test-role">Socio Fundador</div>
+            <div class="test-company">LegalPro Bogotá</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonio-card">
+        <div class="test-stars">
+          <span class="test-star">⭐</span><span class="test-star">⭐</span><span class="test-star">⭐</span><span class="test-star">⭐</span><span class="test-star">⭐</span>
+        </div>
+        <div class="test-quote">"El ROI lo vimos desde el primer mes. No en proyecciones, en dinero real. Las automatizaciones de inventario eliminaron pérdidas que ni sabíamos que teníamos."</div>
+        <div class="test-footer">
+          <div class="test-avatar" style="background:rgba(91,139,255,0.15);color:#1d4ed8;">RG</div>
+          <div>
+            <div class="test-name">Roberto Godoy</div>
+            <div class="test-role">Director de Operaciones</div>
+            <div class="test-company">FullStock Venezuela</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonio-card">
+        <div class="test-stars">
+          <span class="test-star">⭐</span><span class="test-star">⭐</span><span class="test-star">⭐</span><span class="test-star">⭐</span><span class="test-star">⭐</span>
+        </div>
+        <div class="test-quote">"Lo que más me sorprendió fue lo fácil que fue convencer a mi equipo. No hubo resistencia al cambio porque la plataforma simplemente hace más fácil el trabajo de todos."</div>
+        <div class="test-footer">
+          <div class="test-avatar" style="background:rgba(139,92,246,0.15);color:#6d28d9;">SC</div>
+          <div>
+            <div class="test-name">Sandra Castro</div>
+            <div class="test-role">CEO</div>
+            <div class="test-company">EduTech Andina</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- INDUSTRIAS -->
+<section id="industrias">
+  <div class="max-w" style="position:relative;z-index:1;">
+    <div class="reveal" style="text-align:center;max-width:540px;margin:0 auto;">
+      <div class="section-eyebrow">Cobertura sectorial</div>
+      <h2 class="section-title">Xincronix funciona en<br>cualquier industria</h2>
+      <p class="section-sub">Desde logística hasta salud. La plataforma se adapta a la realidad operativa de cada sector.</p>
+    </div>
+    <div class="industrias-grid reveal">
+      <div class="industria-card">
+        <div class="industria-icon">🚚</div>
+        <div class="industria-nombre">Logística</div>
+        <div class="industria-casos">2 casos documentados</div>
+        <div class="industria-bar"><div class="industria-bar-fill" style="width:85%"></div></div>
+      </div>
+      <div class="industria-card">
+        <div class="industria-icon">🛍️</div>
+        <div class="industria-nombre">Retail</div>
+        <div class="industria-casos">1 caso documentado</div>
+        <div class="industria-bar"><div class="industria-bar-fill" style="width:60%"></div></div>
+      </div>
+      <div class="industria-card">
+        <div class="industria-icon">⚖️</div>
+        <div class="industria-nombre">Servicios</div>
+        <div class="industria-casos">2 casos documentados</div>
+        <div class="industria-bar"><div class="industria-bar-fill" style="width:75%"></div></div>
+      </div>
+      <div class="industria-card">
+        <div class="industria-icon">🏥</div>
+        <div class="industria-nombre">Salud</div>
+        <div class="industria-casos">1 caso documentado</div>
+        <div class="industria-bar"><div class="industria-bar-fill" style="width:50%"></div></div>
+      </div>
+      <div class="industria-card">
+        <div class="industria-icon">💳</div>
+        <div class="industria-nombre">Fintech</div>
+        <div class="industria-casos">1 caso documentado</div>
+        <div class="industria-bar"><div class="industria-bar-fill" style="width:55%"></div></div>
+      </div>
+      <div class="industria-card">
+        <div class="industria-icon">🎓</div>
+        <div class="industria-nombre">Educación</div>
+        <div class="industria-casos">1 caso documentado</div>
+        <div class="industria-bar"><div class="industria-bar-fill" style="width:45%"></div></div>
+      </div>
+      <div class="industria-card">
+        <div class="industria-icon">🏗️</div>
+        <div class="industria-nombre">Construcción</div>
+        <div class="industria-casos">Próximamente</div>
+        <div class="industria-bar"><div class="industria-bar-fill" style="width:20%"></div></div>
+      </div>
+      <div class="industria-card">
+        <div class="industria-icon">🍽️</div>
+        <div class="industria-nombre">Gastronomía</div>
+        <div class="industria-casos">Próximamente</div>
+        <div class="industria-bar"><div class="industria-bar-fill" style="width:15%"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESO DE IMPLEMENTACIÓN -->
+<section id="proceso">
+  <div class="max-w">
+    <div class="reveal" style="text-align:center;max-width:540px;margin:0 auto;">
+      <div class="section-eyebrow">Cómo lo hacemos</div>
+      <h2 class="section-title">De cero a operación<br>inteligente en 4 pasos</h2>
+      <p class="section-sub">Cada caso de éxito sigue el mismo proceso probado. Sin fricción, sin largos proyectos de implementación.</p>
+    </div>
+    <div class="proceso-steps reveal">
+      <div class="proceso-step">
+        <div class="proceso-step-num">1</div>
+        <div class="proceso-step-title">Diagnóstico en 48h</div>
+        <div class="proceso-step-desc">Mapeamos tu operación, identificamos cuellos de botella y definimos las automatizaciones con mayor impacto.</div>
+      </div>
+      <div class="proceso-step">
+        <div class="proceso-step-num">2</div>
+        <div class="proceso-step-title">Setup guiado</div>
+        <div class="proceso-step-desc">Configuramos la plataforma según tu operación. Migramos datos, conectamos herramientas y capacitamos al equipo.</div>
+      </div>
+      <div class="proceso-step">
+        <div class="proceso-step-num">3</div>
+        <div class="proceso-step-title">Lanzamiento sprint</div>
+        <div class="proceso-step-desc">Activamos las primeras automatizaciones y agentes de IA. Medimos resultados desde el día uno con métricas claras.</div>
+      </div>
+      <div class="proceso-step">
+        <div class="proceso-step-num">4</div>
+        <div class="proceso-step-title">Escala continua</div>
+        <div class="proceso-step-desc">Iteramos contigo. Cada mes sumamos nuevas automatizaciones basadas en lo que los datos indican que necesita tu empresa.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta">
+  <div class="cta-glow"></div>
+  <div class="cta-box reveal">
+    <div class="cta-eyebrow">¿Tu empresa es la próxima?</div>
+    <h2 class="cta-title">Escribe el siguiente<br>caso de <em>éxito</em></h2>
+    <p class="cta-sub">Cada empresa que ves en esta página empezó exactamente donde estás tú hoy. El primer paso es una conversación honesta sobre tu operación.</p>
+    <div class="cta-actions">
+      <a href="../index.html#pricing"><button class="btn-cta-main">Ver planes empresariales</button></a>
+      <a href="mailto:contacto@xincronix.com"><button class="btn-cta-sec">Hablar con el equipo</button></a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div class="max-w footer-grid">
+      <div class="footer-brand">
+        <div class="footer-logo-text">Xin<span>cronix</span></div>
+        <p class="footer-brand-desc">El sistema nervioso de tu empresa. Organiza, automatiza y escala tu operación con inteligencia artificial integrada.</p>
+        <div class="footer-socials">
+          <a href="#" class="social-btn" title="LinkedIn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          </a>
+          <a href="#" class="social-btn" title="Instagram">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
+          </a>
+          <a href="#" class="social-btn" title="X / Twitter">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <a href="#" class="social-btn" title="YouTube">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Plataforma</div>
+        <ul class="footer-col-links">
+          <li><a href="../../index.html#features">Gestión de proyectos</a></li>
+          <li><a href="../../index.html#features">Agentes de IA</a></li>
+          <li><a href="../../index.html#features">Automatizaciones</a></li>
+          <li><a href="../../index.html#features">Analytics</a></li>
+          <li><a href="../../index.html#how">¿Cómo funciona?</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Empresa</div>
+        <ul class="footer-col-links">
+          <li><a href="equipo.html">Nuestro equipo</a></li>
+          <li><a href="blog.html">Blog</a></li>
+          <li><a href="#" style="color:rgba(255,255,255,0.8)">Casos de éxito</a></li>
+          <li><a href="prensa.html">Prensa</a></li>
+          <li><a href="trabaja_con_nosotros.html">Trabaja con nosotros</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Legal</div>
+        <ul class="footer-col-links">
+          <li><a href="terminos.html">Términos y condiciones</a></li>
+          <li><a href="privacidad.html">Política de privacidad</a></li>
+          <li><a href="cookies.html">Política de cookies</a></li>
+          <li><a href="datos.html">Tratamiento de datos</a></li>
+          <li><a href="acuerdo.html">Acuerdo de nivel de servicio</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Contacto</div>
+        <ul class="footer-col-links">
+          <li><a href="mailto:contacto@xincronix.com">contacto@xincronix.com</a></li>
+          <li><a href="soporte_tecnico.html">Soporte técnico</a></li>
+          <li><a href="ventas_empresariales.html">Ventas empresariales</a></li>
+          <li style="margin-top:14px;">
+            <span style="font-size:11px;color:rgba(255,255,255,0.25);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Ubicación</span>
+            <span style="font-size:12.5px;color:rgba(255,255,255,0.45);">Bogotá, Colombia 🇨🇴</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="max-w footer-bottom-inner">
+      <div class="footer-copy">© 2026 Xincronix SAS. Todos los derechos reservados. · NIT: XXX.XXX.XXX-X</div>
+      <div class="footer-bottom-links">
+        <a href="#">Privacidad</a>
+        <a href="#">Términos</a>
+        <a href="#">Cookies</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Cursor
+const cursor=document.getElementById('cursor'),ring=document.getElementById('cursorRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cursor.style.left=mx-6+'px';cursor.style.top=my-6+'px';});
+(function animRing(){rx+=(mx-rx)*0.12;ry+=(my-ry)*0.12;ring.style.left=rx-18+'px';ring.style.top=ry-18+'px';requestAnimationFrame(animRing);})();
+document.querySelectorAll('a,button,.caso-card,.testimonio-card,.industria-card,.caso-featured-card,.resultado-item').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cursor.style.transform='scale(2)';ring.style.transform='scale(0.5)';ring.style.opacity='0.8';});
+  el.addEventListener('mouseleave',()=>{cursor.style.transform='scale(1)';ring.style.transform='scale(1)';ring.style.opacity='0.5';});
+});
+
+// Nav scroll
+window.addEventListener('scroll',()=>{
+  document.getElementById('mainNav').classList.toggle('scrolled',window.scrollY>40);
+});
+
+// Reveal
+const reveals=document.querySelectorAll('.reveal');
+const io=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});
+},{threshold:0.08});
+reveals.forEach(r=>io.observe(r));
+
+// Filtro
+function filtrarCasos(industria, btn){
+  document.querySelectorAll('.filtro-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const cards=document.querySelectorAll('.caso-card');
+  let visible=0;
+  cards.forEach(card=>{
+    const show = industria==='todos' || card.dataset.industria===industria;
+    card.style.display = show ? 'block' : 'none';
+    if(show) visible++;
+  });
+  document.getElementById('casoCount').textContent=visible;
+  document.getElementById('casoCountGrid').textContent=visible+' '+(visible===1?'empresa':'empresas');
+}
+
+// Barras de industrias — animar al aparecer
+const barraIO=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.querySelectorAll('.industria-bar-fill').forEach(b=>{
+        const w=b.style.width;b.style.width='0';
+        setTimeout(()=>{b.style.width=w;},100);
+      });
+    }
+  });
+},{threshold:0.2});
+const industriasGrid=document.querySelector('.industrias-grid');
+if(industriasGrid) barraIO.observe(industriasGrid);
+</script>
+</body>
+</html>

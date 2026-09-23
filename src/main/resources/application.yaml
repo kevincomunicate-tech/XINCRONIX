@@ -1,0 +1,104 @@
+spring:
+  config:
+    import: optional:file:.env[.properties]
+
+  application:
+    name: Xincronix
+
+  datasource:
+    url: ${XNX_DB_URL:jdbc:mariadb://localhost:3306/xincronix_bd}
+    username: ${XNX_DB_USERNAME:root}
+    password: ${XNX_DB_PASSWORD:}
+    driver-class-name: org.mariadb.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  flyway:
+    baseline-on-migrate: true
+    baseline-version: 0
+
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  mail:
+    host: ${XNX_MAIL_HOST:smtp.gmail.com}
+    port: ${XNX_MAIL_PORT:587}
+    username: ${XNX_MAIL_USERNAME:}
+    password: ${XNX_MAIL_PASSWORD:}
+    properties:
+      mail.smtp.auth: ${XNX_MAIL_AUTH:true}
+      mail.smtp.starttls.enable: ${XNX_MAIL_STARTTLS:true}
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${XNX_GOOGLE_OAUTH_CLIENT_ID:${XNX_GOOGLE_CLIENT_ID:}}
+            client-secret: ${XNX_GOOGLE_OAUTH_CLIENT_SECRET:${XNX_GOOGLE_CLIENT_SECRET:}}
+            scope:
+              - openid
+              - profile
+              - email
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            client-name: Google
+
+        provider:
+          google:
+            issuer-uri: https://accounts.google.com
+
+server:
+  port: 8080
+
+xincronix:
+  uploads:
+    directory: uploads/comprobantes
+
+  jwt:
+    secret: ${XNX_JWT_SECRET:change-this-secret-in-production-32-bytes-min}
+    expiration-ms: ${XNX_JWT_EXPIRATION_MS:86400000}
+
+  app:
+    base-url: ${XNX_APP_BASE_URL:http://localhost:8080}
+
+  mail:
+    from: ${XNX_MAIL_FROM:${XNX_MAIL_USERNAME:no-reply@xincronix.local}}
+
+  google:
+    # Google Identity Services uses this client id in the browser and validates
+    # the returned ID token on the server. Prefer the dedicated OAuth variables
+    # so an older value left in .env cannot silently override the active client.
+    client-id: ${XNX_GOOGLE_OAUTH_CLIENT_ID:${XNX_GOOGLE_CLIENT_ID:}}
+    client-secret: ${XNX_GOOGLE_OAUTH_CLIENT_SECRET:${XNX_GOOGLE_CLIENT_SECRET:}}
+    redirect-uri: ${XNX_GOOGLE_REDIRECT_URI:http://localhost:8080/login/oauth2/code/google}
+
+  ai:
+    provider: ${XNX_AI_PROVIDER:local}
+    temperature: ${XNX_AI_TEMPERATURE:0.35}
+    max-history: ${XNX_AI_MAX_HISTORY:12}
+    timeout-seconds: ${XNX_AI_TIMEOUT:45}
+    grok:
+      api-key: ${GROK_API_KEY:}
+      model: ${GROK_MODEL:grok-2-latest}
+    openai:
+      api-key: ${OPENAI_API_KEY:}
+      model: ${OPENAI_MODEL:gpt-4o-mini}
+    gemini:
+      api-key: ${GEMINI_API_KEY:}
+      model: ${GEMINI_MODEL:gemini-3.6-flash}
+    anthropic:
+      api-key: ${ANTHROPIC_API_KEY:}
+      model: ${ANTHROPIC_MODEL:claude-3-5-haiku-latest}
