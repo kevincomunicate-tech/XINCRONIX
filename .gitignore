@@ -1,0 +1,11 @@
+# Entorno virtual
+.venv/
+
+# Secretos
+.env
+
+# Base de datos de desarrollo y archivos generados
+db.sqlite3
+staticfiles/
+__pycache__/
+*.pyc

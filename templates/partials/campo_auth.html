@@ -1,0 +1,23 @@
+{% comment %}
+  Dibuja un campo de formulario con el estilo del login.
+  Uso:  {% include "partials/campo_auth.html" with campo=form.email icono="bi-envelope" %}
+  Opcionales:  ver_password=True   ayuda="texto de ayuda"   fortaleza=True
+{% endcomment %}
+<div class="field{% if campo.errors %} has-error{% endif %}">
+  <label for="{{ campo.id_for_label }}">{{ campo.label }}{% if campo.field.required %} *{% endif %}</label>
+  <div class="field-wrap">
+    <span class="field-icon"><i class="bi {{ icono }}"></i></span>
+    {{ campo }}
+    {% if ver_password %}
+      <button type="button" class="toggle-pwd" data-toggle-pwd title="Ver contraseña" aria-label="Ver contraseña"><i class="bi bi-eye"></i></button>
+    {% endif %}
+  </div>
+  {% for error in campo.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+  {% if ayuda %}<div class="field-hint">{{ ayuda }}</div>{% endif %}
+  {% if fortaleza %}
+    <div class="pwd-strength" data-fortaleza aria-live="polite">
+      <div class="pwd-strength-bar"><div class="pwd-strength-fill"></div></div>
+      <div class="pwd-strength-text">Escribe tu contraseña</div>
+    </div>
+  {% endif %}
+</div>

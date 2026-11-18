@@ -1,0 +1,11 @@
+{% autoescape off %}Hola{% if user.first_name %} {{ user.first_name }}{% endif %}:
+
+Recibimos una solicitud para restablecer la contraseña de tu cuenta en Xincronix ({{ user.email }}).
+
+Abre este enlace para crear una contraseña nueva:
+{{ protocol }}://{{ domain }}{% url 'password_reset_confirm' uidb64=uid token=token %}
+
+El enlace vence y solo sirve una vez. Si no pediste este cambio, ignora este correo: tu contraseña sigue igual.
+
+— El equipo de Xincronix
+{% endautoescape %}

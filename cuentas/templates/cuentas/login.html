@@ -1,0 +1,60 @@
+{% extends "base_auth.html" %}
+{% load static %}
+
+{% block titulo %}Iniciar sesión{% endblock %}
+{% block css %}<link rel="stylesheet" href="{% static 'css/login.css' %}">{% endblock %}
+
+{% block titular %}El sistema nervioso<br>de tu <em>empresa</em>{% endblock %}
+{% block subtitulo %}Organiza equipos, automatiza procesos y supervisa agentes de IA en un único espacio de trabajo inteligente.{% endblock %}
+
+{% block caracteristicas %}
+  <div class="left-feature"><div class="left-feature-icon"><i class="bi bi-robot"></i></div>Gestión multiagente con IA integrada</div>
+  <div class="left-feature"><div class="left-feature-icon"><i class="bi bi-kanban"></i></div>Control de proyectos en tiempo real</div>
+  <div class="left-feature"><div class="left-feature-icon"><i class="bi bi-gear-wide-connected"></i></div>Automatización de flujos de trabajo</div>
+  <div class="left-feature"><div class="left-feature-icon"><i class="bi bi-graph-up-arrow"></i></div>Analytics e informes inteligentes</div>
+{% endblock %}
+
+{% block panel_extra %}
+  <div class="left-stats">
+    <div class="left-stat"><div class="num">3×</div><div class="lbl">Productividad media</div></div>
+    <div class="left-stat"><div class="num">100%</div><div class="lbl">Empresarial</div></div>
+    <div class="left-stat"><div class="num">IA</div><div class="lbl">Agentes nativos</div></div>
+  </div>
+{% endblock %}
+
+{% block contenido %}
+  <h1 class="form-title">Bienvenido de vuelta</h1>
+  <p class="form-sub">Accede a tu espacio de trabajo corporativo</p>
+
+  <form id="loginForm" method="post" novalidate>
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">
+
+    {% if form.non_field_errors %}
+      <div class="form-alert is-error" role="alert">
+        <i class="bi bi-exclamation-circle-fill"></i>
+        <div>{% for error in form.non_field_errors %}{{ error }}{% endfor %}</div>
+      </div>
+    {% endif %}
+    {% for mensaje in messages %}
+      <div class="form-alert is-{{ mensaje.tags }}" role="status"><i class="bi bi-info-circle-fill"></i><div>{{ mensaje }}</div></div>
+    {% endfor %}
+
+    {% include "partials/campo_auth.html" with campo=form.username icono="bi-envelope" %}
+    {% include "partials/campo_auth.html" with campo=form.password icono="bi-lock" ver_password=True %}
+
+    <div class="form-options">
+      <label class="remember">{{ form.recordar }} Recordar sesión</label>
+      <a href="{% url 'recuperar' %}" class="forgot">¿Olvidaste tu contraseña?</a>
+    </div>
+
+    <button type="submit" class="btn-login">
+      <div class="spinner"></div>
+      <span class="btn-label">Iniciar sesión <i class="bi bi-arrow-right"></i></span>
+    </button>
+  </form>
+
+  <div class="form-footer">
+    ¿No tienes cuenta? <a href="{% url 'registro' %}">Crea tu cuenta <i class="bi bi-arrow-right"></i></a>
+  </div>
+{% endblock %}

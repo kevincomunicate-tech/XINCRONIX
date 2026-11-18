@@ -1,0 +1,36 @@
+{% extends "base_auth.html" %}
+{% load static %}
+
+{% block titulo %}Crear cuenta{% endblock %}
+{% block css %}<link rel="stylesheet" href="{% static 'css/registro.css' %}">{% endblock %}
+
+{% block insignia %}Crea tu cuenta · 2026{% endblock %}
+{% block titular %}Empieza a<br>organizar tu <em>empresa</em>{% endblock %}
+{% block subtitulo %}Solo necesitas tu nombre, tu correo y una contraseña. En menos de un minuto tendrás tu espacio de trabajo listo.{% endblock %}
+
+{% block caracteristicas %}
+  <div class="left-feature"><div class="left-feature-icon"><i class="bi bi-robot"></i></div>Agentes de IA para tu equipo</div>
+  <div class="left-feature"><div class="left-feature-icon"><i class="bi bi-kanban"></i></div>Proyectos y tareas en tiempo real</div>
+  <div class="left-feature"><div class="left-feature-icon"><i class="bi bi-lightbulb"></i></div>Tablero de ideas colaborativo</div>
+{% endblock %}
+
+{% block contenido %}
+  <h1 class="form-title">Crea tu cuenta</h1>
+  <p class="form-sub">Completa tus datos para empezar</p>
+
+  <form id="registroForm" method="post" novalidate>
+    {% csrf_token %}
+    {% include "partials/campo_auth.html" with campo=form.nombre icono="bi-person" %}
+    {% include "partials/campo_auth.html" with campo=form.email icono="bi-envelope" %}
+    {% include "partials/campo_auth.html" with campo=form.password icono="bi-lock" ver_password=True fortaleza=True %}
+
+    <button type="submit" class="btn-login">
+      <div class="spinner"></div>
+      <span class="btn-label" data-cargando="Creando cuenta...">Crear cuenta <i class="bi bi-arrow-right"></i></span>
+    </button>
+  </form>
+
+  <div class="form-footer">
+    ¿Ya tienes cuenta? <a href="{% url 'login' %}">Inicia sesión <i class="bi bi-arrow-right"></i></a>
+  </div>
+{% endblock %}
