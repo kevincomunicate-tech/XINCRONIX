@@ -1,0 +1,41 @@
+{% extends "cuentas/recuperar.html" %}
+
+{% block titulo %}Nueva contraseña{% endblock %}
+{% block subtitulo %}Crea una contraseña nueva y retoma tus proyectos, equipos y agentes de IA en segundos.{% endblock %}
+
+{% block caracteristicas %}
+  <div class="left-feature"><div class="left-feature-icon"><i class="bi bi-key"></i></div>Usa al menos 8 caracteres</div>
+  <div class="left-feature"><div class="left-feature-icon"><i class="bi bi-fonts"></i></div>Combina letras, números y símbolos</div>
+  <div class="left-feature"><div class="left-feature-icon"><i class="bi bi-arrow-repeat"></i></div>No repitas una contraseña anterior</div>
+{% endblock %}
+
+{% block contenido %}
+  {% if validlink %}
+    <h1 class="form-title">Restablecer contraseña</h1>
+    <p class="form-sub">Elige una contraseña nueva de al menos 8 caracteres.</p>
+
+    <form id="reset-password-form" method="post" novalidate>
+      {% csrf_token %}
+      {% include "partials/campo_auth.html" with campo=form.new_password1 icono="bi-lock" ver_password=True fortaleza=True %}
+      {% include "partials/campo_auth.html" with campo=form.new_password2 icono="bi-lock-fill" ver_password=True %}
+
+      <button type="submit" class="btn-login">
+        <div class="spinner"></div>
+        <span class="btn-label" data-cargando="Actualizando...">Actualizar contraseña <i class="bi bi-arrow-right"></i></span>
+      </button>
+    </form>
+  {% else %}
+    <h1 class="form-title">Enlace no válido</h1>
+    <p class="form-sub">Este enlace ya se usó o venció.</p>
+
+    <div id="reset-password-form" class="estado-card">
+      <div class="estado-icono is-error"><i class="bi bi-link-45deg"></i></div>
+      <p>Pide un enlace nuevo y ábrelo antes de que venza. Cada enlace sirve una sola vez.</p>
+      <a href="{% url 'recuperar' %}" class="btn-login"><span class="btn-label">Pedir un enlace nuevo <i class="bi bi-arrow-right"></i></span></a>
+    </div>
+  {% endif %}
+
+  <div class="form-footer">
+    ¿La recordaste? <a href="{% url 'login' %}">Volver a iniciar sesión <i class="bi bi-arrow-right"></i></a>
+  </div>
+{% endblock %}

@@ -1,121 +1,97 @@
-# 🚀 Xincronix - Sistema de Gestión Integrada
+# Xincronix — Django
 
-[![Laravel](https://img.shields.io/badge/Laravel-11.x-red?style=flat&logo=laravel)](https://laravel.com)
-[![PHP](https://img.shields.io/badge/PHP-8.2+-blue?style=flat&logo=php)](https://www.php.net)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+Migración del proyecto Xincronix (HTML/CSS/JS) a **Python + Django 5.2**.
 
-## 📋 Descripción
+## Requisitos
 
-Xincronix es una plataforma integral de gestión empresarial construida con Laravel 11 que permite:
+- Python 3.10 o superior
 
-- ✅ Gestión de empresas y usuarios con control de acceso basado en roles
-- ✅ Administración de proyectos, equipos y tareas
-- ✅ Planificación de reuniones y eventos
-- ✅ Sistema de mensajería interna
-- ✅ Notificaciones en tiempo real
-- ✅ Seguimiento de tickets de soporte
-- ✅ Gestión de solicitudes de pago
-- ✅ Análisis de métricas de rendimiento
-- ✅ API RESTful con autenticación Sanctum
+## Instalación (primera vez)
 
-## 🚀 Inicio Rápido
-
-### Windows
 ```bash
-setup.bat
+# 1. Crear el entorno virtual
+python -m venv .venv
+
+# 2. Activarlo
+#    Windows (PowerShell):  .venv\Scripts\Activate.ps1
+#    Windows (cmd):         .venv\Scripts\activate.bat
+#    Linux / macOS:         source .venv/bin/activate
+
+# 3. Instalar las dependencias
+pip install -r requirements.txt
+
+# 4. Crear tu archivo .env a partir del ejemplo (y cambiar la clave)
+#    Windows:  copy .env.example .env
+#    Linux:    cp .env.example .env
+
+# 5. Crear las tablas de la base de datos
+python manage.py migrate
+
+# 6. (Opcional) Crear un administrador para /admin
+python manage.py createsuperuser
+
+# 7. Levantar el servidor
+python manage.py runserver
 ```
 
-### Linux/Mac
+Abre http://127.0.0.1:8000
+
+## Uso diario
+
 ```bash
-bash setup.sh
+source .venv/bin/activate      # o .venv\Scripts\Activate.ps1 en Windows
+python manage.py runserver
 ```
 
-### Manual
+Si instalas un paquete nuevo, actualiza la lista:
+
 ```bash
-php artisan migrate:fresh
-php artisan db:seed
-php artisan serve
+pip install nombre-del-paquete
+pip freeze > requirements.txt
 ```
 
-## 🔐 Usuarios de Prueba
-
-| Email | Contraseña | Rol |
-|-------|-----------|-----|
-| admin@xincronix.com | password123 | Administrador |
-| manager@xincronix.com | password123 | Manager |
-| carlos@xincronix.com | password123 | Colaborador |
-
-## 📚 Documentación
-
-- [API Guide](API_GUIDE.md) - Documentación de endpoints
-- [Migration Summary](MIGRATION_SUMMARY.md) - Detalles de la migración
-- [Laravel Docs](https://laravel.com/docs) - Documentación oficial
-
-## 🏗️ Características
-
-✅ Multi-empresa
-✅ Control de acceso por roles
-✅ Gestión de proyectos Kanban
-✅ Sistema de tareas
-✅ Reuniones programadas
-✅ Mensajería interna
-✅ Notificaciones
-✅ Calendario de eventos
-✅ Tickets de soporte
-✅ Solicitudes de pago
-✅ Métricas de rendimiento
-✅ API RESTful
-
-## 📊 Modelos de Datos
-
-- Empresa
-- Usuario
-- Rol
-- PerfilEspecifico
-- Equipo
-- Proyecto
-- Tarea
-- Reunión
-- Mensaje
-- Notificación
-- Calendario
-- SolicitudPago
-- TicketSoporte
-- MetricaRendimiento
-
-## 🔌 Endpoints Principales
+## Estructura
 
 ```
-POST   /api/login
-GET    /api/me
-POST   /api/logout
-CRUD   /api/usuarios
-CRUD   /api/proyectos
-CRUD   /api/tareas
-CRUD   /api/empresas
-CRUD   /api/equipos
-CRUD   /api/reuniones
-CRUD   /api/mensajes
-CRUD   /api/notificaciones
+xincronix/
+├── .venv/               entorno virtual (no se sube a git)
+├── .env                 secretos (no se sube a git)
+├── .env.example         guía para crear .env
+├── requirements.txt     dependencias exactas
+├── manage.py            comandos de Django
+├── config/              configuración general (settings, urls)
+├── cuentas/             usuarios: login, registro, recuperar contraseña
+├── dashboard/           panel, proyectos, tareas, analytics, ideas, canvas
+├── sitio/               página pública de inicio
+├── templates/           plantillas base compartidas
+└── static/              CSS, JS e imágenes
 ```
 
-## 📝 Cambios Realizados
+## Rutas
 
-- ✅ 15 Modelos con relaciones completas
-- ✅ 18 Migraciones de BD
-- ✅ 14 Seeders con datos de prueba
-- ✅ 15 Controladores API
-- ✅ Autenticación Sanctum
-- ✅ Rate limiting
-- ✅ Validación de datos
-- ✅ Paginación
+| URL | Página |
+|---|---|
+| `/` | Inicio (por ahora redirige al login o al panel) |
+| `/cuentas/login/` | Iniciar sesión |
+| `/cuentas/registro/` | Crear cuenta |
+| `/cuentas/recuperar/` | Recuperar contraseña |
+| `/app/` | Panel (requiere sesión) |
+| `/admin/` | Administración de Django |
 
-## 📄 Licencia
+## Recuperar contraseña en desarrollo
 
-MIT License - Ver [LICENSE](LICENSE)
+Los correos **no se envían**: se imprimen en la terminal donde corre
+`runserver`. Copia el enlace de ahí y ábrelo en el navegador.
 
----
+## Pruebas
 
-**Estado:** ✅ Producción
-**Versión:** 1.0.0
-**Última actualización:** Junio 21, 2024
+```bash
+python manage.py test
+```
+
+## Avance de la migración
+
+- [x] Fase 1: entorno, proyecto, login, registro, recuperar contraseña, modo oscuro
+- [ ] Fase 2: modelos (proyectos, tareas, actividad) y panel con datos reales
+- [ ] Fase 3: proyectos, tareas y analytics
+- [ ] Fase 4: ideas, canvas, página de inicio e información

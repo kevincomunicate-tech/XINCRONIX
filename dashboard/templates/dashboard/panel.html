@@ -1,0 +1,17 @@
+{% extends "base_dashboard.html" %}
+
+{% block titulo %}Panel{% endblock %}
+{% block titulo_pagina %}Hola, {{ request.user.first_name|default:"bienvenido" }} 👋{% endblock %}
+{% block subtitulo_pagina %}{% now "l j \d\e F" %}{% endblock %}
+
+{% block contenido %}
+  {# Fase 2: estadísticas, actividad reciente y progreso de proyectos con datos reales #}
+  <div class="xnx-card">
+    <div class="xnx-card-header">
+      <span class="xnx-card-title">Tu espacio de trabajo</span>
+    </div>
+    <div class="xnx-card-body">
+      <p class="mb-0 text-muted">Sesión iniciada como <strong>{{ request.user.email }}</strong>. En la fase 2 aquí aparecerán tus proyectos, tareas y actividad.</p>
+    </div>
+  </div>
+{% endblock %}
