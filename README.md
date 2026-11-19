@@ -30,7 +30,11 @@ python manage.py migrate
 # 6. (Opcional) Crear un administrador para /admin
 python manage.py createsuperuser
 
-# 7. Levantar el servidor
+# 7. (Opcional) Cargar proyectos y tareas de ejemplo para ver el panel con datos
+#    El usuario debe existir antes (paso 6 o /cuentas/registro/)
+python manage.py cargar_demo tu@correo.com
+
+# 8. Levantar el servidor
 python manage.py runserver
 ```
 
@@ -78,6 +82,24 @@ xincronix/
 | `/app/` | Panel (requiere sesión) |
 | `/admin/` | Administración de Django |
 
+## Modelo de datos (app `dashboard`)
+
+| Tabla | Qué guarda |
+|---|---|
+| `Proyecto` | nombre, estado, prioridad, fechas y su **propietario** |
+| `MiembroProyecto` | qué usuarios participan en cada proyecto (sin repetidos) |
+| `Tarea` | pertenece a un proyecto; estado, prioridad, vencimiento, asignada a / creada por |
+| `Actividad` | historial ("Ana completó la tarea X") que se muestra en el panel |
+
+Reglas del esquema:
+
+- No se guarda nada que se pueda calcular: el **% de avance** de un proyecto
+  se obtiene contando sus tareas completadas.
+- Estados y prioridades son opciones fijas (no texto libre).
+- Cada usuario solo ve los proyectos de los que es dueño o miembro.
+- Mientras se construyen las pantallas de la fase 3, los proyectos y tareas
+  se crean desde `/admin/` (eso también registra la actividad).
+
 ## Recuperar contraseña en desarrollo
 
 Los correos **no se envían**: se imprimen en la terminal donde corre
@@ -92,6 +114,6 @@ python manage.py test
 ## Avance de la migración
 
 - [x] Fase 1: entorno, proyecto, login, registro, recuperar contraseña, modo oscuro
-- [ ] Fase 2: modelos (proyectos, tareas, actividad) y panel con datos reales
+- [x] Fase 2: modelos (proyectos, tareas, actividad) y panel con datos reales
 - [ ] Fase 3: proyectos, tareas y analytics
 - [ ] Fase 4: ideas, canvas, página de inicio e información

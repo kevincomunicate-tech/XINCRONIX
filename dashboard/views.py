@@ -1,11 +1,45 @@
+from datetime import timedelta
+
 from django.contrib.auth.decorators import login_required
+from django.db.models import F
 from django.shortcuts import render
+from django.utils import timezone
+
+from .models import Actividad, Proyecto, Tarea
 
 
 @login_required
 def panel(request):
-    # Fase 2: aquí se calcularán las estadísticas reales desde la base de datos
-    return render(request, "dashboard/panel.html")
+    usuario = request.user
+    hoy = timezone.localdate()
+    inicio_semana = hoy - timedelta(days=hoy.weekday())  # lunes
+    inicio_mes = hoy.replace(day=1)
+
+    proyectos = Proyecto.objects.visibles_para(usuario)
+    tareas = Tarea.objects.filter(proyecto__in=proyectos)
+    completadas = tareas.filter(estado=Tarea.Estado.COMPLETADA)
+    mis_pendientes = tareas.filter(asignada_a=usuario).exclude(estado=Tarea.Estado.COMPLETADA)
+
+    estadisticas = {
+        "proyectos_activos": proyectos.filter(estado=Proyecto.Estado.ACTIVO).count(),
+        "proyectos_este_mes": proyectos.filter(creado__date__gte=inicio_mes).count(),
+        "tareas_completadas": completadas.count(),
+        "completadas_semana": completadas.filter(completada_en__date__gte=inicio_semana).count(),
+        "mis_pendientes": mis_pendientes.count(),
+        "mis_vencidas": mis_pendientes.filter(fecha_vencimiento__lt=hoy).count(),
+    }
+
+    actividades = Actividad.objects.filter(proyecto__in=proyectos).select_related("usuario")[:6]
+    progreso = proyectos.filter(estado=Proyecto.Estado.ACTIVO).con_progreso()[:5]
+
+    return render(request, "dashboard/panel.html", {
+        "estadisticas": estadisticas,
+        "actividades": actividades,
+        "progreso": progreso,
+        # Las tareas sin fecha van al final
+        "proximas": mis_pendientes.select_related("proyecto")
+        .order_by(F("fecha_vencimiento").asc(nulls_last=True), "-prioridad")[:5],
+    })
 
 
 @login_required
