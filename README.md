@@ -14,7 +14,7 @@ trabajo en equipo con permisos por empresa, equipo y proyecto.
 
 ## Product Goal
 
-> Ofrecer a las empresas una plataforma segura y colaborativa, construida en
+> Se Ofrece a las empresas una plataforma segura y colaborativa, construida en
 > Python con Django, donde cada equipo gestione sus proyectos y tareas,
 > comparta ideas, diseñe en conjunto sobre un canvas y mida su rendimiento,
 > viendo cada persona solo la información que le corresponde.
