@@ -91,19 +91,25 @@ Nadie ve nunca la información de otra empresa.
 
 ---
 
-## Sprint Goals
+## Sprint actual — Sprint 2
 
-Cada sprint dura una semana y entrega módulos completos.
+| Módulos | Responsable | Fechas |
+|---|---|---|
+| Empresas y equipos · Panel | Felipe ([@FelipeNavarrete0313](https://github.com/FelipeNavarrete0313)) | 16 – 20 de noviembre de 2026 |
 
-| Sprint | Módulos | Sprint goal | Responsable | Fechas | Estado |
-|---|---|---|---|---|---|
-| **1** | Cuentas | Una empresa empieza a trabajar en Xincronix en minutos, con su propio espacio protegido donde su información está segura desde el primer día. | Yohan | 9 – 13 nov | ✅ |
-| **2** | Empresas y equipos · Panel | Cada empresa organiza a su gente en equipos y conoce de un vistazo el estado real de su trabajo, sin tener que preguntarle a cada persona. | Felipe | 16 – 20 nov | 🔄 |
-| **3** | Proyectos · Tareas · Analytics | Los equipos dejan de coordinarse por chats y hojas de cálculo: cada tarea tiene responsable y fecha, y los líderes saben a tiempo si se van a cumplir las metas. | Kevin | 23 – 27 nov | ⏳ |
-| **4** | Tablero de ideas · Canvas | Las ideas del equipo ya no se pierden: se proponen, se votan y se diseñan en conjunto en un mismo lugar, hasta convertirse en proyectos. | Yohan, Felipe y Kevin | 23 nov – 1 dic | ⏳ |
+### Sprint Goal
 
-El detalle (historias de usuario, story points y criterios de aceptación) está
-en [`docs/plan_sprints.md`](docs/plan_sprints.md).
+> Cada empresa organiza a su gente en equipos y conoce de un vistazo el estado
+> real de su trabajo, sin tener que preguntarle a cada persona.
+
+**Qué entrega este sprint:**
+- Cada empresa tiene sus propios usuarios, roles y equipos, separados de las demás.
+- Cada persona ve solo los proyectos y la información que le corresponden.
+- El panel muestra el resumen real del trabajo: proyectos activos, tareas
+  completadas y vencidas, actividad reciente y avance de cada proyecto.
+
+El plan de todos los sprints (historias de usuario, story points y criterios
+de aceptación) está en [`docs/plan_sprints.md`](docs/plan_sprints.md).
 
 ---
 
