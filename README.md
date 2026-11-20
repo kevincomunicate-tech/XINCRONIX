@@ -1,4 +1,21 @@
 # Xincronix — Django
+## Objetivos del producto (Product Goal)
+
+Construir una plataforma completa de gestión de proyectos, tareas, ideas y analytics (Xincronix) migrada a **Django 5.2**, con autenticación de usuarios, panel funcional y las funcionalidades principales del sistema original, lista para uso real.
+
+## Sprint actual
+
+**Sprint 2** — Modelos de datos y panel con información real  
+**Duración:**  10 – 28 de noviembre 2026
+
+### Sprint Goal
+Implementar los modelos de **Proyectos**, **Tareas** y **Actividad**, y mostrar datos reales en el dashboard (ya no mock/estáticos), manteniendo la autenticación y el modo oscuro funcionando.
+
+### Criterios de éxito del Sprint
+- [ ] Modelos `Proyecto`, `Tarea` y `Actividad` creados y migrados
+- [ ] Panel (`/app/`) muestra proyectos y tareas reales del usuario autenticado
+- [ ] Crear, listar y ver detalle básico de proyectos y tareas
+- [ ] Tests básicos de los nuevos modelos y vistas
 
 Migración del proyecto Xincronix (HTML/CSS/JS) a **Python + Django 5.2**.
 
