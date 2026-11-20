@@ -1,10 +1,14 @@
 """
-Carga proyectos, tareas y actividad de ejemplo para ver el panel con datos.
+Carga un equipo, proyectos, tareas y actividad de ejemplo para ver el
+panel con datos.
 
     python manage.py cargar_demo tu@correo.com
 
-El usuario debe existir (créalo antes con /cuentas/registro/ o createsuperuser).
-Si ya tiene los proyectos de ejemplo, no los duplica.
+El usuario debe existir (créalo antes con /cuentas/registro/ o
+createsuperuser). Los datos se crean en la empresa del usuario; si no
+tiene empresa (por ejemplo, un superusuario), se le crea "Empresa demo"
+y queda como administrador. Si ya tiene los proyectos de ejemplo, no los
+duplica.
 """
 
 from datetime import timedelta
@@ -14,35 +18,39 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.utils import timezone
 
-from dashboard.models import Actividad, Prioridad, Proyecto, Tarea
+from cuentas.models import Empresa, Rol
+from dashboard.models import Actividad, Equipo, MiembroEquipo, Proyecto, Tarea
 
 E = Tarea.Estado
+P = Tarea.Prioridad
+I = Proyecto.Importancia
+T = Proyecto.Tipo
 
-# nombre, prioridad, [(título, estado, días para vencer, ¿asignada al usuario?)]
+# nombre, importancia, tipo, [(título, estado, prioridad, días para vencer, ¿asignada al usuario?)]
 DEMO = [
-    ("Rediseño del sitio web", Prioridad.ALTA, [
-        ("Definir paleta de colores", E.COMPLETADA, -6, True),
-        ("Maquetar página de inicio", E.COMPLETADA, -2, True),
-        ("Adaptar a móviles", E.EN_PROGRESO, 3, True),
-        ("Revisar accesibilidad", E.POR_HACER, 8, False),
+    ("Rediseño del sitio web", I.ALTA, T.DISENO, [
+        ("Definir paleta de colores", E.COMPLETADA, P.MEDIA, -6, True),
+        ("Maquetar página de inicio", E.COMPLETADA, P.ALTA, -2, True),
+        ("Adaptar a móviles", E.EN_PROGRESO, P.ALTA, 3, True),
+        ("Revisar accesibilidad", E.POR_HACER, P.MEDIA, 8, False),
     ]),
-    ("App de inventario", Prioridad.MEDIA, [
-        ("Modelo de datos", E.COMPLETADA, -10, False),
-        ("Pantalla de productos", E.EN_REVISION, -1, True),
-        ("Reportes en PDF", E.POR_HACER, 12, True),
+    ("App de inventario", I.CRITICA, T.DESARROLLO, [
+        ("Modelo de datos", E.COMPLETADA, P.ALTA, -10, False),
+        ("Pantalla de productos", E.EN_REVISION, P.URGENTE, -1, True),
+        ("Reportes en PDF", E.POR_HACER, P.BAJA, 12, True),
     ]),
-    ("Campaña de lanzamiento", Prioridad.BAJA, [
-        ("Guion del video", E.POR_HACER, 5, False),
-        ("Publicaciones en redes", E.POR_HACER, None, True),
+    ("Campaña de lanzamiento", I.MEDIA, T.MARKETING, [
+        ("Guion del video", E.POR_HACER, P.MEDIA, 5, False),
+        ("Publicaciones en redes", E.POR_HACER, P.BAJA, None, True),
     ]),
 ]
 
 # Cuántas actividades se crean en total (1 por proyecto + 1 por tarea)
-TOTAL_PASOS = sum(1 + len(tareas) for _, _, tareas in DEMO)
+TOTAL_PASOS = sum(1 + len(tareas) for *_, tareas in DEMO)
 
 
 class Command(BaseCommand):
-    help = "Crea proyectos, tareas y actividad de ejemplo para un usuario."
+    help = "Crea un equipo, proyectos, tareas y actividad de ejemplo para un usuario."
 
     def add_arguments(self, parser):
         parser.add_argument("email", help="Correo del usuario dueño de los datos de ejemplo")
@@ -51,47 +59,68 @@ class Command(BaseCommand):
     def handle(self, *args, email, **options):
         Usuario = get_user_model()
         try:
-            usuario = Usuario.objects.get(email=email.lower())
+            usuario = Usuario.objects.select_related("empresa").get(email=email.lower())
         except Usuario.DoesNotExist:
             raise CommandError(f"No existe un usuario con el correo {email}.")
+
+        if usuario.empresa is None:
+            usuario.empresa = Empresa.objects.create(nombre="Empresa demo", email=usuario.email)
+            usuario.rol = Rol.objects.get(codigo=Rol.ADMIN)
+            usuario.save(update_fields=["empresa", "rol"])
+            self.stdout.write(f"{usuario.email} no tenía empresa: se creó «Empresa demo».")
+        empresa = usuario.empresa
+
+        equipo, _ = Equipo.objects.get_or_create(empresa=empresa, nombre="Equipo de producto")
+        MiembroEquipo.objects.get_or_create(
+            equipo=equipo, usuario=usuario, defaults={"rol_en_equipo": MiembroEquipo.Rol.LIDER}
+        )
 
         ahora = timezone.now()
         hoy = timezone.localdate()
         creados = 0
         paso = 0  # para escalonar las fechas de la actividad
 
-        for nombre, prioridad, tareas in DEMO:
-            if Proyecto.objects.filter(propietario=usuario, nombre=nombre).exists():
+        for nombre, importancia, tipo, tareas in DEMO:
+            if Proyecto.objects.filter(empresa=empresa, nombre=nombre).exists():
                 continue
             proyecto = Proyecto.objects.create(
-                nombre=nombre, prioridad=prioridad, propietario=usuario, fecha_inicio=hoy - timedelta(days=15)
+                nombre=nombre,
+                nivel_importancia=importancia,
+                tipo_proyecto=tipo,
+                empresa=empresa,
+                equipo=equipo,
+                creador=usuario,
+                fecha_inicio=hoy - timedelta(days=15),
             )
             creados += 1
             paso += 1
-            self._actividad(usuario, Actividad.Accion.PROYECTO_CREADO, proyecto, None, ahora, paso)
+            self._fechar(Actividad.registrar_proyecto_creado(usuario, proyecto), ahora, paso)
 
-            for titulo, estado, dias, mia in tareas:
+            for titulo, estado, prioridad, dias, mia in tareas:
                 tarea = Tarea.objects.create(
                     proyecto=proyecto,
                     titulo=titulo,
                     estado=estado,
+                    prioridad=prioridad,
                     fecha_vencimiento=hoy + timedelta(days=dias) if dias is not None else None,
                     asignada_a=usuario if mia else None,
-                    creada_por=usuario,
+                    creador=usuario,
                 )
-                accion = Actividad.Accion.TAREA_COMPLETADA if estado == E.COMPLETADA else Actividad.Accion.TAREA_CREADA
                 paso += 1
-                self._actividad(usuario, accion, proyecto, tarea, ahora, paso)
+                # Las completadas se registran como "completó"; el resto, como "creó"
+                creada = estado != E.COMPLETADA
+                self._fechar(Actividad.registrar_tarea(usuario, tarea, creada=creada), ahora, paso)
 
         if creados:
-            self.stdout.write(self.style.SUCCESS(f"Listo: {creados} proyecto(s) de ejemplo para {usuario.email}."))
+            self.stdout.write(self.style.SUCCESS(
+                f"Listo: {creados} proyecto(s) de ejemplo en «{empresa}» para {usuario.email}."
+            ))
         else:
-            self.stdout.write(f"{usuario.email} ya tenía los proyectos de ejemplo; no se creó nada.")
+            self.stdout.write(f"«{empresa}» ya tenía los proyectos de ejemplo; no se creó nada.")
 
     @staticmethod
-    def _actividad(usuario, accion, proyecto, tarea, ahora, paso):
+    def _fechar(actividad, ahora, paso):
         # Fechas hacia atrás (de 3 en 3 horas) para que el historial se vea
         # realista; la última actividad queda de hace unos minutos.
-        a = Actividad.registrar(usuario, accion, proyecto, tarea)
-        a.fecha = ahora - timedelta(hours=3 * (TOTAL_PASOS - paso), minutes=10)
-        a.save(update_fields=["fecha"])
+        actividad.fecha = ahora - timedelta(hours=3 * (TOTAL_PASOS - paso), minutes=10)
+        actividad.save(update_fields=["fecha"])

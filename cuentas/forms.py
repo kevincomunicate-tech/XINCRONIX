@@ -1,8 +1,9 @@
 from django import forms
 from django.contrib.auth import password_validation
+from django.db import transaction
 from django.contrib.auth.forms import AuthenticationForm, PasswordResetForm, SetPasswordForm
 
-from .models import Usuario
+from .models import Empresa, Rol, Usuario
 
 
 class LoginForm(AuthenticationForm):
@@ -33,12 +34,21 @@ class LoginForm(AuthenticationForm):
 
 
 class RegistroForm(forms.Form):
-    """Registro con solo nombre completo, correo y contraseña."""
+    """Registro: nombre completo, empresa, correo y contraseña.
+
+    Como en el sistema original, quien se registra crea su empresa y
+    queda como su administrador.
+    """
 
     nombre = forms.CharField(
         label="Nombre completo",
         max_length=150,
         widget=forms.TextInput(attrs={"autocomplete": "name", "placeholder": "María García López", "autofocus": True}),
+    )
+    empresa = forms.CharField(
+        label="Nombre de la empresa",
+        max_length=200,
+        widget=forms.TextInput(attrs={"autocomplete": "organization", "placeholder": "Mi Empresa S.A.S."}),
     )
     email = forms.EmailField(
         label="Correo electrónico",
@@ -57,6 +67,9 @@ class RegistroForm(forms.Form):
             raise forms.ValidationError("Escribe tu nombre y tu apellido.")
         return nombre
 
+    def clean_empresa(self):
+        return " ".join(self.cleaned_data["empresa"].split())
+
     def clean_email(self):
         email = self.cleaned_data["email"].strip().lower()
         if Usuario.objects.filter(email=email).exists():
@@ -69,20 +82,24 @@ class RegistroForm(forms.Form):
         if password:
             # Usa las reglas de AUTH_PASSWORD_VALIDATORS (mínimo 8, no común, etc.)
             nombre = datos.get("nombre", "")
-            temporal = Usuario(email=datos.get("email", ""), first_name=nombre)
+            temporal = Usuario(email=datos.get("email", ""), nombres=nombre)
             try:
                 password_validation.validate_password(password, temporal)
             except forms.ValidationError as error:
                 self.add_error("password", error)
         return datos
 
+    @transaction.atomic
     def save(self):
         nombre, _, apellido = self.cleaned_data["nombre"].partition(" ")
+        empresa = Empresa.objects.create(nombre=self.cleaned_data["empresa"], email=self.cleaned_data["email"])
         return Usuario.objects.create_user(
             email=self.cleaned_data["email"],
             password=self.cleaned_data["password"],
-            first_name=nombre,
-            last_name=apellido,
+            nombres=nombre,
+            apellidos=apellido,
+            empresa=empresa,
+            rol=Rol.ADMIN,
         )
 
 

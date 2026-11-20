@@ -30,8 +30,9 @@ python manage.py migrate
 # 6. (Opcional) Crear un administrador para /admin
 python manage.py createsuperuser
 
-# 7. (Opcional) Cargar proyectos y tareas de ejemplo para ver el panel con datos
-#    El usuario debe existir antes (paso 6 o /cuentas/registro/)
+# 7. (Opcional) Cargar un equipo, proyectos y tareas de ejemplo en la empresa
+#    del usuario. El usuario debe existir antes (paso 6 o /cuentas/registro/);
+#    si no tiene empresa, se le crea "Empresa demo".
 python manage.py cargar_demo tu@correo.com
 
 # 8. Levantar el servidor
@@ -64,8 +65,8 @@ xincronix/
 ├── requirements.txt     dependencias exactas
 ├── manage.py            comandos de Django
 ├── config/              configuración general (settings, urls)
-├── cuentas/             usuarios: login, registro, recuperar contraseña
-├── dashboard/           panel, proyectos, tareas, analytics, ideas, canvas
+├── cuentas/             empresas, roles y usuarios: login, registro, recuperar contraseña
+├── dashboard/           panel, equipos, proyectos, tareas, actividad (luego analytics, ideas, canvas)
 ├── sitio/               página pública de inicio
 ├── templates/           plantillas base compartidas
 └── static/              CSS, JS e imágenes
@@ -77,28 +78,40 @@ xincronix/
 |---|---|
 | `/` | Inicio (por ahora redirige al login o al panel) |
 | `/cuentas/login/` | Iniciar sesión |
-| `/cuentas/registro/` | Crear cuenta |
+| `/cuentas/registro/` | Crear cuenta (y la empresa) |
 | `/cuentas/recuperar/` | Recuperar contraseña |
 | `/app/` | Panel (requiere sesión) |
 | `/admin/` | Administración de Django |
 
-## Modelo de datos (app `dashboard`)
+## Modelo de datos
 
-| Tabla | Qué guarda |
-|---|---|
-| `Proyecto` | nombre, estado, prioridad, fechas y su **propietario** |
-| `MiembroProyecto` | qué usuarios participan en cada proyecto (sin repetidos) |
-| `Tarea` | pertenece a un proyecto; estado, prioridad, vencimiento, asignada a / creada por |
-| `Actividad` | historial ("Ana completó la tarea X") que se muestra en el panel |
+Las tablas siguen el esquema de [xincronix_bd.sql](xincronix_bd.sql)
+(mismos nombres de tablas, columnas, índices y restricciones). Ese archivo
+es solo una referencia: las tablas las crea `python manage.py migrate`.
 
-Reglas del esquema:
+| Tabla | App | Qué guarda |
+|---|---|---|
+| `empresa` | cuentas | la empresa; todo lo demás pertenece a una |
+| `roles` | cuentas | admin, manager, supervisor y colaborador (los crea la migración) |
+| `usuarios` | cuentas | nombres, apellidos, correo, cargo, empresa y rol |
+| `equipos` / `miembros_equipo` | dashboard | equipos de la empresa y quién está en cada uno |
+| `proyecto` / `proyecto_miembros` | dashboard | proyectos (estado, importancia 1-4, tipo, fechas, equipo) y sus miembros |
+| `tareas` | dashboard | estado, prioridad, vencimiento, asignada a y creada por |
+| `actividad` | dashboard | historial ("Ana completó la tarea X") que se muestra en el panel |
 
+Reglas:
+
+- Al registrarse se crea la empresa y quien se registra queda como **administrador**.
+- Nadie ve datos de otra empresa. Admin, manager y supervisor ven todos los
+  proyectos de su empresa; un colaborador solo los que creó, aquellos donde
+  lo agregaron como miembro o los de sus equipos.
 - No se guarda nada que se pueda calcular: el **% de avance** de un proyecto
   se obtiene contando sus tareas completadas.
-- Estados y prioridades son opciones fijas (no texto libre).
-- Cada usuario solo ve los proyectos de los que es dueño o miembro.
-- Mientras se construyen las pantallas de la fase 3, los proyectos y tareas
-  se crean desde `/admin/` (eso también registra la actividad).
+- Estados, tipos y prioridades son opciones fijas (no texto libre).
+- Mientras se construyen las pantallas de la fase 3, los proyectos, equipos y
+  tareas se crean desde `/admin/` (eso también registra la actividad).
+- Las demás tablas del esquema (ideas, lienzos, mensajes, notificaciones, IA,
+  etc.) se agregan en las fases siguientes.
 
 ## Recuperar contraseña en desarrollo
 

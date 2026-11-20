@@ -22,23 +22,30 @@ def panel(request):
 
     estadisticas = {
         "proyectos_activos": proyectos.filter(estado=Proyecto.Estado.ACTIVO).count(),
-        "proyectos_este_mes": proyectos.filter(creado__date__gte=inicio_mes).count(),
+        "proyectos_este_mes": proyectos.filter(fecha_creacion__date__gte=inicio_mes).count(),
         "tareas_completadas": completadas.count(),
-        "completadas_semana": completadas.filter(completada_en__date__gte=inicio_semana).count(),
+        "completadas_semana": completadas.filter(fecha_completada__date__gte=inicio_semana).count(),
         "mis_pendientes": mis_pendientes.count(),
         "mis_vencidas": mis_pendientes.filter(fecha_vencimiento__lt=hoy).count(),
     }
 
+    # Actividad de la empresa, solo de los proyectos que el usuario puede ver
     actividades = Actividad.objects.filter(proyecto__in=proyectos).select_related("usuario")[:6]
-    progreso = proyectos.filter(estado=Proyecto.Estado.ACTIVO).con_progreso()[:5]
+    # Orden explícito: Django no aplica Meta.ordering a consultas que agrupan (Count)
+    progreso = (
+        proyectos.filter(estado=Proyecto.Estado.ACTIVO)
+        .con_progreso()
+        .order_by("-nivel_importancia", "nombre")[:5]
+    )
 
     return render(request, "dashboard/panel.html", {
         "estadisticas": estadisticas,
         "actividades": actividades,
         "progreso": progreso,
-        # Las tareas sin fecha van al final
+        # Las tareas sin fecha van al final; a igual fecha, la más urgente primero
         "proximas": mis_pendientes.select_related("proyecto")
-        .order_by(F("fecha_vencimiento").asc(nulls_last=True), "-prioridad")[:5],
+        .order_by(F("fecha_vencimiento").asc(nulls_last=True), Tarea.orden_prioridad().desc())[:5],
+        "sin_empresa": usuario.empresa_id is None,
     })
 
 

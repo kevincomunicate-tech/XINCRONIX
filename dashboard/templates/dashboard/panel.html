@@ -2,10 +2,18 @@
 {% load humanize %}
 
 {% block titulo %}Panel{% endblock %}
-{% block titulo_pagina %}Hola, {{ request.user.first_name|default:"bienvenido" }} 👋{% endblock %}
+{% block titulo_pagina %}Hola, {{ request.user.nombres|default:"bienvenido" }} 👋{% endblock %}
 {% block subtitulo_pagina %}{% now "l j \d\e F" %}{% endblock %}
 
 {% block contenido %}
+  {% if sin_empresa %}
+    <div class="alert alert-warning small">
+      <i class="bi bi-building-exclamation me-1"></i>
+      Tu cuenta no pertenece a ninguna empresa, así que no hay proyectos que mostrar.
+      Pide a un administrador que te agregue a una.
+    </div>
+  {% endif %}
+
   {# ── Estadísticas ── #}
   <div class="stats-row">
     <div class="stat-card">
@@ -42,7 +50,7 @@
             <div class="xnx-avatar sm">{% if a.usuario %}{{ a.usuario.iniciales }}{% else %}?{% endif %}</div>
             <div>
               <div class="activity-text">
-                <strong>{{ a.usuario|default:"Alguien" }}</strong> {{ a.get_accion_display }} <strong>{{ a.detalle }}</strong>
+                <strong>{{ a.usuario|default:"Alguien" }}</strong> {{ a.descripcion }}
               </div>
               <div class="activity-time"><i class="bi bi-clock me-1"></i>{{ a.fecha|naturaltime }}</div>
             </div>
