@@ -169,7 +169,11 @@ python manage.py createsuperuser
 
 # 7. (Opcional) Inicio con Google: ver docs/google_login.md
 
-# 8. Iniciar el servidor
+# 8. (Opcional) Datos de ejemplo en la empresa de un usuario que ya exista.
+#    Si no tiene empresa, se le crea "Empresa demo" (queda como propietario).
+python manage.py cargar_demo tu@correo.com
+
+# 9. Iniciar el servidor
 python manage.py runserver
 ```
 

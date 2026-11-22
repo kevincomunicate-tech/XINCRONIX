@@ -199,3 +199,26 @@ class FlechasTests(ProyectoBase):
         for pagina in ("login", "registro"):
             self.assertContains(self.client.get(reverse(pagina)), f'href="{reverse("inicio")}" class="auth-volver"')
         self.assertContains(self.client.get(reverse("recuperar")), f'href="{reverse("login")}" class="auth-volver"')
+
+
+class CargarDemoTests(TestCase):
+    """El comando de datos de ejemplo (versión de Felipe, adaptada)."""
+
+    def test_crea_empresa_proyectos_y_no_duplica(self):
+        from io import StringIO
+
+        from django.core.management import call_command
+
+        from .models import Actividad
+
+        ana = usuario("ana@demo.com")
+        call_command("cargar_demo", "ANA@demo.com", stdout=StringIO())
+        ana.refresh_from_db()
+        self.assertEqual((ana.empresa.nombre, ana.empresa.propietario, ana.rol.codigo), ("Empresa demo", ana, Rol.USUARIO))
+        self.assertEqual(Proyecto.objects.filter(empresa=ana.empresa).count(), 3)
+        self.assertEqual(Tarea.objects.filter(proyecto__empresa=ana.empresa).count(), 9)
+        self.assertEqual(Actividad.objects.filter(empresa=ana.empresa).count(), 12)
+        call_command("cargar_demo", "ana@demo.com", stdout=StringIO())
+        self.assertEqual(Proyecto.objects.count(), 3)  # no duplica
+        self.client.force_login(ana)
+        self.assertEqual(self.client.get(reverse("panel")).context["metricas"]["proyectos"], 3)
