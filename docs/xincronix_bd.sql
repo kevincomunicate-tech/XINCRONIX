@@ -1,17 +1,16 @@
--- ============================================================
--- Xincronix — estructura de la base de datos (normalizada)
--- Generada desde los modelos de Django con MariaDB 10.11.
---
--- IMPORTANTE: esta es una referencia para revisar en phpMyAdmin.
--- Para crear la base de verdad usa:  python manage.py migrate
--- (Django crea estas tablas, las suyas y los 4 roles).
--- Django 5.2 necesita MariaDB 10.5+ o MySQL 8+.
--- ============================================================
-
-SET NAMES utf8mb4;
-SET FOREIGN_KEY_CHECKS = 0;
-
 /*M!999999\- enable the sandbox mode */ 
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+DROP TABLE IF EXISTS `empresa`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `empresa` (
@@ -25,10 +24,14 @@ CREATE TABLE `empresa` (
   `num_empleados` varchar(10) NOT NULL,
   `fecha_creacion` datetime(6) NOT NULL,
   `fecha_actualizacion` datetime(6) NOT NULL,
+  `id_propietario` bigint(20) DEFAULT NULL,
   PRIMARY KEY (`id_empresa`),
-  UNIQUE KEY `nit` (`nit`)
+  UNIQUE KEY `nit` (`nit`),
+  KEY `empresa_id_propietario_0db51e50_fk_usuarios_id_usuario` (`id_propietario`),
+  CONSTRAINT `empresa_id_propietario_0db51e50_fk_usuarios_id_usuario` FOREIGN KEY (`id_propietario`) REFERENCES `usuarios` (`id_usuario`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `roles`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `roles` (
@@ -41,6 +44,7 @@ CREATE TABLE `roles` (
   UNIQUE KEY `nombre` (`nombre`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `usuarios`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `usuarios` (
@@ -67,6 +71,7 @@ CREATE TABLE `usuarios` (
   CONSTRAINT `usuarios_id_roles_908ce67c_fk_roles_id_roles` FOREIGN KEY (`id_roles`) REFERENCES `roles` (`id_roles`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `equipos`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `equipos` (
@@ -80,6 +85,7 @@ CREATE TABLE `equipos` (
   CONSTRAINT `equipos_id_empresa_4e715381_fk_empresa_id_empresa` FOREIGN KEY (`id_empresa`) REFERENCES `empresa` (`id_empresa`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `miembros_equipo`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `miembros_equipo` (
@@ -95,6 +101,7 @@ CREATE TABLE `miembros_equipo` (
   CONSTRAINT `miembros_equipo_id_usuario_7ddc7b77_fk_usuarios_id_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id_usuario`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `proyecto`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `proyecto` (
@@ -121,6 +128,7 @@ CREATE TABLE `proyecto` (
   CONSTRAINT `ck_proyecto_importancia` CHECK (`nivel_importancia` >= 1 and `nivel_importancia` <= 4)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `proyecto_miembros`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `proyecto_miembros` (
@@ -136,6 +144,7 @@ CREATE TABLE `proyecto_miembros` (
   CONSTRAINT `proyecto_miembros_id_usuario_8668de52_fk_usuarios_id_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id_usuario`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `tareas`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `tareas` (
@@ -159,6 +168,7 @@ CREATE TABLE `tareas` (
   CONSTRAINT `tareas_id_usuario_01308f1b_fk_usuarios_id_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id_usuario`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `ideas`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ideas` (
@@ -178,6 +188,7 @@ CREATE TABLE `ideas` (
   CONSTRAINT `ideas_id_usuario_b9821647_fk_usuarios_id_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id_usuario`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `ideas_votos`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ideas_votos` (
@@ -192,6 +203,7 @@ CREATE TABLE `ideas_votos` (
   CONSTRAINT `ideas_votos_id_usuario_d5545740_fk_usuarios_id_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id_usuario`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `lienzos`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `lienzos` (
@@ -220,6 +232,7 @@ CREATE TABLE `lienzos` (
   CONSTRAINT `lienzos_id_ultimo_editor_9d497136_fk_usuarios_id_usuario` FOREIGN KEY (`id_ultimo_editor`) REFERENCES `usuarios` (`id_usuario`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `lienzo_colaboradores`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `lienzo_colaboradores` (
@@ -235,6 +248,7 @@ CREATE TABLE `lienzo_colaboradores` (
   CONSTRAINT `lienzo_colaboradores_id_usuario_83fdc601_fk_usuarios_id_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id_usuario`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `actividad`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `actividad` (
@@ -254,6 +268,7 @@ CREATE TABLE `actividad` (
   CONSTRAINT `actividad_id_usuario_c4865489_fk_usuarios_id_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id_usuario`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `notificaciones`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `notificaciones` (
@@ -270,6 +285,7 @@ CREATE TABLE `notificaciones` (
   CONSTRAINT `notificaciones_id_usuario_7a6362fb_fk_usuarios_id_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id_usuario`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `metrica_rendimiento`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `metrica_rendimiento` (
@@ -291,6 +307,7 @@ CREATE TABLE `metrica_rendimiento` (
   CONSTRAINT `ck_metrica_periodo` CHECK (`fecha_fin_periodo` >= `fecha_inicio_periodo`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `mensajes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `mensajes` (
@@ -311,6 +328,7 @@ CREATE TABLE `mensajes` (
   CONSTRAINT `ck_mensaje_un_destino` CHECK (`id_destinatario` is not null and `id_equipo` is null or `id_destinatario` is null and `id_equipo` is not null)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `reuniones`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `reuniones` (
@@ -329,6 +347,7 @@ CREATE TABLE `reuniones` (
   CONSTRAINT `reuniones_id_usuario_6371ab90_fk_usuarios_id_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id_usuario`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `calendario`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `calendario` (
@@ -341,6 +360,7 @@ CREATE TABLE `calendario` (
   CONSTRAINT `calendario_id_usuario_ff213115_fk_usuarios_id_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id_usuario`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `ia_conversaciones`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ia_conversaciones` (
@@ -355,6 +375,7 @@ CREATE TABLE `ia_conversaciones` (
   CONSTRAINT `ia_conversaciones_id_usuario_120f7335_fk_usuarios_id_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id_usuario`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `ia_mensajes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ia_mensajes` (
@@ -370,6 +391,7 @@ CREATE TABLE `ia_mensajes` (
   CONSTRAINT `ia_mensajes_id_conversacion_0c0469da_fk_ia_conver` FOREIGN KEY (`id_conversacion`) REFERENCES `ia_conversaciones` (`id_conversacion`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `tickets_soporte`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `tickets_soporte` (
@@ -389,13 +411,21 @@ CREATE TABLE `tickets_soporte` (
   CONSTRAINT `tickets_soporte_id_usuario_ee201afd_fk_usuarios_id_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id_usuario`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
--- Roles iniciales (los crea la migración cuentas/0002_roles_iniciales.py)
-/*M!999999\- enable the sandbox mode */ 
-INSERT INTO `roles` VALUES
-(1,'admin','Administrador','Acceso completo a la empresa: usuarios, equipos y todos los proyectos.'),
-(2,'manager','Manager','Gestiona equipos y proyectos de la empresa.'),
-(3,'supervisor','Supervisor','Ve todos los proyectos y tareas de la empresa para hacer seguimiento.'),
-(4,'colaborador','Colaborador','Trabaja en los proyectos, equipos y lienzos donde lo agregan.');
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+
+-- Roles (los crea la migración; nombres y descripciones salen de config/politica_accesos.json)
+INSERT INTO `roles` VALUES (1,'admin','Administrador','Gestiona todos los proyectos de su empresa. Solo el superadministrador puede dar este rol.');
+INSERT INTO `roles` VALUES (2,'manager','Manager','Gestiona los proyectos de su empresa (sin eliminarlos).');
+INSERT INTO `roles` VALUES (3,'supervisor','Supervisor','Ve todos los proyectos de su empresa para hacer seguimiento.');
+INSERT INTO `roles` VALUES (4,'usuario','Usuario','Usuario normal: crea su empresa, sus proyectos y trabaja en los proyectos donde lo agregan.');
 
 SET FOREIGN_KEY_CHECKS = 1;

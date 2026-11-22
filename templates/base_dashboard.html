@@ -41,6 +41,13 @@
         <a href="{% url 'automatizaciones' %}" class="xnx-sidebar-item{% if actual == 'automatizaciones' %} active{% endif %}"><i class="bi bi-arrow-repeat"></i> Automatizaciones</a>
       </div>
 
+      {# Enlaces extra según el perfil (perfiles.<perfil>.menu en config/politica_accesos.json) #}
+      {% for item in menu_perfil %}
+        <div class="xnx-sidebar-section">
+          <a href="{{ item.href }}" class="xnx-sidebar-item{% if item.activo %} active{% endif %}"><i class="bi {{ item.icono }}"></i> {{ item.texto }}</a>
+        </div>
+      {% endfor %}
+
       <div class="xnx-sidebar-section">
         <div class="xnx-sidebar-section-label">Reportes</div>
         <a href="{% url 'analytics' %}" class="xnx-sidebar-item{% if actual == 'analytics' %} active{% endif %}"><i class="bi bi-bar-chart-line"></i> Analytics</a>
@@ -48,11 +55,14 @@
 
       <div class="xnx-sidebar-bottom">
         <div class="xnx-sidebar-user">
-          <div class="xnx-avatar">{{ request.user.iniciales }}</div>
-          <div>
-            <div class="user-name">{{ request.user.get_full_name|default:request.user.email }}</div>
-            <div class="user-role">{{ request.user.rol|default:"" }}</div>
-          </div>
+          {# Clic en el nombre: "Mi cuenta" (ver, editar o eliminar la propia información) #}
+          <a href="{% url 'mi_cuenta' %}" class="xnx-sidebar-user-link" title="Mi cuenta">
+            <div class="xnx-avatar">{{ request.user.iniciales }}</div>
+            <div>
+              <div class="user-name">{{ request.user.get_full_name|default:request.user.email }}</div>
+              <div class="user-role">{{ request.user.cargo|default:request.user.rol|default:"" }}</div>
+            </div>
+          </a>
           {# En Django 5 cerrar sesión debe ser POST #}
           <form method="post" action="{% url 'logout' %}" class="ms-auto">
             {% csrf_token %}
@@ -67,9 +77,13 @@
     <!-- ══ CONTENIDO ══ -->
     <main class="xnx-main">
       <div class="xnx-topbar">
-        <div>
-          <span class="xnx-topbar-title">{% block titulo_pagina %}{% endblock %}</span>
-          <span class="xnx-topbar-sub">{% block subtitulo_pagina %}{% endblock %}</span>
+        <div class="xnx-topbar-titulo-wrap">
+          {# Flecha de regreso: cada página la define con partials/volver.html #}
+          {% block volver %}{% endblock %}
+          <div>
+            <span class="xnx-topbar-title">{% block titulo_pagina %}{% endblock %}</span>
+            <span class="xnx-topbar-sub">{% block subtitulo_pagina %}{% endblock %}</span>
+          </div>
         </div>
         <div class="xnx-topbar-right">
           {% block acciones %}{% endblock %}

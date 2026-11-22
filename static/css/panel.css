@@ -2205,3 +2205,46 @@ html[data-theme="dark"] .theme-btn .theme-toggle-icon {
 a.xnx-logo {
   text-decoration: none;
 }
+
+
+/* =========================================================
+   FLECHA DE REGRESO (partials/volver.html) y extras de CRUD
+   ========================================================= */
+
+.xnx-topbar-titulo-wrap { display: flex; align-items: center; gap: 12px; }
+
+.xnx-volver {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid rgba(7, 16, 31, 0.12);
+  border-radius: 999px;
+  color: var(--xnx-blue-dark);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  background: var(--xnx-white);
+  transition: border-color .2s ease, color .2s ease, transform .2s ease;
+}
+.xnx-volver:hover { border-color: var(--xnx-primary); color: var(--xnx-primary); transform: translateX(-2px); }
+.xnx-volver:focus-visible { outline: 3px solid rgba(42, 91, 255, .35); outline-offset: 2px; }
+
+.xnx-sidebar-user-link { color: inherit; text-decoration: none; display: flex; align-items: center; gap: 10px; min-width: 0; }
+.xnx-sidebar-user-link:hover .user-name { text-decoration: underline; }
+
+.xnx-tabla-acciones { white-space: nowrap; }
+.xnx-vacio { padding: 36px 16px; text-align: center; color: var(--xnx-blue-dark); }
+.xnx-vacio i { font-size: 34px; color: var(--xnx-primary); }
+
+html[data-theme="dark"] .xnx-volver {
+  border-color: rgba(148, 170, 220, 0.3);
+  color: var(--d-text);
+  background: var(--d-surface-2);
+}
+html[data-theme="dark"] .xnx-volver:hover { color: #7b9bff; }
+
+@media (max-width: 640px) {
+  .xnx-volver span { display: none; }
+}

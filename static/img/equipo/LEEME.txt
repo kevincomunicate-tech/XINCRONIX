@@ -1,0 +1,3 @@
+Fotos del equipo para la página pública (sitio/templates/sitio/index.html):
+  1.jpeg  2.jpeg  3.jpeg  grupo.jpeg
+Si una foto no está, se muestra el recuadro con el ícono en su lugar.

@@ -1,0 +1,19 @@
+{% load socialaccount %}
+{% comment %}
+  Botón "Continuar con Google" (django-allauth). Es un formulario POST:
+  así nadie puede iniciar el proceso desde otra página sin tu permiso (CSRF).
+  Si faltan GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET en .env, sale desactivado.
+{% endcomment %}
+<div class="divider">o continúa con</div>
+{% if google_activo %}
+  <form method="post" action="{% provider_login_url 'google' %}" class="auth-google-form">
+    {% csrf_token %}
+    {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+    <button type="submit" class="btn-google btn-google-xnx">{% include "partials/logo_google.svg" %} Continuar con Google</button>
+  </form>
+{% else %}
+  <div class="auth-google-form">
+    <button type="button" class="btn-google btn-google-xnx" disabled aria-describedby="google-pendiente">{% include "partials/logo_google.svg" %} Continuar con Google</button>
+  </div>
+  <p class="auth-google-hint" id="google-pendiente">Inicio con Google sin configurar: agrega GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET al archivo .env.</p>
+{% endif %}

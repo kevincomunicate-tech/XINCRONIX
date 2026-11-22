@@ -2,6 +2,8 @@
 
 {% block titulo %}Contraseña actualizada{% endblock %}
 
+{% block volver %}{% url 'login' as destino %}{% include "partials/volver_auth.html" with url=destino texto="Volver al login" %}{% endblock %}
+
 {% block contenido %}
   <h1 class="form-title">¡Listo!</h1>
   <p class="form-sub">Tu contraseña se actualizó correctamente.</p>

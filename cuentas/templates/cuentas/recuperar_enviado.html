@@ -2,6 +2,8 @@
 
 {% block titulo %}Revisa tu correo{% endblock %}
 
+{% block volver %}{% url 'login' as destino %}{% include "partials/volver_auth.html" with url=destino texto="Volver al login" %}{% endblock %}
+
 {% block contenido %}
   <h1 class="form-title">Revisa tu correo</h1>
   <p class="form-sub">Si el correo está registrado, ya te llegó el enlace.</p>

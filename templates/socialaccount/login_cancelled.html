@@ -1,0 +1,14 @@
+{% extends "base_auth.html" %}
+{% load static %}
+{# Reemplaza la página de django-allauth cuando la persona cancela en Google #}
+
+{% block titulo %}Inicio con Google cancelado{% endblock %}
+{% block css %}<link rel="stylesheet" href="{% static 'css/login.css' %}">{% endblock %}
+{% block volver %}{% url 'login' as destino %}{% include "partials/volver_auth.html" with url=destino texto="Volver al login" %}{% endblock %}
+{% block titular %}Cancelaste<br>el inicio con <em>Google</em>{% endblock %}
+
+{% block contenido %}
+  <h1 class="form-title">Inicio con Google cancelado</h1>
+  <p class="form-sub">No se compartió ningún dato. Puedes entrar con tu correo y contraseña o intentarlo de nuevo.</p>
+  <a href="{% url 'login' %}" class="btn-login"><span class="btn-label">Volver a iniciar sesión <i class="bi bi-arrow-right"></i></span></a>
+{% endblock %}

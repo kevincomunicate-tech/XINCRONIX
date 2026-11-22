@@ -18,14 +18,18 @@ compartida, con indicadores para ver cómo avanza todo.
 
 ## Partes del proyecto
 
-Para usar cualquier módulo primero hay que **registrarse** e **iniciar
-sesión**. Al registrarse, la persona recibe su propia empresa y queda como
-**Administrador**; desde ahí invita a su equipo.
+Para usar cualquier módulo primero hay que **registrarse** (con correo o con
+**Google**) e **iniciar sesión**. Quien se registra queda como **Usuario**:
+crea su propia empresa, sus proyectos e invita a quien necesite. El único que
+asigna roles (incluido Administrador) es el **superadministrador**.
 
 | Módulo | Para qué sirve | Ruta | Necesitas antes |
 |---|---|---|---|
-| **Cuentas** | Crear la cuenta, entrar y recuperar la contraseña | `/cuentas/registro/` · `/cuentas/login/` | — |
+| **Cuentas** | Crear la cuenta, entrar (correo o Google) y recuperar la contraseña | `/cuentas/registro/` · `/cuentas/login/` | — |
+| **Mi cuenta** | Ver, editar o eliminar la propia información | `/cuentas/mi-cuenta/` | Iniciar sesión |
 | **Panel** | Ver de un vistazo cómo va el trabajo | `/app/` | Iniciar sesión |
+| **Mi empresa** | Crear la empresa, editarla y ver sus métricas | `/app/empresa/` | Iniciar sesión |
+| **Administración** | CRUD de usuarios y empresas, asignar roles | `/administracion/` | Ser superadministrador |
 | **Empresas y equipos** | Agrupar a las personas de la empresa en equipos, con su rol | `/app/equipo/` | Ser Administrador o Manager |
 | **Proyectos** | Crear proyectos, sumar miembros y organizarlos en un Kanban | `/app/proyectos/` | Iniciar sesión |
 | **Tareas** | Repartir el trabajo con responsable, prioridad y fecha | `/app/tareas/` | Tener un proyecto |
@@ -45,6 +49,7 @@ flowchart LR
         direction TB
         R[Registro<br>/cuentas/registro/]
         L[Login<br>/cuentas/login/]
+        G[Continuar con Google]
         RC[Recuperar contraseña<br>/cuentas/recuperar/]
         L -. olvidó la contraseña .-> RC
         RC -. nueva contraseña .-> L
@@ -52,12 +57,17 @@ flowchart LR
 
     I --> R
     I --> L
-    R -->|crea su empresa y entra| P
+    I --> G
+    R -->|entra como Usuario| P
+    G --> P
     L --> P
+    L -->|superadministrador| AD
 
     subgraph APP [Aplicación: con sesión iniciada]
         direction TB
         P[Panel<br>/app/]
+        P --> ME[Mi empresa + métricas<br>/app/empresa/]
+        P --> MC[Mi cuenta<br>/cuentas/mi-cuenta/]
         P --> E[Equipo<br>/app/equipo/]
         P --> A[Analytics<br>/app/analytics/]
         P --> ID[Ideas<br>/app/ideas/]
@@ -65,29 +75,37 @@ flowchart LR
         P --> PR[Proyectos + Kanban<br>/app/proyectos/]
         PR -->|cada proyecto tiene| T[Tareas<br>/app/tareas/]
     end
+
+    subgraph ADM [Solo superadministrador]
+        AD[Administración<br>/administracion/<br>usuarios · empresas · roles]
+    end
 ```
 
 ### Ejemplo: crear un proyecto
 
-1. **Regístrate** en `/cuentas/registro/` o **inicia sesión** en `/cuentas/login/`.
-2. Llegas al **Panel** (`/app/`).
-3. En la barra superior, entra a **Proyectos**.
-4. Pulsa **Nuevo proyecto** y llena nombre, tipo, importancia, fechas y equipo.
-5. El proyecto aparece en la lista y en la actividad reciente del panel.
-6. Agrega **miembros** con su rol: responsable, colaborador u observador.
-7. En el **Kanban**, crea tareas y muévelas: Por hacer → En progreso → En revisión → Completada.
+1. **Regístrate** en `/cuentas/registro/` (o con **Continuar con Google**).
+2. Llegas al **Panel** (`/app/`) y creas **Mi empresa**.
+3. En **Proyectos**, pulsa **Nuevo proyecto** y llena nombre, tipo, importancia y fechas.
+4. En el proyecto, **agrega personas por su correo** (pueden ser de otra empresa) con su rol:
+   responsable, editor u observador.
+5. Crea las **tareas** con responsable y fecha límite. Tú y quienes agregaste
+   ajustan fechas, estados y tareas; el avance y las métricas se calculan solos.
 
-### Qué puede hacer cada rol
+### Qué puede hacer cada quien
 
-| Acción | Administrador | Manager | Supervisor | Colaborador |
-|---|---|---|---|---|
-| Ver todos los proyectos de la empresa | ✅ | ✅ | ✅ | Solo donde participa |
-| Crear proyectos, tareas e ideas | ✅ | ✅ | ✅ | ✅ |
-| Editar cualquier proyecto | ✅ | ✅ | ❌ | Solo donde es miembro |
-| Agregar usuarios y crear equipos | ✅ | ✅ | ❌ | ❌ |
-| Editar un lienzo compartido | ✅ | ✅ | Solo ver | Según el permiso que le den |
+Las reglas viven en [`config/politica_accesos.json`](config/politica_accesos.json)
+(sin `if` en el código). Guía: [`docs/roles_y_accesos.md`](docs/roles_y_accesos.md).
 
-Nadie ve nunca la información de otra empresa.
+| En un proyecto | Ver | Editar datos y fechas | Tareas | Miembros | Eliminar |
+|---|---|---|---|---|---|
+| Creador | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Responsable | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Editor | ✅ | ✅ | ✅ | ❌ | ❌ |
+| Observador | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Administrador de la empresa | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+El **superadministrador** (`cuellaryohan100@gmail.com`) entra a `/administracion/`,
+crea empresas y las vincula con usuarios, y es el único que asigna roles.
 
 ---
 
@@ -115,8 +133,8 @@ de aceptación) está en [`docs/plan_sprints.md`](docs/plan_sprints.md).
 
 ## Tecnologías y requisitos
 
-- **Python 3.10+** con **Django 5.2**
-- **Base de datos:** SQLite (desarrollo) o MariaDB 10.5+ / MySQL 8+
+- **Python 3.10+** con **Django 5.2** y **django-allauth** (inicio con Google)
+- **Base de datos:** MariaDB 10.5+ / MySQL 8+, SQLite o PostgreSQL
 - **Interfaz:** Bootstrap 5.3, Bootstrap Icons y Chart.js
 - **Git** y **pip**
 
@@ -146,15 +164,16 @@ pip install -r requirements.txt
 # 5. Crear las tablas de la base de datos
 python manage.py migrate
 
-# 6. (Opcional) Crear un administrador para /admin
+# 6. Crear el superadministrador (usa el correo de config/politica_accesos.json)
 python manage.py createsuperuser
 
-# 7. (Opcional) Cargar un equipo, proyectos y tareas de ejemplo en la empresa
-#    del usuario. El usuario debe existir antes (paso 6 o /cuentas/registro/);
-#    si no tiene empresa, se le crea "Empresa demo".
+# 7. (Opcional) Inicio con Google: ver docs/google_login.md
+
+# 8. (Opcional) Datos de ejemplo en la empresa de un usuario que ya exista.
+#    Si no tiene empresa, se le crea "Empresa demo" (queda como propietario).
 python manage.py cargar_demo tu@correo.com
 
-# 8. Levantar el servidor
+# 9. Iniciar el servidor
 python manage.py runserver
 ```
 
@@ -177,69 +196,17 @@ imprimen en la terminal donde corre `runserver`.
 
 ## Base de datos
 
-Por defecto se usa **SQLite**, sin instalar nada. Para usar **MariaDB/MySQL**
-(por ejemplo, con phpMyAdmin), crea la base vacía `xincronix_bd`
-(`utf8mb4_unicode_ci`), configura `.env` y corre `python manage.py migrate`:
-
-```
-DB_ENGINE=mysql
-DB_NAME=xincronix_bd
-DB_USER=root
-DB_PASSWORD=
-DB_HOST=127.0.0.1
-DB_PORT=3306
-```
+El motor se elige en `.env` con `DB_ENGINE`: **mysql** (MariaDB de XAMPP, por
+defecto), **sqlite** o **postgresql**. Crea la base vacía `xincronix_bd`
+(`utf8mb4_unicode_ci`), configura `.env` (ver `.env.example`) y corre
+`python manage.py migrate`. Paso a paso en
+[`docs/guia_base_de_datos.md`](docs/guia_base_de_datos.md).
 
 El diagrama entidad-relación está en [`docs/modelo_datos.md`](docs/modelo_datos.md)
-y la estructura en SQL en [`xincronix_bd.sql`](xincronix_bd.sql).
+y la estructura en SQL en [`docs/xincronix_bd.sql`](docs/xincronix_bd.sql).
 
 > Borra los datos desde la aplicación o desde `/admin`, no con `DELETE`
 > directo en phpMyAdmin.
-
----
-
-## Modelo de datos
-
-Las tablas siguen el esquema de [xincronix_bd.sql](xincronix_bd.sql)
-(mismos nombres de tablas, columnas, índices y restricciones). Ese archivo
-es solo una referencia: las tablas las crea `python manage.py migrate`.
-
-| Tabla | App | Qué guarda |
-|---|---|---|
-| `empresa` | cuentas | la empresa; todo lo demás pertenece a una |
-| `roles` | cuentas | admin, manager, supervisor y colaborador (los crea la migración) |
-| `usuarios` | cuentas | nombres, apellidos, correo, cargo, empresa y rol |
-| `equipos` / `miembros_equipo` | dashboard | equipos de la empresa y quién está en cada uno |
-| `proyecto` / `proyecto_miembros` | dashboard | proyectos (estado, importancia 1-4, tipo, fechas, equipo) y sus miembros |
-| `tareas` | dashboard | estado, prioridad, vencimiento, asignada a y creada por |
-| `actividad` | dashboard | historial ("Ana completó la tarea X") que se muestra en el panel |
-
-Reglas:
-
-- Al registrarse se crea la empresa y quien se registra queda como **administrador**.
-- Nadie ve datos de otra empresa. Admin, manager y supervisor ven todos los
-  proyectos de su empresa; un colaborador solo los que creó, aquellos donde
-  lo agregaron como miembro o los de sus equipos.
-- No se guarda nada que se pueda calcular: el **% de avance** de un proyecto
-  se obtiene contando sus tareas completadas.
-- Estados, tipos y prioridades son opciones fijas (no texto libre).
-- Mientras se construyen las pantallas de la fase 3, los proyectos, equipos y
-  tareas se crean desde `/admin/` (eso también registra la actividad).
-- Las demás tablas del esquema (ideas, lienzos, mensajes, notificaciones, IA,
-  etc.) se agregan en las fases siguientes.
-
----
-
-## Páginas
-
-| URL | Página |
-|---|---|
-| `/` | Inicio (por ahora redirige al login o al panel) |
-| `/cuentas/login/` | Iniciar sesión |
-| `/cuentas/registro/` | Crear cuenta (y la empresa) |
-| `/cuentas/recuperar/` | Recuperar contraseña |
-| `/app/` | Panel (requiere sesión) |
-| `/admin/` | Administración de Django |
 
 ---
 
@@ -247,18 +214,19 @@ Reglas:
 
 ```
 XINCRONIX/
-├── .venv/               entorno virtual (no se sube a git)
-├── .env                 secretos (no se sube a git)
-├── .env.example         guía para crear .env
-├── requirements.txt     dependencias exactas
-├── manage.py            comandos de Django
-├── xincronix_bd.sql     esquema de referencia de la base de datos
-├── config/              configuración general (settings, urls)
-├── cuentas/             empresas, roles y usuarios: login, registro, recuperar contraseña
-├── dashboard/           panel, equipos, proyectos, tareas, actividad (luego analytics, ideas, canvas)
-├── sitio/               página pública de inicio
-├── templates/           plantillas base compartidas
-└── static/              CSS, JS e imágenes
+├── config/          configuración general (settings, urls)
+├── cuentas/         cuentas, empresas, roles, equipos, política de accesos y Google
+├── administracion/  panel del superadministrador (usuarios y empresas)
+├── dashboard/       panel, proyectos, tareas, analytics, ideas y canvas
+├── comunicacion/    mensajes, reuniones, calendario, asistente IA y soporte
+├── sitio/           página pública de inicio
+├── templates/       plantillas base
+├── static/          CSS, JS e imágenes
+├── docs/            modelo de datos, guías y plan de sprints
+├── sql/             consultas de solo lectura para revisar los datos
+├── scripts/         publicar el backlog en GitHub
+├── requirements.txt dependencias
+└── .env.example     guía para crear .env
 ```
 
 ---
@@ -284,12 +252,3 @@ Una historia está terminada cuando cumple sus criterios de aceptación, tiene
 pruebas y `python manage.py test` pasa, funciona en modo claro, oscuro y en
 móvil, respeta los permisos, incluye su migración si cambia el modelo de datos
 y su pull request fue revisado por otra persona.
-
----
-
-## Avance por fases
-
-- [x] Fase 1: entorno, proyecto, login, registro, recuperar contraseña, modo oscuro
-- [x] Fase 2: modelos (proyectos, tareas, actividad) y panel con datos reales
-- [ ] Fase 3: proyectos, tareas y analytics
-- [ ] Fase 4: ideas, canvas, página de inicio e información

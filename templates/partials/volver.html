@@ -1,0 +1,7 @@
+{% comment %}
+  Flecha de regreso para el título de cada página.
+  Uso:  {% url 'proyectos' as destino %}{% include "partials/volver.html" with url=destino texto="Proyectos" %}
+{% endcomment %}
+<a href="{{ url }}" class="xnx-volver" title="Volver a {{ texto }}" aria-label="Volver a {{ texto }}">
+  <i class="bi bi-arrow-left"></i><span>{{ texto }}</span>
+</a>

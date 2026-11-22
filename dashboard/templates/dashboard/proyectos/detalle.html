@@ -1,0 +1,87 @@
+{% extends "base_dashboard.html" %}
+
+{% block titulo %}{{ proyecto }}{% endblock %}
+{% block volver %}{% url 'proyectos' as destino %}{% include "partials/volver.html" with url=destino texto="Proyectos" %}{% endblock %}
+{% block titulo_pagina %}{{ proyecto }}{% endblock %}
+{% block subtitulo_pagina %}{{ proyecto.empresa }} · {{ proyecto.get_estado_display }}{% endblock %}
+
+{% block accion_principal %}
+  {% if "editar" in permisos %}<a href="{% url 'proyecto_editar' proyecto.pk %}" class="btn btn-outline-primary btn-sm"><i class="bi bi-pencil-square me-1"></i>Editar</a>{% endif %}
+  {% if "eliminar" in permisos %}<a href="{% url 'proyecto_eliminar' proyecto.pk %}" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash3 me-1"></i>Eliminar</a>{% endif %}
+{% endblock %}
+
+{% block contenido %}
+  <div class="row g-3 mb-4">
+    <div class="col-md-4"><div class="stat-card h-100"><div class="stat-label">Avance</div><div class="stat-value">{{ avance }}%</div><div class="xnx-progress mt-3"><div class="xnx-progress-bar" style="width: {{ avance }}%"></div></div><div class="small text-muted mt-2">{{ hechas }} de {{ tareas|length }} tareas completadas</div></div></div>
+    <div class="col-md-4"><div class="stat-card h-100"><div class="stat-label">Fechas</div><div class="fw-bold fs-5">{{ proyecto.fecha_inicio|date:"j M Y"|default:"Sin inicio" }}</div><div class="text-muted small">hasta {{ proyecto.fecha_fin|date:"j M Y"|default:"sin fecha de fin" }}</div></div></div>
+    <div class="col-md-4"><div class="stat-card h-100"><div class="stat-label">Importancia</div><div class="fw-bold fs-5">{{ proyecto.get_nivel_importancia_display }}</div><div class="text-muted small">{{ proyecto.get_tipo_proyecto_display|default:"Sin tipo" }} · creado por {{ proyecto.creado_por|default:"—" }}</div></div></div>
+  </div>
+  {% if proyecto.descripcion %}<div class="xnx-card mb-4"><div class="xnx-card-body small">{{ proyecto.descripcion|linebreaksbr }}</div></div>{% endif %}
+
+  <div class="dashboard-grid">
+    <div class="xnx-card">
+      <div class="xnx-card-header">
+        <span class="xnx-card-title"><i class="bi bi-check2-square me-2"></i>Tareas</span>
+        {% if "tareas" in permisos %}<a href="{% url 'tarea_crear' proyecto.pk %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Nueva tarea</a>{% endif %}
+      </div>
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead><tr><th>Tarea</th><th>Estado</th><th>Fecha límite</th><th>Responsable</th>{% if "tareas" in permisos %}<th class="text-end">Acciones</th>{% endif %}</tr></thead>
+          <tbody>
+            {% for t in tareas %}
+              <tr>
+                <td><div class="fw-semibold">{{ t.titulo }}</div><div class="text-muted small">Prioridad {{ t.get_prioridad_display|lower }}</div></td>
+                <td><span class="badge {% if t.estado == 'completada' %}text-bg-success{% else %}text-bg-light border{% endif %}">{{ t.get_estado_display }}</span></td>
+                <td class="small {% if t.vencida %}text-danger fw-semibold{% endif %}">{{ t.fecha_vencimiento|date:"j M Y"|default:"—" }}</td>
+                <td class="small">{{ t.asignado_a|default:"—" }}</td>
+                {% if "tareas" in permisos %}
+                  <td class="text-end xnx-tabla-acciones">
+                    <a href="{% url 'tarea_editar' t.pk %}" class="btn btn-outline-secondary btn-sm" aria-label="Editar tarea"><i class="bi bi-pencil-square"></i></a>
+                    <a href="{% url 'tarea_eliminar' t.pk %}" class="btn btn-outline-danger btn-sm" aria-label="Eliminar tarea"><i class="bi bi-trash3"></i></a>
+                  </td>
+                {% endif %}
+              </tr>
+            {% empty %}
+              <tr><td colspan="5"><div class="xnx-vacio"><i class="bi bi-list-check"></i><p class="small mt-2 mb-0">Sin tareas todavía.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="xnx-card">
+      <div class="xnx-card-header"><span class="xnx-card-title"><i class="bi bi-people me-2"></i>Miembros</span></div>
+      <div class="xnx-card-body">
+        <div class="activity-item">
+          <div class="xnx-avatar">{{ proyecto.creado_por.iniciales|default:"?" }}</div>
+          <div><div class="activity-text fw-semibold">{{ proyecto.creado_por|default:"(cuenta eliminada)" }}</div><div class="activity-time">Creador</div></div>
+        </div>
+        {% for m in miembros %}
+          <div class="activity-item">
+            <div class="xnx-avatar">{{ m.usuario.iniciales }}</div>
+            <div class="flex-grow-1">
+              <div class="activity-text fw-semibold">{{ m.usuario }}</div>
+              <div class="activity-time">{{ m.get_rol_display }}{% if m.usuario.empresa_id != proyecto.empresa_id %} · {{ m.usuario.empresa|default:"sin empresa" }}{% endif %}</div>
+            </div>
+            {% if "miembros" in permisos or m.usuario_id == request.user.pk %}
+              <form method="post" action="{% url 'miembro_quitar' proyecto.pk m.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-danger" title="{% if m.usuario_id == request.user.pk %}Salir del proyecto{% else %}Quitar del proyecto{% endif %}" aria-label="Quitar a {{ m.usuario }}"><i class="bi bi-{% if m.usuario_id == request.user.pk %}box-arrow-right{% else %}x-lg{% endif %}"></i></button>
+              </form>
+            {% endif %}
+          </div>
+        {% endfor %}
+
+        {% if "miembros" in permisos %}
+          <form method="post" action="{% url 'miembro_agregar' proyecto.pk %}" class="mt-3" novalidate>
+            {% csrf_token %}
+            <div class="small fw-semibold mb-2"><i class="bi bi-person-plus me-1"></i>Agregar persona</div>
+            {% include "partials/formulario.html" with form=miembro_form %}
+            <button type="submit" class="btn btn-primary btn-sm mt-3">Agregar</button>
+            <p class="form-text mb-0 mt-2">Responsable: edita, gestiona miembros y tareas · Editor: ajusta fechas, datos y tareas · Observador: solo ve.</p>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

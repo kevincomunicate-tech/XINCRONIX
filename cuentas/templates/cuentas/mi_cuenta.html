@@ -1,0 +1,55 @@
+{% extends "base_dashboard.html" %}
+
+{% block titulo %}Mi cuenta{% endblock %}
+{% block volver %}{% url 'inicio' as destino %}{% include "partials/volver.html" with url=destino texto="Mi inicio" %}{% endblock %}
+{% block titulo_pagina %}Mi cuenta{% endblock %}
+{% block subtitulo_pagina %}Tu información personal{% endblock %}
+
+{% block contenido %}
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="xnx-card">
+        <div class="xnx-card-header"><span class="xnx-card-title"><i class="bi bi-person-vcard me-2"></i>Mis datos</span></div>
+        <div class="xnx-card-body">
+          <form method="post" novalidate>
+            {% csrf_token %}
+            {% include "partials/formulario.html" with form=form %}
+            <button type="submit" class="btn btn-primary mt-4"><i class="bi bi-check-lg me-1"></i>Guardar cambios</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4 d-flex flex-column gap-4">
+      <div class="xnx-card">
+        <div class="xnx-card-header"><span class="xnx-card-title"><i class="bi bi-info-circle me-2"></i>Resumen</span></div>
+        <div class="xnx-card-body small">
+          <div class="mb-2"><span class="text-muted">Rol:</span> <strong>{{ request.user.rol|default:"—" }}</strong></div>
+          <div class="mb-2"><span class="text-muted">Empresa:</span>
+            {% if request.user.empresa %}<strong>{{ request.user.empresa }}</strong>{% else %}<a href="{% url 'mi_empresa' %}">Crear mi empresa</a>{% endif %}
+          </div>
+          <div class="mb-2"><span class="text-muted">Desde:</span> {{ request.user.date_joined|date:"j \d\e F \d\e Y" }}</div>
+          <div><span class="text-muted">Google:</span> {% if cuentas_google %}<span class="badge text-bg-success">Vinculada</span>{% else %}No vinculada{% endif %}</div>
+        </div>
+      </div>
+
+      <div class="xnx-card">
+        <div class="xnx-card-header"><span class="xnx-card-title"><i class="bi bi-key me-2"></i>Contraseña</span></div>
+        <div class="xnx-card-body small">
+          <p class="text-muted">{% if request.user.has_usable_password %}Cámbiala cuando quieras.{% else %}Entraste con Google: crea una contraseña si también quieres entrar con tu correo.{% endif %}</p>
+          <a href="{% url 'cambiar_contrasena' %}" class="btn btn-outline-primary btn-sm">{% if request.user.has_usable_password %}Cambiar contraseña{% else %}Crear contraseña{% endif %}</a>
+        </div>
+      </div>
+
+      {% if puede_eliminar %}
+        <div class="xnx-card border-danger-subtle">
+          <div class="xnx-card-header"><span class="xnx-card-title text-danger"><i class="bi bi-exclamation-octagon me-2"></i>Zona de peligro</span></div>
+          <div class="xnx-card-body small">
+            <p class="text-muted">Elimina tu cuenta y tus datos. Antes de confirmar verás exactamente qué se borra.</p>
+            <a href="{% url 'eliminar_cuenta' %}" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash3 me-1"></i>Eliminar mi cuenta</a>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
