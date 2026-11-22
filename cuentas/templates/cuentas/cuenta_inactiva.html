@@ -1,0 +1,13 @@
+{% extends "base_auth.html" %}
+{% load static %}
+
+{% block titulo %}Cuenta desactivada{% endblock %}
+{% block css %}<link rel="stylesheet" href="{% static 'css/login.css' %}">{% endblock %}
+{% block volver %}{% url 'login' as destino %}{% include "partials/volver_auth.html" with url=destino texto="Volver al login" %}{% endblock %}
+{% block titular %}Tu cuenta está<br><em>desactivada</em>{% endblock %}
+
+{% block contenido %}
+  <h1 class="form-title">Cuenta desactivada</h1>
+  <p class="form-sub">Esta cuenta no puede iniciar sesión en este momento. Si crees que es un error, escríbele al administrador de Xincronix.</p>
+  <a href="{% url 'login' %}" class="btn-login"><span class="btn-label">Volver al login <i class="bi bi-arrow-right"></i></span></a>
+{% endblock %}

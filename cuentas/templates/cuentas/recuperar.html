@@ -14,6 +14,8 @@
   <div class="left-feature"><div class="left-feature-icon"><i class="bi bi-shield-lock"></i></div>Nadie de Xincronix te pedirá tu contraseña</div>
 {% endblock %}
 
+{% block volver %}{% url 'login' as destino %}{% include "partials/volver_auth.html" with url=destino texto="Volver al login" %}{% endblock %}
+
 {% block contenido %}
   <h1 class="form-title">Recuperar contraseña</h1>
   <p class="form-sub">Escribe el correo con el que te registraste.</p>

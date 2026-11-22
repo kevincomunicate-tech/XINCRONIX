@@ -1,0 +1,24 @@
+{% extends "base_dashboard.html" %}
+
+{% block titulo %}{% if proyecto %}Editar proyecto{% else %}Nuevo proyecto{% endif %}{% endblock %}
+{% block volver %}
+  {% if proyecto %}{% url 'proyecto_detalle' proyecto.pk as destino %}{% include "partials/volver.html" with url=destino texto=proyecto.nombre %}
+  {% else %}{% url 'proyectos' as destino %}{% include "partials/volver.html" with url=destino texto="Proyectos" %}{% endif %}
+{% endblock %}
+{% block titulo_pagina %}{% if proyecto %}Editar proyecto{% else %}Nuevo proyecto{% endif %}{% endblock %}
+{% block subtitulo_pagina %}{% if proyecto %}{{ proyecto }}{% else %}En {{ request.user.empresa }}{% endif %}{% endblock %}
+
+{% block contenido %}
+  <div class="xnx-card" style="max-width: 860px">
+    <div class="xnx-card-body">
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% include "partials/formulario.html" with form=form %}
+        <div class="d-flex gap-2 mt-4">
+          <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>{% if proyecto %}Guardar cambios{% else %}Crear proyecto{% endif %}</button>
+          <a href="{% if proyecto %}{% url 'proyecto_detalle' proyecto.pk %}{% else %}{% url 'proyectos' %}{% endif %}" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

@@ -9,3 +9,13 @@ db.sqlite3
 staticfiles/
 __pycache__/
 *.pyc
+
+# Archivos subidos (fotos de perfil)
+media/
+
+# Volcados y copias con datos reales (nunca se suben)
+*.sql
+datos*.json
+# ...excepto estos archivos del proyecto, que no tienen datos reales
+!docs/xincronix_bd.sql
+!sql/verificar_datos.sql

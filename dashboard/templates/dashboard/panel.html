@@ -4,14 +4,69 @@
 {% block titulo_pagina %}Hola, {{ request.user.first_name|default:"bienvenido" }} 👋{% endblock %}
 {% block subtitulo_pagina %}{% now "l j \d\e F" %}{% endblock %}
 
+{% block accion_principal %}
+  {% if puede_crear_proyecto and empresa %}
+    <a href="{% url 'proyecto_crear' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Nuevo proyecto</a>
+  {% endif %}
+{% endblock %}
+
 {% block contenido %}
-  {# Fase 2: estadísticas, actividad reciente y progreso de proyectos con datos reales #}
-  <div class="xnx-card">
-    <div class="xnx-card-header">
-      <span class="xnx-card-title">Tu espacio de trabajo</span>
+  {% if not empresa and puede_crear_empresa %}
+    <div class="xnx-card mb-4">
+      <div class="xnx-card-body d-flex flex-wrap align-items-center gap-3">
+        <i class="bi bi-building-add fs-2" style="color:var(--xnx-primary)"></i>
+        <div class="flex-grow-1">
+          <h2 class="h6 fw-bold mb-1">Crea tu empresa para empezar</h2>
+          <p class="text-muted small mb-0">Con tu empresa podrás crear proyectos, invitar personas y ver tus métricas. Si te invitan a un proyecto, también lo verás aquí.</p>
+        </div>
+        <a href="{% url 'mi_empresa' %}" class="btn btn-primary btn-sm">Crear mi empresa</a>
+      </div>
     </div>
-    <div class="xnx-card-body">
-      <p class="mb-0 text-muted">Sesión iniciada como <strong>{{ request.user.email }}</strong>. En la fase 2 aquí aparecerán tus proyectos, tareas y actividad.</p>
+  {% endif %}
+
+  {% if metricas %}
+    <h2 class="h6 fw-bold mb-3">Métricas de {{ empresa }}</h2>
+    {% include "partials/metricas.html" with m=metricas %}
+  {% endif %}
+
+  <div class="dashboard-grid">
+    <div class="xnx-card">
+      <div class="xnx-card-header">
+        <span class="xnx-card-title"><i class="bi bi-kanban me-2"></i>Proyectos ({{ total_proyectos }})</span>
+        <a href="{% url 'proyectos' %}" class="xnx-card-action">Ver todos</a>
+      </div>
+      <div class="xnx-card-body">
+        {% for p in proyectos %}
+          <a href="{% url 'proyecto_detalle' p.pk %}" class="d-block text-reset text-decoration-none mb-3">
+            <div class="d-flex justify-content-between small mb-1">
+              <span class="fw-semibold">{{ p.nombre }}</span>
+              <span class="text-muted">{{ p.avance }}%</span>
+            </div>
+            <div class="xnx-progress"><div class="xnx-progress-bar" style="width: {{ p.avance }}%"></div></div>
+          </a>
+        {% empty %}
+          <div class="xnx-vacio"><i class="bi bi-kanban"></i><p class="small mt-2 mb-0">Todavía no tienes proyectos.</p></div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="xnx-card">
+      <div class="xnx-card-header">
+        <span class="xnx-card-title"><i class="bi bi-check2-square me-2"></i>Mis tareas pendientes ({{ total_pendientes }})</span>
+        <a href="{% url 'tareas' %}" class="xnx-card-action">Ver todas</a>
+      </div>
+      <div class="xnx-card-body">
+        {% for t in mis_tareas %}
+          <div class="activity-item">
+            <div>
+              <div class="activity-text fw-semibold">{{ t.titulo }}</div>
+              <div class="activity-time">{{ t.proyecto }} · {% if t.fecha_vencimiento %}{% if t.vencida %}<span class="text-danger">venció el {{ t.fecha_vencimiento|date:"j M" }}</span>{% else %}vence el {{ t.fecha_vencimiento|date:"j M" }}{% endif %}{% else %}sin fecha{% endif %}</div>
+            </div>
+          </div>
+        {% empty %}
+          <div class="xnx-vacio"><i class="bi bi-emoji-smile"></i><p class="small mt-2 mb-0">No tienes tareas pendientes.</p></div>
+        {% endfor %}
+      </div>
     </div>
   </div>
 {% endblock %}

@@ -13,4 +13,9 @@ urlpatterns = [
     path("recuperar/enviado/", views.RecuperarEnviadoView.as_view(), name="recuperar_enviado"),
     path("recuperar/<uidb64>/<token>/", views.NuevaContrasenaView.as_view(), name="password_reset_confirm"),
     path("recuperar/listo/", views.RecuperarListoView.as_view(), name="recuperar_listo"),
+
+    # Mi cuenta: cada persona ve, edita y puede eliminar su propia información
+    path("mi-cuenta/", views.mi_cuenta, name="mi_cuenta"),
+    path("mi-cuenta/contrasena/", views.cambiar_contrasena, name="cambiar_contrasena"),
+    path("mi-cuenta/eliminar/", views.eliminar_cuenta, name="eliminar_cuenta"),
 ]

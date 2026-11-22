@@ -1,6 +1,7 @@
 {% extends "base_dashboard.html" %}
 
 {% block titulo %}{{ seccion }}{% endblock %}
+{% block volver %}{% url 'panel' as destino %}{% include "partials/volver.html" with url=destino texto="Panel" %}{% endblock %}
 {% block titulo_pagina %}{{ seccion }}{% endblock %}
 {% block subtitulo_pagina %}En construcción{% endblock %}
 
