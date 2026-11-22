@@ -149,7 +149,12 @@ python manage.py migrate
 # 6. (Opcional) Crear un administrador para /admin
 python manage.py createsuperuser
 
-# 7. Iniciar el servidor
+# 7. (Opcional) Cargar un equipo, proyectos y tareas de ejemplo en la empresa
+#    del usuario. El usuario debe existir antes (paso 6 o /cuentas/registro/);
+#    si no tiene empresa, se le crea "Empresa demo".
+python manage.py cargar_demo tu@correo.com
+
+# 8. Levantar el servidor
 python manage.py runserver
 ```
 
@@ -186,10 +191,55 @@ DB_PORT=3306
 ```
 
 El diagrama entidad-relación está en [`docs/modelo_datos.md`](docs/modelo_datos.md)
-y la estructura en SQL en [`docs/xincronix_bd.sql`](docs/xincronix_bd.sql).
+y la estructura en SQL en [`xincronix_bd.sql`](xincronix_bd.sql).
 
 > Borra los datos desde la aplicación o desde `/admin`, no con `DELETE`
 > directo en phpMyAdmin.
+
+---
+
+## Modelo de datos
+
+Las tablas siguen el esquema de [xincronix_bd.sql](xincronix_bd.sql)
+(mismos nombres de tablas, columnas, índices y restricciones). Ese archivo
+es solo una referencia: las tablas las crea `python manage.py migrate`.
+
+| Tabla | App | Qué guarda |
+|---|---|---|
+| `empresa` | cuentas | la empresa; todo lo demás pertenece a una |
+| `roles` | cuentas | admin, manager, supervisor y colaborador (los crea la migración) |
+| `usuarios` | cuentas | nombres, apellidos, correo, cargo, empresa y rol |
+| `equipos` / `miembros_equipo` | dashboard | equipos de la empresa y quién está en cada uno |
+| `proyecto` / `proyecto_miembros` | dashboard | proyectos (estado, importancia 1-4, tipo, fechas, equipo) y sus miembros |
+| `tareas` | dashboard | estado, prioridad, vencimiento, asignada a y creada por |
+| `actividad` | dashboard | historial ("Ana completó la tarea X") que se muestra en el panel |
+
+Reglas:
+
+- Al registrarse se crea la empresa y quien se registra queda como **administrador**.
+- Nadie ve datos de otra empresa. Admin, manager y supervisor ven todos los
+  proyectos de su empresa; un colaborador solo los que creó, aquellos donde
+  lo agregaron como miembro o los de sus equipos.
+- No se guarda nada que se pueda calcular: el **% de avance** de un proyecto
+  se obtiene contando sus tareas completadas.
+- Estados, tipos y prioridades son opciones fijas (no texto libre).
+- Mientras se construyen las pantallas de la fase 3, los proyectos, equipos y
+  tareas se crean desde `/admin/` (eso también registra la actividad).
+- Las demás tablas del esquema (ideas, lienzos, mensajes, notificaciones, IA,
+  etc.) se agregan en las fases siguientes.
+
+---
+
+## Páginas
+
+| URL | Página |
+|---|---|
+| `/` | Inicio (por ahora redirige al login o al panel) |
+| `/cuentas/login/` | Iniciar sesión |
+| `/cuentas/registro/` | Crear cuenta (y la empresa) |
+| `/cuentas/recuperar/` | Recuperar contraseña |
+| `/app/` | Panel (requiere sesión) |
+| `/admin/` | Administración de Django |
 
 ---
 
@@ -197,17 +247,18 @@ y la estructura en SQL en [`docs/xincronix_bd.sql`](docs/xincronix_bd.sql).
 
 ```
 XINCRONIX/
-├── config/          configuración general (settings, urls)
-├── cuentas/         cuentas, empresas, roles y equipos
-├── dashboard/       panel, proyectos, tareas, analytics, ideas y canvas
-├── comunicacion/    mensajes, reuniones, calendario, asistente IA y soporte
-├── sitio/           página pública de inicio
-├── templates/       plantillas base
-├── static/          CSS, JS e imágenes
-├── docs/            modelo de datos y plan de sprints
-├── scripts/         publicar el backlog en GitHub
-├── requirements.txt dependencias
-└── .env.example     guía para crear .env
+├── .venv/               entorno virtual (no se sube a git)
+├── .env                 secretos (no se sube a git)
+├── .env.example         guía para crear .env
+├── requirements.txt     dependencias exactas
+├── manage.py            comandos de Django
+├── xincronix_bd.sql     esquema de referencia de la base de datos
+├── config/              configuración general (settings, urls)
+├── cuentas/             empresas, roles y usuarios: login, registro, recuperar contraseña
+├── dashboard/           panel, equipos, proyectos, tareas, actividad (luego analytics, ideas, canvas)
+├── sitio/               página pública de inicio
+├── templates/           plantillas base compartidas
+└── static/              CSS, JS e imágenes
 ```
 
 ---
@@ -233,3 +284,12 @@ Una historia está terminada cuando cumple sus criterios de aceptación, tiene
 pruebas y `python manage.py test` pasa, funciona en modo claro, oscuro y en
 móvil, respeta los permisos, incluye su migración si cambia el modelo de datos
 y su pull request fue revisado por otra persona.
+
+---
+
+## Avance por fases
+
+- [x] Fase 1: entorno, proyecto, login, registro, recuperar contraseña, modo oscuro
+- [x] Fase 2: modelos (proyectos, tareas, actividad) y panel con datos reales
+- [ ] Fase 3: proyectos, tareas y analytics
+- [ ] Fase 4: ideas, canvas, página de inicio e información

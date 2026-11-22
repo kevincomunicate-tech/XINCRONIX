@@ -51,7 +51,7 @@
           <div class="xnx-avatar">{{ request.user.iniciales }}</div>
           <div>
             <div class="user-name">{{ request.user.get_full_name|default:request.user.email }}</div>
-            <div class="user-role">{{ request.user.get_rol_display }}</div>
+            <div class="user-role">{{ request.user.rol|default:"" }}</div>
           </div>
           {# En Django 5 cerrar sesión debe ser POST #}
           <form method="post" action="{% url 'logout' %}" class="ms-auto">

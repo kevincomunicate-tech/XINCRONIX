@@ -4,20 +4,24 @@ from django.core import mail
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import Usuario
+from .models import Empresa, Rol, Usuario
 
 
 class RegistroTests(TestCase):
     def test_registro_crea_usuario_e_inicia_sesion(self):
         r = self.client.post(reverse("registro"), {
             "nombre": "Yohan Cuellar",
+            "empresa": "  Xincronix   SAS ",
             "email": "Yohan@Empresa.com",
             "password": "Clave$egura2026",
         })
         self.assertRedirects(r, reverse("panel"))
         usuario = Usuario.objects.get(email="yohan@empresa.com")  # se guarda en minúsculas
-        self.assertEqual(usuario.first_name, "Yohan")
-        self.assertEqual(usuario.last_name, "Cuellar")
+        self.assertEqual(usuario.nombres, "Yohan")
+        self.assertEqual(usuario.apellidos, "Cuellar")
+        # crea su empresa y queda como administrador
+        self.assertEqual(usuario.empresa.nombre, "Xincronix SAS")
+        self.assertEqual(usuario.rol.codigo, Rol.ADMIN)
         self.assertEqual(usuario.iniciales, "YC")
         self.assertTrue(usuario.check_password("Clave$egura2026"))  # cifrada, no en texto plano
         # quedó con la sesión iniciada
@@ -26,26 +30,53 @@ class RegistroTests(TestCase):
     def test_correo_repetido(self):
         Usuario.objects.create_user("ana@empresa.com", "Clave$egura2026")
         r = self.client.post(reverse("registro"), {
-            "nombre": "Ana Ruiz", "email": "ana@empresa.com", "password": "OtraClave#2026",
+            "nombre": "Ana Ruiz", "empresa": "Acme", "email": "ana@empresa.com", "password": "OtraClave#2026",
         })
         self.assertContains(r, "Ya existe una cuenta con este correo.")
         self.assertEqual(Usuario.objects.count(), 1)
+        self.assertEqual(Empresa.objects.count(), 0)  # no deja empresas sueltas
 
     def test_validaciones(self):
         r = self.client.post(reverse("registro"), {"nombre": "Ana", "email": "no-es-correo", "password": "123"})
         self.assertContains(r, "Escribe tu nombre y tu apellido.")
+        self.assertContains(r, "Nombre de la empresa")
         self.assertContains(r, "has-error")
         self.assertEqual(Usuario.objects.count(), 0)
 
     def test_contrasena_comun_rechazada(self):
-        r = self.client.post(reverse("registro"), {"nombre": "Ana Ruiz", "email": "ana@empresa.com", "password": "password123"})
+        r = self.client.post(reverse("registro"), {"nombre": "Ana Ruiz", "empresa": "Acme", "email": "ana@empresa.com", "password": "password123"})
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(Usuario.objects.count(), 0)
+
+    def test_contrasena_parecida_al_nombre_rechazada(self):
+        r = self.client.post(reverse("registro"), {
+            "nombre": "Bartolomeo Quintanilla", "empresa": "Acme", "email": "bq@empresa.com",
+            "password": "Bartolomeo",
+        })
         self.assertEqual(r.status_code, 200)
         self.assertEqual(Usuario.objects.count(), 0)
 
 
+class UsuarioTests(TestCase):
+    def test_roles_iniciales(self):
+        codigos = set(Rol.objects.values_list("codigo", flat=True))
+        self.assertEqual(codigos, {"admin", "manager", "supervisor", "colaborador"})
+
+    def test_roles_por_defecto(self):
+        self.assertEqual(Usuario.objects.create_user("a@e.com", "x").rol.codigo, Rol.COLABORADOR)
+        self.assertEqual(Usuario.objects.create_superuser("b@e.com", "x").rol.codigo, Rol.ADMIN)
+
+    def test_tablas_del_esquema(self):
+        self.assertEqual(Usuario._meta.db_table, "usuarios")
+        self.assertEqual(Usuario._meta.get_field("id").column, "id_usuario")
+        self.assertEqual(Usuario._meta.get_field("is_active").column, "estado")
+        self.assertEqual(Usuario._meta.get_field("empresa").column, "id_empresa")
+        self.assertEqual(Usuario._meta.get_field("rol").column, "id_roles")
+
+
 class LoginTests(TestCase):
     def setUp(self):
-        Usuario.objects.create_user("ana@empresa.com", "Clave$egura2026", first_name="Ana")
+        Usuario.objects.create_user("ana@empresa.com", "Clave$egura2026", nombres="Ana")
 
     def test_login_con_correo(self):
         r = self.client.post(reverse("login"), {"username": "ANA@empresa.com", "password": "Clave$egura2026"})

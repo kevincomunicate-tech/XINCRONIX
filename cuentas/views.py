@@ -27,7 +27,7 @@ def registro(request):
     if request.method == "POST" and form.is_valid():
         usuario = form.save()
         login(request, usuario)
-        messages.success(request, f"¡Bienvenido, {usuario.first_name}! Tu cuenta quedó creada.")
+        messages.success(request, f"¡Bienvenido, {usuario.nombres}! Tu cuenta quedó creada.")
         return redirect("panel")
 
     return render(request, "cuentas/registro.html", {"form": form})

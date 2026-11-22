@@ -1,17 +1,123 @@
 {% extends "base_dashboard.html" %}
+{% load humanize %}
 
 {% block titulo %}Panel{% endblock %}
-{% block titulo_pagina %}Hola, {{ request.user.first_name|default:"bienvenido" }} 👋{% endblock %}
+{% block titulo_pagina %}Hola, {{ request.user.nombres|default:"bienvenido" }} 👋{% endblock %}
 {% block subtitulo_pagina %}{% now "l j \d\e F" %}{% endblock %}
 
 {% block contenido %}
-  {# Fase 2: estadísticas, actividad reciente y progreso de proyectos con datos reales #}
-  <div class="xnx-card">
-    <div class="xnx-card-header">
-      <span class="xnx-card-title">Tu espacio de trabajo</span>
+  {% if sin_empresa %}
+    <div class="alert alert-warning small">
+      <i class="bi bi-building-exclamation me-1"></i>
+      Tu cuenta no pertenece a ninguna empresa, así que no hay proyectos que mostrar.
+      Pide a un administrador que te agregue a una.
     </div>
-    <div class="xnx-card-body">
-      <p class="mb-0 text-muted">Sesión iniciada como <strong>{{ request.user.email }}</strong>. En la fase 2 aquí aparecerán tus proyectos, tareas y actividad.</p>
+  {% endif %}
+
+  {# ── Estadísticas ── #}
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon-wrap mb-3"><i class="bi bi-kanban"></i></div>
+      <div class="stat-label">Proyectos activos</div>
+      <div class="stat-value">{{ estadisticas.proyectos_activos }}</div>
+      <div class="stat-trend"><i class="bi bi-arrow-up-short"></i> {{ estadisticas.proyectos_este_mes }} nuevo{{ estadisticas.proyectos_este_mes|pluralize }} este mes</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon-wrap mb-3"><i class="bi bi-check2-circle"></i></div>
+      <div class="stat-label">Tareas completadas</div>
+      <div class="stat-value">{{ estadisticas.tareas_completadas }}</div>
+      <div class="stat-trend"><i class="bi bi-arrow-up-short"></i> {{ estadisticas.completadas_semana }} esta semana</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon-wrap mb-3"><i class="bi bi-hourglass-split"></i></div>
+      <div class="stat-label">Mis tareas pendientes</div>
+      <div class="stat-value">{{ estadisticas.mis_pendientes }}</div>
+      <div class="stat-trend{% if estadisticas.mis_vencidas %} down{% endif %}">
+        <i class="bi bi-exclamation-circle"></i> {{ estadisticas.mis_vencidas }} vencida{{ estadisticas.mis_vencidas|pluralize }}
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+    {# ── Actividad reciente ── #}
+    <div class="xnx-card">
+      <div class="xnx-card-header">
+        <span class="xnx-card-title">Actividad reciente</span>
+      </div>
+      <div class="xnx-card-body py-1" id="actividadesContainer">
+        {% for a in actividades %}
+          <div class="activity-item">
+            <div class="xnx-avatar sm">{% if a.usuario %}{{ a.usuario.iniciales }}{% else %}?{% endif %}</div>
+            <div>
+              <div class="activity-text">
+                <strong>{{ a.usuario|default:"Alguien" }}</strong> {{ a.descripcion }}
+              </div>
+              <div class="activity-time"><i class="bi bi-clock me-1"></i>{{ a.fecha|naturaltime }}</div>
+            </div>
+          </div>
+        {% empty %}
+          <div class="text-center py-5 text-muted small">
+            <i class="bi bi-activity d-block fs-3 mb-2"></i>
+            Todavía no hay actividad. Aquí verás lo que pasa en tus proyectos.
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="d-flex flex-column gap-4">
+      {# ── Progreso de proyectos ── #}
+      <div class="xnx-card">
+        <div class="xnx-card-header">
+          <span class="xnx-card-title">Progreso proyectos</span>
+          <a href="{% url 'proyectos' %}" class="xnx-card-action">Ver todos</a>
+        </div>
+        <div class="xnx-card-body" id="progresoContainer">
+          {% for p in progreso %}
+            <div class="mb-3">
+              <div class="d-flex justify-content-between mb-1">
+                <span class="small fw-500">{{ p.nombre }}</span>
+                <span class="small fw-600">{{ p.progreso }}%</span>
+              </div>
+              <div class="xnx-progress" role="progressbar" aria-label="Avance de {{ p.nombre }}"
+                   aria-valuenow="{{ p.progreso }}" aria-valuemin="0" aria-valuemax="100">
+                <div class="xnx-progress-bar" style="width:{{ p.progreso }}%"></div>
+              </div>
+              <div class="text-muted" style="font-size:10px;margin-top:4px">
+                {{ p.tareas_completadas }} de {{ p.total_tareas }} tarea{{ p.total_tareas|pluralize }}
+              </div>
+            </div>
+          {% empty %}
+            <div class="text-center py-4 text-muted small">No tienes proyectos activos.</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      {# ── Mis próximas tareas ── #}
+      <div class="xnx-card">
+        <div class="xnx-card-header">
+          <span class="xnx-card-title">Mis próximas tareas</span>
+          <a href="{% url 'tareas' %}" class="xnx-card-action">Ver todas</a>
+        </div>
+        <div class="xnx-card-body py-1">
+          {% for t in proximas %}
+            <div class="activity-item">
+              <div>
+                <div class="activity-text"><strong>{{ t.titulo }}</strong> · {{ t.proyecto.nombre }}</div>
+                <div class="activity-time">
+                  <i class="bi bi-calendar-event me-1"></i>
+                  {% if t.fecha_vencimiento %}
+                    {% if t.vencida %}<span class="text-danger">Venció {{ t.fecha_vencimiento|naturalday:"j M" }}</span>
+                    {% else %}Vence {{ t.fecha_vencimiento|naturalday:"j M" }}{% endif %}
+                  {% else %}Sin fecha{% endif %}
+                  · {{ t.get_estado_display }}
+                </div>
+              </div>
+            </div>
+          {% empty %}
+            <div class="text-center py-4 text-muted small">No tienes tareas pendientes. 🎉</div>
+          {% endfor %}
+        </div>
+      </div>
     </div>
   </div>
 {% endblock %}
