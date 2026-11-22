@@ -4,7 +4,7 @@ from django.core import mail
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import Usuario
+from .models import Rol, Usuario
 
 
 class RegistroTests(TestCase):
@@ -20,8 +20,14 @@ class RegistroTests(TestCase):
         self.assertEqual(usuario.last_name, "Cuellar")
         self.assertEqual(usuario.iniciales, "YC")
         self.assertTrue(usuario.check_password("Clave$egura2026"))  # cifrada, no en texto plano
-        # quedó con la sesión iniciada
-        self.assertEqual(self.client.get(reverse("panel")).status_code, 200)
+        # Queda como USUARIO NORMAL y sin empresa: la crea él en "Mi empresa"
+        self.assertIsNone(usuario.empresa)
+        self.assertEqual(usuario.rol.codigo, Rol.USUARIO)
+        # quedó con la sesión iniciada, y la barra muestra su nombre y su rol
+        panel = self.client.get(reverse("panel"))
+        self.assertEqual(panel.status_code, 200)
+        self.assertContains(panel, '<div class="user-name">Yohan Cuellar</div>', html=True)
+        self.assertContains(panel, '<div class="user-role">Usuario</div>', html=True)
 
     def test_correo_repetido(self):
         Usuario.objects.create_user("ana@empresa.com", "Clave$egura2026")

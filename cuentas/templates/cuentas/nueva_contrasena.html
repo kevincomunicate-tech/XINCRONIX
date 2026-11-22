@@ -9,6 +9,8 @@
   <div class="left-feature"><div class="left-feature-icon"><i class="bi bi-arrow-repeat"></i></div>No repitas una contraseña anterior</div>
 {% endblock %}
 
+{% block volver %}{% url 'login' as destino %}{% include "partials/volver_auth.html" with url=destino texto="Volver al login" %}{% endblock %}
+
 {% block contenido %}
   {% if validlink %}
     <h1 class="form-title">Restablecer contraseña</h1>
