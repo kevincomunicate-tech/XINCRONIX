@@ -1,0 +1,36 @@
+{% extends "base_dashboard.html" %}
+{% comment %}
+  Página genérica para confirmar una eliminación.
+  Contexto: titulo, objeto (texto), consecuencias (lista), url_cancelar, form (opcional)
+{% endcomment %}
+
+{% block titulo %}{{ titulo }}{% endblock %}
+{% block volver %}{% include "partials/volver.html" with url=url_cancelar texto="Volver" %}{% endblock %}
+{% block titulo_pagina %}{{ titulo }}{% endblock %}
+{% block subtitulo_pagina %}Esta acción no se puede deshacer{% endblock %}
+
+{% block contenido %}
+  <div class="xnx-card" style="max-width: 680px">
+    <div class="xnx-card-body">
+      <div class="d-flex gap-3 align-items-start">
+        <i class="bi bi-exclamation-triangle-fill text-danger fs-3"></i>
+        <div>
+          <h2 class="h6 fw-bold mb-2">¿Seguro que quieres eliminar «{{ objeto }}»?</h2>
+          {% if consecuencias %}
+            <ul class="small text-muted mb-3 ps-3">
+              {% for texto in consecuencias %}<li>{{ texto }}</li>{% endfor %}
+            </ul>
+          {% endif %}
+        </div>
+      </div>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% if form %}<div class="mb-3">{% include "partials/formulario.html" with form=form %}</div>{% endif %}
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-danger"><i class="bi bi-trash3 me-1"></i>Sí, eliminar</button>
+          <a href="{{ url_cancelar }}" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

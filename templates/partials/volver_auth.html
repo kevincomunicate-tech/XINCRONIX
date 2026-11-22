@@ -1,0 +1,2 @@
+{# Flecha de regreso en las páginas de acceso. Uso: {% url 'login' as destino %}{% include "partials/volver_auth.html" with url=destino texto="Volver al login" %} #}
+<a href="{{ url }}" class="auth-volver" aria-label="{{ texto }}"><i class="bi bi-arrow-left"></i><span>{{ texto }}</span></a>

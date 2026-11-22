@@ -1,0 +1,26 @@
+{% comment %}
+  Dibuja los campos de un formulario con Bootstrap (errores incluidos).
+  Uso:  {% include "partials/formulario.html" with form=form %}
+  Opcional: una_columna=True (para tarjetas angostas)
+{% endcomment %}
+{% for error in form.non_field_errors %}
+  <div class="alert alert-danger py-2 small" role="alert"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>
+{% endfor %}
+<div class="row g-3">
+  {% for campo in form.visible_fields %}
+    <div class="{% if una_columna or campo.field.widget.input_type == 'checkbox' %}col-12{% elif campo.field.widget.attrs.rows or campo.name == 'descripcion' or campo.name == 'direccion' %}col-12{% else %}col-md-6{% endif %}">
+      {% if campo.field.widget.input_type == "checkbox" %}
+        <div class="form-check">
+          {{ campo }}
+          <label class="form-check-label" for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+        </div>
+      {% else %}
+        <label class="form-label fw-semibold small" for="{{ campo.id_for_label }}">{{ campo.label }}{% if campo.field.required %} *{% endif %}</label>
+        {{ campo }}
+      {% endif %}
+      {% if campo.help_text %}<div class="form-text">{{ campo.help_text }}</div>{% endif %}
+      {% for error in campo.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+    </div>
+  {% endfor %}
+</div>
+{% for campo in form.hidden_fields %}{{ campo }}{% endfor %}
