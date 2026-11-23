@@ -1,0 +1,33 @@
+{% extends "base_dashboard.html" %}
+
+{% block titulo %}Equipos{% endblock %}
+{% block titulo_pagina %}Equipos{% endblock %}
+{% block subtitulo_pagina %}Organiza a las personas de {{ request.user.empresa.nombre }}{% endblock %}
+{% block accion_principal %}
+  <a class="btn btn-outline-primary btn-sm" href="{% url 'miembros' %}"><i class="bi bi-people me-1"></i>Integrantes</a>
+  {% if puede_administrar %}<a class="btn btn-primary btn-sm xnx-action-create" href="{% url 'equipo_crear' %}"><i class="bi bi-plus-lg me-1"></i>Crear equipo</a>{% endif %}
+{% endblock %}
+
+{% block contenido %}
+  <div class="xnx-card">
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead><tr><th>Equipo</th><th>Integrantes</th><th>Proyectos</th>{% if puede_administrar %}<th class="text-end">Acciones</th>{% endif %}</tr></thead>
+        <tbody>
+          {% for equipo in equipos %}
+            <tr>
+              <td><strong>{{ equipo.nombre }}</strong>{% if equipo.descripcion %}<div class="small text-muted">{{ equipo.descripcion|truncatechars:120 }}</div>{% endif %}</td>
+              <td>{{ equipo.cantidad_miembros }}</td><td>{{ equipo.cantidad_proyectos }}</td>
+              {% if puede_administrar %}<td class="text-end text-nowrap">
+                <a class="btn btn-sm btn-outline-secondary" href="{% url 'equipo_editar' equipo.pk %}">Editar</a>
+                <a class="btn btn-sm btn-outline-danger" href="{% url 'equipo_eliminar' equipo.pk %}">Eliminar</a>
+              </td>{% endif %}
+            </tr>
+          {% empty %}
+            <tr><td colspan="4" class="text-center text-muted py-5">Aún no hay equipos{% if puede_administrar %}. Crea uno para organizar a tu empresa{% endif %}.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}

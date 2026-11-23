@@ -1,8 +1,8 @@
 # Xincronix
 
-Xincronix es una plataforma web donde las empresas organizan el trabajo de
-sus equipos en un solo lugar: proyectos, tareas, ideas y una pizarra
-compartida, con indicadores para ver cómo avanza todo.
+Xincronix es una plataforma para planificar proyectos tecnológicos de forma
+individual o en equipo, organizar su trabajo en un tablero Kanban y vincular
+repositorios públicos, issues y pull requests de GitHub como referencias.
 
 ---
 
@@ -16,22 +16,27 @@ compartida, con indicadores para ver cómo avanza todo.
 
 ---
 
-## Partes del proyecto
+## Módulos disponibles
 
 Para usar cualquier módulo primero hay que **registrarse** e **iniciar
 sesión**. Al registrarse, la persona recibe su propia empresa y queda como
-**Administrador**; desde ahí invita a su equipo.
+**Administrador**. Admin y Manager pueden crear y administrar integrantes; al
+crear una cuenta de integrante se define su contraseña inicial.
 
-| Módulo | Para qué sirve | Ruta | Necesitas antes |
-|---|---|---|---|
-| **Cuentas** | Crear la cuenta, entrar y recuperar la contraseña | `/cuentas/registro/` · `/cuentas/login/` | — |
-| **Panel** | Ver de un vistazo cómo va el trabajo | `/app/` | Iniciar sesión |
-| **Empresas y equipos** | Agrupar a las personas de la empresa en equipos, con su rol | `/app/equipo/` | Ser Administrador o Manager |
-| **Proyectos** | Crear proyectos, sumar miembros y organizarlos en un Kanban | `/app/proyectos/` | Iniciar sesión |
-| **Tareas** | Repartir el trabajo con responsable, prioridad y fecha | `/app/tareas/` | Tener un proyecto |
-| **Analytics** | Medir el avance frente a las metas | `/app/analytics/` | Tener tareas |
-| **Tablero de ideas** | Proponer y votar ideas en equipo | `/app/ideas/` | Iniciar sesión |
-| **Canvas** | Diseñar en conjunto sobre una pizarra compartida | `/app/canvas/` | Iniciar sesión |
+| Módulo | Funcionalidad | Ruta |
+|---|---|---|
+| **Cuentas** | Registro de empresa, inicio de sesión y recuperación de contraseña | `/cuentas/registro/` · `/cuentas/login/` |
+| **Panel** | Resumen de proyectos y tareas visibles para la persona | `/app/` |
+| **Empresas y equipos** | CRUD de integrantes, roles y equipos, aislados por empresa | `/app/equipo/` · `/app/equipo/miembros/` |
+| **Proyectos** | CRUD de proyectos individuales o de equipo, con fechas, prioridad y repositorio público opcional | `/app/proyectos/` |
+| **Tareas** | Tablero Kanban por estado y CRUD de tareas, con responsable, prioridad y fecha límite | `/app/tareas/` |
+| **Referencias GitHub** | Guardar enlaces de un repositorio, issues y pull requests; sin sincronización ni cambios en GitHub | Desde cada proyecto |
+
+**Pendiente de implementar:** Analytics, tablero de ideas, Canvas, asistente
+virtual, automatizaciones y seguimiento de despliegues. Las rutas de Analytics,
+ideas, Canvas y automatizaciones aún muestran páginas provisionales. La
+vinculación actual con GitHub guarda enlaces manuales: no verifica la visibilidad
+del repositorio ni consulta su API.
 
 Todo funciona en **modo claro y oscuro**.
 
@@ -58,12 +63,9 @@ flowchart LR
     subgraph APP [Aplicación: con sesión iniciada]
         direction TB
         P[Panel<br>/app/]
-        P --> E[Equipo<br>/app/equipo/]
-        P --> A[Analytics<br>/app/analytics/]
-        P --> ID[Ideas<br>/app/ideas/]
-        P --> CV[Canvas<br>/app/canvas/]
-        P --> PR[Proyectos + Kanban<br>/app/proyectos/]
+        P --> PR[Proyectos<br>/app/proyectos/]
         PR -->|cada proyecto tiene| T[Tareas<br>/app/tareas/]
+        P --> E[Equipos e integrantes<br>/app/equipo/]
     end
 ```
 
@@ -72,26 +74,26 @@ flowchart LR
 1. **Regístrate** en `/cuentas/registro/` o **inicia sesión** en `/cuentas/login/`.
 2. Llegas al **Panel** (`/app/`).
 3. En la barra superior, entra a **Proyectos**.
-4. Pulsa **Nuevo proyecto** y llena nombre, tipo, importancia, fechas y equipo.
-5. El proyecto aparece en la lista y en la actividad reciente del panel.
-6. Agrega **miembros** con su rol: responsable, colaborador u observador.
-7. En el **Kanban**, crea tareas y muévelas: Por hacer → En progreso → En revisión → Completada.
+4. Pulsa **Crear proyecto** y llena nombre, descripción, prioridad, fechas y equipo.
+5. Agrega integrantes activos de la misma empresa al proyecto.
+6. Desde el tablero, crea tareas y asígnales estado, prioridad, responsable y fecha límite.
+7. Si el proyecto tiene un repositorio público, agrega enlaces a sus issues y pull requests desde **Referencias**.
 
 ### Qué puede hacer cada rol
 
 | Acción | Administrador | Manager | Supervisor | Colaborador |
 |---|---|---|---|---|
 | Ver todos los proyectos de la empresa | ✅ | ✅ | ✅ | Solo donde participa |
-| Crear proyectos, tareas e ideas | ✅ | ✅ | ✅ | ✅ |
+| Crear proyectos y tareas | ✅ | ✅ | ✅ | ✅ |
 | Editar cualquier proyecto | ✅ | ✅ | ❌ | Solo donde es miembro |
-| Agregar usuarios y crear equipos | ✅ | ✅ | ❌ | ❌ |
-| Editar un lienzo compartido | ✅ | ✅ | Solo ver | Según el permiso que le den |
+| Agregar integrantes y crear equipos | ✅ | ✅ | ❌ | ❌ |
+| Ver Analytics, ideas y Canvas | En construcción | En construcción | En construcción | En construcción |
 
 Nadie ve nunca la información de otra empresa.
 
 ---
 
-## Sprint actual — Sprint 2
+## Sprint 2 — base implementada
 
 | Módulos | Responsable | Fechas |
 |---|---|---|
@@ -102,25 +104,19 @@ Nadie ve nunca la información de otra empresa.
 > Cada empresa organiza a su gente en equipos y conoce de un vistazo el estado
 > real de su trabajo, sin tener que preguntarle a cada persona.
 
-**Qué entrega este sprint:**
+**Incluido en esta entrega:**
 - Cada empresa tiene sus propios usuarios, roles y equipos, separados de las demás.
 - Cada persona ve solo los proyectos y la información que le corresponden.
-- El panel muestra el resumen real del trabajo: proyectos activos, tareas
-  completadas y vencidas, actividad reciente y avance de cada proyecto.
-
-El plan de todos los sprints (historias de usuario, story points y criterios
-de aceptación) está en [`docs/plan_sprints.md`](docs/plan_sprints.md).
+- El panel muestra conteos reales de proyectos y tareas, completadas y vencidas.
 
 ---
 
 ## Tecnologías y requisitos
 
 - **Python 3.10+** con **Django 5.2**
-- **Base de datos:** SQLite (desarrollo) o MariaDB 10.5+ / MySQL 8+
-- **Interfaz:** Bootstrap 5.3, Bootstrap Icons y Chart.js
+- **Base de datos:** SQLite
+- **Interfaz:** Bootstrap 5.3 y Bootstrap Icons (cargados desde CDN)
 - **Git** y **pip**
-
-> El XAMPP con MariaDB 10.4 **no** es compatible con Django 5.2.
 
 ---
 
@@ -139,9 +135,10 @@ python -m venv .venv
 # 3. Instalar las dependencias
 pip install -r requirements.txt
 
-# 4. Crear el archivo .env (y cambiar la clave secreta)
+# 4. Opcional para desarrollo local: copiar la configuración de ejemplo
 #    Windows:        copy .env.example .env
 #    Linux / macOS:  cp .env.example .env
+#    En producción, configurar una clave secreta segura y DEBUG=False.
 
 # 5. Crear las tablas de la base de datos
 python manage.py migrate
@@ -172,24 +169,10 @@ imprimen en la terminal donde corre `runserver`.
 
 ## Base de datos
 
-Por defecto se usa **SQLite**, sin instalar nada. Para usar **MariaDB/MySQL**
-(por ejemplo, con phpMyAdmin), crea la base vacía `xincronix_bd`
-(`utf8mb4_unicode_ci`), configura `.env` y corre `python manage.py migrate`:
-
-```
-DB_ENGINE=mysql
-DB_NAME=xincronix_bd
-DB_USER=root
-DB_PASSWORD=
-DB_HOST=127.0.0.1
-DB_PORT=3306
-```
-
-El diagrama entidad-relación está en [`docs/modelo_datos.md`](docs/modelo_datos.md)
-y la estructura en SQL en [`docs/xincronix_bd.sql`](docs/xincronix_bd.sql).
-
-> Borra los datos desde la aplicación o desde `/admin`, no con `DELETE`
-> directo en phpMyAdmin.
+SQLite se configura automáticamente y no requiere un servidor aparte. Las
+migraciones crean las tablas y asignan un espacio de trabajo aislado a cada
+cuenta existente. Para cambiar a otro motor se debe configurar primero el
+backend y su controlador en `config/settings.py`.
 
 ---
 
@@ -199,13 +182,10 @@ y la estructura en SQL en [`docs/xincronix_bd.sql`](docs/xincronix_bd.sql).
 XINCRONIX/
 ├── config/          configuración general (settings, urls)
 ├── cuentas/         cuentas, empresas, roles y equipos
-├── dashboard/       panel, proyectos, tareas, analytics, ideas y canvas
-├── comunicacion/    mensajes, reuniones, calendario, asistente IA y soporte
+├── dashboard/       panel, equipos, proyectos y tareas
 ├── sitio/           página pública de inicio
 ├── templates/       plantillas base
 ├── static/          CSS, JS e imágenes
-├── docs/            modelo de datos y plan de sprints
-├── scripts/         publicar el backlog en GitHub
 ├── requirements.txt dependencias
 └── .env.example     guía para crear .env
 ```

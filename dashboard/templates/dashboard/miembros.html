@@ -1,0 +1,37 @@
+{% extends "base_dashboard.html" %}
+
+{% block titulo %}Integrantes{% endblock %}
+{% block titulo_pagina %}Integrantes{% endblock %}
+{% block subtitulo_pagina %}Personas de {{ request.user.empresa.nombre }}{% endblock %}
+{% block accion_principal %}
+  <a class="btn btn-outline-secondary btn-sm" href="{% url 'equipo' %}"><i class="bi bi-people me-1"></i>Equipos</a>
+  {% if puede_administrar %}<a class="btn btn-primary btn-sm" href="{% url 'miembro_crear' %}"><i class="bi bi-person-plus me-1"></i>Agregar integrante</a>{% endif %}
+{% endblock %}
+
+{% block contenido %}
+  <div class="xnx-card">
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead><tr><th>Integrante</th><th>Rol</th><th>Equipos</th><th>Estado</th>{% if puede_administrar %}<th class="text-end">Acciones</th>{% endif %}</tr></thead>
+        <tbody>
+          {% for miembro in miembros %}
+            <tr>
+              <td><strong>{{ miembro.get_full_name|default:miembro.email }}</strong><div class="small text-muted">{{ miembro.email }}</div></td>
+              <td>{{ miembro.get_rol_display }}</td>
+              <td>{% for equipo in miembro.equipos.all %}<span class="badge text-bg-light">{{ equipo.nombre }}</span> {% empty %}<span class="text-muted">Sin equipo</span>{% endfor %}</td>
+              <td>{% if miembro.is_active %}<span class="badge text-bg-success">Activo</span>{% else %}<span class="badge text-bg-secondary">Desactivado</span>{% endif %}</td>
+              {% if puede_administrar %}<td class="text-end text-nowrap">
+                {% if miembro.is_active and not miembro.is_superuser %}
+                  <a class="btn btn-sm btn-outline-secondary" href="{% url 'miembro_editar' miembro.pk %}">Editar</a>
+                  {% if miembro.pk != request.user.pk %}<a class="btn btn-sm btn-outline-danger" href="{% url 'miembro_eliminar' miembro.pk %}">Desactivar</a>{% endif %}
+                {% endif %}
+              </td>{% endif %}
+            </tr>
+          {% empty %}
+            <tr><td colspan="5" class="text-center text-muted py-5">Aún no hay integrantes.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}

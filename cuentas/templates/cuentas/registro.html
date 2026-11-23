@@ -6,7 +6,7 @@
 
 {% block insignia %}Crea tu cuenta · 2026{% endblock %}
 {% block titular %}Empieza a<br>organizar tu <em>empresa</em>{% endblock %}
-{% block subtitulo %}Solo necesitas tu nombre, tu correo y una contraseña. En menos de un minuto tendrás tu espacio de trabajo listo.{% endblock %}
+{% block subtitulo %}Crea el espacio de trabajo de tu empresa y conviértete en su administrador.{% endblock %}
 
 {% block caracteristicas %}
   <div class="left-feature"><div class="left-feature-icon"><i class="bi bi-robot"></i></div>Agentes de IA para tu equipo</div>
@@ -20,6 +20,7 @@
 
   <form id="registroForm" method="post" novalidate>
     {% csrf_token %}
+    {% include "partials/campo_auth.html" with campo=form.empresa icono="bi-building" %}
     {% include "partials/campo_auth.html" with campo=form.nombre icono="bi-person" %}
     {% include "partials/campo_auth.html" with campo=form.email icono="bi-envelope" %}
     {% include "partials/campo_auth.html" with campo=form.password icono="bi-lock" ver_password=True fortaleza=True %}

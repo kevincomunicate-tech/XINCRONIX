@@ -24,9 +24,11 @@ load_dotenv(BASE_DIR / ".env")
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "solo-para-desarrollo-cambiame")
 
-DEBUG = os.getenv("DJANGO_DEBUG", "True") == "True"
+DEBUG = os.getenv("DJANGO_DEBUG", "True").strip().lower() in {"1", "true", "yes", "on"}
 
 ALLOWED_HOSTS = [h.strip() for h in os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",") if h.strip()]
+if DEBUG:
+    ALLOWED_HOSTS.extend(["testserver"] if "testserver" not in ALLOWED_HOSTS else [])
 
 
 # ---------------------------------------------------------------------------
@@ -127,7 +129,7 @@ USE_TZ = True
 # Archivos estáticos (CSS, JS, imágenes)
 # ---------------------------------------------------------------------------
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 # Carpeta donde "collectstatic" junta todo para producción
 STATIC_ROOT = BASE_DIR / "staticfiles"

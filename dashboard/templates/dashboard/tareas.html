@@ -1,0 +1,54 @@
+{% extends "base_dashboard.html" %}
+
+{% block titulo %}Tareas{% endblock %}
+{% block titulo_pagina %}Tablero de tareas{% endblock %}
+{% block subtitulo_pagina %}{% if proyecto_seleccionado %}{{ proyecto_seleccionado.nombre }}{% else %}Organiza el trabajo de tus proyectos{% endif %}{% endblock %}
+{% block accion_principal %}
+  {% if proyecto_seleccionado %}<a class="btn btn-outline-primary btn-sm" href="{% url 'tareas' %}">Todos los proyectos</a>{% endif %}
+  <a class="btn btn-primary btn-sm xnx-action-create" href="{% url 'tarea_crear' %}{% if proyecto_seleccionado %}?proyecto={{ proyecto_seleccionado.pk }}{% endif %}"><i class="bi bi-plus-lg me-1"></i>Crear tarea</a>
+{% endblock %}
+
+{% block contenido %}
+  <div class="xnx-kanban" aria-label="Tablero de tareas">
+    {% for columna in columnas %}
+      <section class="xnx-kanban-column" aria-labelledby="estado-{{ columna.estado }}">
+        <header class="xnx-kanban-column-header">
+          <h2 id="estado-{{ columna.estado }}">{{ columna.nombre }}</h2>
+          <span class="badge rounded-pill text-bg-secondary">{{ columna.tareas|length }}</span>
+        </header>
+        <div class="xnx-kanban-cards">
+          {% for fila in columna.tareas %}
+            {% with tarea=fila.tarea %}
+              <article class="xnx-kanban-card">
+                <div class="d-flex justify-content-between align-items-start gap-2">
+                  <a class="xnx-kanban-card-title" href="{% if fila.editable %}{% url 'tarea_editar' tarea.pk %}{% else %}{% url 'tareas' %}?proyecto={{ tarea.proyecto.pk }}{% endif %}">{{ tarea.titulo }}</a>
+                  <span class="badge {% if tarea.prioridad == 'urgente' %}text-bg-danger{% elif tarea.prioridad == 'alta' %}text-bg-warning{% else %}text-bg-light{% endif %}">{{ tarea.get_prioridad_display }}</span>
+                </div>
+                {% if tarea.descripcion %}<p class="xnx-kanban-card-description">{{ tarea.descripcion|truncatechars:130 }}</p>{% endif %}
+                {% if not proyecto_seleccionado %}<a class="xnx-kanban-project" href="{% url 'tareas' %}?proyecto={{ tarea.proyecto.pk }}">{{ tarea.proyecto.nombre }}</a>{% endif %}
+                <div class="xnx-kanban-meta">
+                  <span>{% if tarea.responsable %}<i class="bi bi-person me-1"></i>{{ tarea.responsable.get_full_name|default:tarea.responsable.email }}{% else %}<i class="bi bi-person-plus me-1"></i>Sin asignar{% endif %}</span>
+                  {% if tarea.fecha_limite %}<span class="{% if tarea.vencida %}text-danger fw-semibold{% endif %}"><i class="bi bi-calendar3 me-1"></i>{{ tarea.fecha_limite|date:"j M" }}</span>{% endif %}
+                </div>
+                {% if fila.editable %}
+                  <form method="post" action="{% url 'tarea_cambiar_estado' tarea.pk %}" class="xnx-kanban-move">
+                    {% csrf_token %}
+                    <label class="visually-hidden" for="estado-tarea-{{ tarea.pk }}">Cambiar estado de {{ tarea.titulo }}</label>
+                    <select class="form-select form-select-sm" id="estado-tarea-{{ tarea.pk }}" name="estado">
+                      {% for estado, etiqueta in estados %}
+                        <option value="{{ estado }}"{% if estado == tarea.estado %} selected{% endif %}>{{ etiqueta }}</option>
+                      {% endfor %}
+                    </select>
+                    <button class="btn btn-sm btn-outline-secondary" type="submit" aria-label="Guardar estado de {{ tarea.titulo }}"><i class="bi bi-arrow-right"></i></button>
+                  </form>
+                {% endif %}
+              </article>
+            {% endwith %}
+          {% empty %}
+            <p class="xnx-kanban-empty">No hay tareas en este estado.</p>
+          {% endfor %}
+        </div>
+      </section>
+    {% endfor %}
+  </div>
+{% endblock %}

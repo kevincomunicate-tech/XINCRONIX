@@ -4,18 +4,21 @@ from django.core import mail
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import Usuario
+from .models import Empresa, Usuario
 
 
 class RegistroTests(TestCase):
     def test_registro_crea_usuario_e_inicia_sesion(self):
         r = self.client.post(reverse("registro"), {
+            "empresa": "Empresa de prueba",
             "nombre": "Yohan Cuellar",
             "email": "Yohan@Empresa.com",
             "password": "Clave$egura2026",
         })
         self.assertRedirects(r, reverse("panel"))
         usuario = Usuario.objects.get(email="yohan@empresa.com")  # se guarda en minúsculas
+        self.assertEqual(usuario.rol, Usuario.Rol.ADMIN)
+        self.assertEqual(usuario.empresa.nombre, "Empresa de prueba")
         self.assertEqual(usuario.first_name, "Yohan")
         self.assertEqual(usuario.last_name, "Cuellar")
         self.assertEqual(usuario.iniciales, "YC")
@@ -26,26 +29,46 @@ class RegistroTests(TestCase):
     def test_correo_repetido(self):
         Usuario.objects.create_user("ana@empresa.com", "Clave$egura2026")
         r = self.client.post(reverse("registro"), {
+            "empresa": "Empresa de prueba",
             "nombre": "Ana Ruiz", "email": "ana@empresa.com", "password": "OtraClave#2026",
         })
         self.assertContains(r, "Ya existe una cuenta con este correo.")
         self.assertEqual(Usuario.objects.count(), 1)
 
     def test_validaciones(self):
-        r = self.client.post(reverse("registro"), {"nombre": "Ana", "email": "no-es-correo", "password": "123"})
+        r = self.client.post(reverse("registro"), {"empresa": "Empresa", "nombre": "Ana", "email": "no-es-correo", "password": "123"})
         self.assertContains(r, "Escribe tu nombre y tu apellido.")
         self.assertContains(r, "has-error")
         self.assertEqual(Usuario.objects.count(), 0)
 
     def test_contrasena_comun_rechazada(self):
-        r = self.client.post(reverse("registro"), {"nombre": "Ana Ruiz", "email": "ana@empresa.com", "password": "password123"})
+        r = self.client.post(reverse("registro"), {"empresa": "Empresa", "nombre": "Ana Ruiz", "email": "ana@empresa.com", "password": "password123"})
         self.assertEqual(r.status_code, 200)
         self.assertEqual(Usuario.objects.count(), 0)
+
+    def test_correo_y_nombre_se_normalizan(self):
+        r = self.client.post(reverse("registro"), {
+            "empresa": "Empresa de Ana",
+            "nombre": "  Ana   María   Ruiz López ",
+            "email": "  Ana@Empresa.COM ",
+            "password": "Clave$egura2026",
+        })
+        self.assertRedirects(r, reverse("panel"))
+        usuario = Usuario.objects.get(email="ana@empresa.com")
+        self.assertEqual(usuario.first_name, "Ana")
+        self.assertEqual(usuario.last_name, "María Ruiz López")
 
 
 class LoginTests(TestCase):
     def setUp(self):
-        Usuario.objects.create_user("ana@empresa.com", "Clave$egura2026", first_name="Ana")
+        empresa = Empresa.objects.create(nombre="Empresa de Ana")
+        Usuario.objects.create_user(
+            "ana@empresa.com",
+            "Clave$egura2026",
+            first_name="Ana",
+            empresa=empresa,
+            rol=Usuario.Rol.ADMIN,
+        )
 
     def test_login_con_correo(self):
         r = self.client.post(reverse("login"), {"username": "ANA@empresa.com", "password": "Clave$egura2026"})
