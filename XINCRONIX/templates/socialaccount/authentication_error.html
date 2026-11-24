@@ -1,0 +1,15 @@
+{% extends "base_auth.html" %}
+{% load static %}
+{# Reemplaza la página de error de django-allauth con el diseño de Xincronix #}
+
+{% block titulo %}No se pudo entrar con Google{% endblock %}
+{% block css %}<link rel="stylesheet" href="{% static 'css/login.css' %}">{% endblock %}
+{% block volver %}{% url 'login' as destino %}{% include "partials/volver_auth.html" with url=destino texto="Volver al login" %}{% endblock %}
+{% block titular %}Algo salió<br>mal con <em>Google</em>{% endblock %}
+{% block subtitulo %}No te preocupes: tu cuenta está a salvo. Inténtalo de nuevo.{% endblock %}
+
+{% block contenido %}
+  <h1 class="form-title">No se pudo iniciar sesión con Google</h1>
+  <p class="form-sub">La respuesta de Google no era válida o la solicitud caducó. Vuelve a intentarlo desde el login.</p>
+  <a href="{% url 'login' %}" class="btn-login"><span class="btn-label">Volver a iniciar sesión <i class="bi bi-arrow-right"></i></span></a>
+{% endblock %}

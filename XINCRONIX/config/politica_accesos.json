@@ -1,0 +1,234 @@
+{
+  "version": 2,
+  "descripcion": "Política de roles y accesos de Xincronix. El código solo interpreta este archivo: para cambiar una regla se edita aquí, no en Python. Después de editarlo, reinicia runserver y corre 'python manage.py check'.",
+  "superadministradores": [
+    "cuellaryohan100@gmail.com",
+    "kevincomunicate@gmail.com",
+    "xincronix@gmail.com",
+    "felipe@gmail.com"
+  ],
+  "roles": {
+    "admin": {
+      "nombre": "Administrador",
+      "descripcion": "Gestiona todos los proyectos de su empresa. Solo el superadministrador puede dar este rol."
+    },
+    "manager": {
+      "nombre": "Manager",
+      "descripcion": "Gestiona los proyectos de su empresa (sin eliminarlos)."
+    },
+    "supervisor": {
+      "nombre": "Supervisor",
+      "descripcion": "Ve todos los proyectos de su empresa para hacer seguimiento."
+    },
+    "usuario": {
+      "nombre": "Usuario",
+      "descripcion": "Usuario normal: crea su empresa, sus proyectos y trabaja en los proyectos donde lo agregan."
+    }
+  },
+  "registro": {
+    "rol": "usuario",
+    "crear_empresa_propia": false
+  },
+  "perfiles": {
+    "superadministrador": {
+      "inicio": "administracion:inicio",
+      "puede_asignar": [
+        "admin",
+        "manager",
+        "supervisor",
+        "usuario"
+      ],
+      "acciones": [
+        "editar_cuenta"
+      ],
+      "menu": [
+        {
+          "texto": "Usuarios",
+          "url": "administracion:inicio",
+          "icono": "bi-person-gear"
+        },
+        {
+          "texto": "Empresas",
+          "url": "administracion:empresas",
+          "icono": "bi-buildings"
+        },
+        {
+          "texto": "Monitoreo",
+          "url": "administracion:monitoreo",
+          "icono": "bi-activity"
+        }
+      ]
+    },
+    "admin": {
+      "inicio": "panel",
+      "puede_asignar": [],
+      "acciones": [
+        "editar_cuenta",
+        "eliminar_cuenta",
+        "crear_empresa",
+        "crear_proyecto"
+      ],
+      "menu": [
+        {
+          "texto": "Mi empresa",
+          "url": "mi_empresa",
+          "icono": "bi-building"
+        }
+      ]
+    },
+    "usuario": {
+      "inicio": "panel",
+      "puede_asignar": [],
+      "acciones": [
+        "editar_cuenta",
+        "eliminar_cuenta",
+        "crear_empresa",
+        "crear_proyecto"
+      ],
+      "menu": [
+        {
+          "texto": "Mi empresa",
+          "url": "mi_empresa",
+          "icono": "bi-building"
+        }
+      ]
+    },
+    "manager": {
+      "inicio": "panel",
+      "puede_asignar": [],
+      "acciones": [
+        "editar_cuenta",
+        "eliminar_cuenta",
+        "crear_empresa",
+        "crear_proyecto"
+      ],
+      "menu": [
+        {
+          "texto": "Mi empresa",
+          "url": "mi_empresa",
+          "icono": "bi-building"
+        }
+      ]
+    },
+    "supervisor": {
+      "inicio": "panel",
+      "puede_asignar": [],
+      "acciones": [
+        "editar_cuenta",
+        "eliminar_cuenta",
+        "crear_empresa",
+        "crear_proyecto"
+      ],
+      "menu": [
+        {
+          "texto": "Mi empresa",
+          "url": "mi_empresa",
+          "icono": "bi-building"
+        }
+      ]
+    }
+  },
+  "empresas": {
+    "descripcion": "Permisos sobre una empresa: ver, editar, eliminar, metricas.",
+    "por_relacion": {
+      "propietario": [
+        "ver",
+        "editar",
+        "eliminar",
+        "metricas"
+      ],
+      "integrante": [
+        "ver",
+        "metricas"
+      ]
+    },
+    "por_perfil": {
+      "superadministrador": {
+        "alcance": "todas",
+        "permisos": [
+          "ver",
+          "editar",
+          "eliminar",
+          "metricas"
+        ]
+      },
+      "admin": {
+        "alcance": "empresa",
+        "permisos": [
+          "ver",
+          "editar",
+          "metricas"
+        ]
+      }
+    }
+  },
+  "proyectos": {
+    "descripcion": "Permisos sobre un proyecto: ver, editar (datos y fechas), eliminar, miembros (agregar/quitar), tareas (crear/editar/eliminar).",
+    "por_relacion": {
+      "creador": [
+        "ver",
+        "editar",
+        "eliminar",
+        "miembros",
+        "tareas"
+      ],
+      "responsable": [
+        "ver",
+        "editar",
+        "miembros",
+        "tareas"
+      ],
+      "editor": [
+        "ver",
+        "editar",
+        "tareas"
+      ],
+      "observador": [
+        "ver"
+      ],
+      "equipo": [
+        "ver",
+        "editar",
+        "tareas"
+      ]
+    },
+    "por_perfil": {
+      "superadministrador": {
+        "alcance": "todas",
+        "permisos": [
+          "ver"
+        ]
+      },
+      "admin": {
+        "alcance": "empresa",
+        "permisos": [
+          "ver",
+          "editar",
+          "eliminar",
+          "miembros",
+          "tareas"
+        ]
+      },
+      "manager": {
+        "alcance": "empresa",
+        "permisos": [
+          "ver",
+          "editar",
+          "miembros",
+          "tareas"
+        ]
+      },
+      "supervisor": {
+        "alcance": "empresa",
+        "permisos": [
+          "ver"
+        ]
+      }
+    }
+  },
+  "rutas_restringidas": {
+    "/administracion/": [
+      "superadministrador"
+    ]
+  }
+}

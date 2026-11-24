@@ -1,0 +1,9 @@
+{% comment %}
+  Pestañas del monitoreo. Cada vista manda "pestana" (resumen, tablas, sesiones o sistema).
+{% endcomment %}
+<nav class="xnx-pestanas mb-4" aria-label="Secciones del monitoreo">
+  <a href="{% url 'administracion:monitoreo' %}" class="xnx-pestana{% if pestana == 'resumen' %} activa{% endif %}"><i class="bi bi-speedometer2"></i> Resumen</a>
+  <a href="{% url 'administracion:monitoreo_tablas' %}" class="xnx-pestana{% if pestana == 'tablas' %} activa{% endif %}"><i class="bi bi-table"></i> Tablas</a>
+  <a href="{% url 'administracion:monitoreo_sesiones' %}" class="xnx-pestana{% if pestana == 'sesiones' %} activa{% endif %}"><i class="bi bi-person-badge"></i> Sesiones</a>
+  <a href="{% url 'administracion:monitoreo_sistema' %}" class="xnx-pestana{% if pestana == 'sistema' %} activa{% endif %}"><i class="bi bi-cpu"></i> Sistema</a>
+</nav>

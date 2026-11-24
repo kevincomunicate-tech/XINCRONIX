@@ -1,0 +1,82 @@
+{% extends "base_dashboard.html" %}
+
+{% block titulo %}Sistema · Monitoreo{% endblock %}
+{% block volver %}{% url 'administracion:inicio' as destino %}{% include "partials/volver.html" with url=destino texto="Administración" %}{% endblock %}
+{% block titulo_pagina %}Sistema{% endblock %}
+{% block subtitulo_pagina %}Base de datos, migraciones y revisiones{% endblock %}
+
+{% block contenido %}
+  {% include "administracion/monitoreo/_pestanas.html" %}
+
+  <div class="dashboard-grid mb-4">
+    <div class="xnx-card">
+      <div class="xnx-card-header"><span class="xnx-card-title"><i class="bi bi-database me-2"></i>Base de datos y servidor</span></div>
+      <table class="table mb-0 small">
+        <tbody>
+          <tr><th>Motor</th><td>{{ sistema.motor }}</td></tr>
+          <tr><th>Versión</th><td>{{ sistema.version_bd }}</td></tr>
+          <tr><th>Base de datos</th><td><code class="text-break">{{ sistema.nombre_bd }}</code></td></tr>
+          <tr><th>Servidor</th><td>{{ sistema.host }}</td></tr>
+          <tr><th>Tamaño</th><td>{{ sistema.tamano }}</td></tr>
+          <tr><th>Django / Python</th><td>{{ sistema.django }} / {{ sistema.python }}</td></tr>
+          <tr><th>Sistema operativo</th><td>{{ sistema.sistema }}</td></tr>
+          <tr><th>Zona horaria</th><td>{{ sistema.zona_horaria }} · {{ sistema.hora_servidor }}</td></tr>
+          <tr><th>DEBUG</th><td>{% if sistema.debug %}<span class="badge text-bg-warning">activo</span> <span class="text-muted">bien para desarrollo, apágalo en producción</span>{% else %}<span class="badge text-bg-success">apagado</span>{% endif %}</td></tr>
+          <tr><th>Inicio con Google</th><td>{% if sistema.google %}<span class="badge text-bg-success">configurado</span>{% else %}<span class="badge text-bg-secondary">sin credenciales</span>{% endif %}</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="xnx-card">
+      <div class="xnx-card-header">
+        <span class="xnx-card-title"><i class="bi bi-clipboard-check me-2"></i>Revisiones (<code>manage.py check</code>)</span>
+        {% if revisiones %}<span class="badge text-bg-warning">{{ revisiones|length }}</span>{% else %}<span class="badge text-bg-success">sin problemas</span>{% endif %}
+      </div>
+      <ul class="list-group list-group-flush">
+        {% for r in revisiones %}
+          <li class="list-group-item small">
+            <span class="badge {% if r.grave %}text-bg-danger{% else %}text-bg-warning{% endif %} me-1">{{ r.nivel }}</span>
+            <code>{{ r.id }}</code> {{ r.mensaje }}{% if r.objeto %} <span class="text-muted">({{ r.objeto }})</span>{% endif %}
+          </li>
+        {% empty %}
+          <li class="list-group-item small"><i class="bi bi-check-circle text-success me-1"></i>Django no encontró problemas, y los JSON de la política y del monitoreo están bien escritos.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="xnx-card">
+    <div class="xnx-card-header">
+      <span class="xnx-card-title"><i class="bi bi-layers me-2"></i>Migraciones</span>
+      {% if migraciones.pendientes is None %}
+        <span class="badge text-bg-danger">no se pudieron leer</span>
+      {% elif migraciones.pendientes %}
+        <span class="badge text-bg-danger">{{ migraciones.pendientes }} pendiente{{ migraciones.pendientes|pluralize }}: corre <code class="text-white">migrate</code></span>
+      {% else %}
+        <span class="badge text-bg-success">todas aplicadas</span>
+      {% endif %}
+    </div>
+    <div class="accordion accordion-flush" id="migraciones">
+      {% for a in migraciones.apps %}
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed py-2" type="button" data-bs-toggle="collapse" data-bs-target="#mig-{{ forloop.counter }}" aria-expanded="false">
+              <span class="flex-grow-1 text-start"><code>{{ a.app }}</code> · {{ a.migraciones|length }} migraciones</span>
+              {% if a.pendientes %}<span class="badge text-bg-danger me-2">{{ a.pendientes }} pendiente{{ a.pendientes|pluralize }}</span>{% else %}<span class="badge text-bg-success me-2">al día</span>{% endif %}
+            </button>
+          </h2>
+          <div id="mig-{{ forloop.counter }}" class="accordion-collapse collapse" data-bs-parent="#migraciones">
+            <ul class="list-group list-group-flush">
+              {% for mig in a.migraciones %}
+                <li class="list-group-item d-flex justify-content-between small">
+                  <span><i class="bi {% if mig.aplicada %}bi-check-circle text-success{% else %}bi-circle text-danger{% endif %} me-2"></i>{{ mig.nombre }}</span>
+                  <span class="text-muted">{% if mig.aplicada %}{{ mig.fecha|default:"" }}{% else %}pendiente{% endif %}</span>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}

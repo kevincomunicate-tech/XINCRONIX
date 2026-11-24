@@ -1,0 +1,48 @@
+{% extends "base_dashboard.html" %}
+
+{% block titulo %}{{ empresa }}{% endblock %}
+{% block volver %}{% url 'panel' as destino %}{% include "partials/volver.html" with url=destino texto="Panel" %}{% endblock %}
+{% block titulo_pagina %}{{ empresa }}{% endblock %}
+{% block subtitulo_pagina %}{{ empresa.get_sector_display|default:"Mi empresa" }}{% if empresa.propietario %} · Propietario: {{ empresa.propietario }}{% endif %}{% endblock %}
+
+{% block accion_principal %}
+  {% if "editar" in permisos %}<a href="{% url 'mi_empresa_editar' %}" class="btn btn-outline-primary btn-sm"><i class="bi bi-pencil-square me-1"></i>Editar</a>{% endif %}
+  {% if "eliminar" in permisos %}<a href="{% url 'mi_empresa_eliminar' %}" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash3 me-1"></i>Eliminar</a>{% endif %}
+{% endblock %}
+
+{% block contenido %}
+  {% if metricas %}{% include "partials/metricas.html" with m=metricas %}{% endif %}
+
+  <div class="dashboard-grid">
+    <div class="xnx-card">
+      <div class="xnx-card-header"><span class="xnx-card-title"><i class="bi bi-people me-2"></i>Integrantes</span></div>
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead><tr><th>Persona</th><th>Rol</th></tr></thead>
+          <tbody>
+            {% for u in integrantes %}
+              <tr>
+                <td><div class="fw-semibold">{{ u.get_full_name|default:u.email }}{% if u.pk == empresa.propietario_id %} <span class="badge text-bg-warning">Propietario</span>{% endif %}</div><div class="text-muted small">{{ u.email }}</div></td>
+                <td><span class="badge text-bg-primary">{{ u.rol|default:"—" }}</span></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="xnx-card">
+      <div class="xnx-card-header"><span class="xnx-card-title"><i class="bi bi-info-circle me-2"></i>Datos</span></div>
+      <div class="xnx-card-body small">
+        <dl class="row mb-0">
+          <dt class="col-5 text-muted fw-normal">NIT</dt><dd class="col-7">{{ empresa.nit|default:"—" }}</dd>
+          <dt class="col-5 text-muted fw-normal">Correo</dt><dd class="col-7">{{ empresa.email|default:"—" }}</dd>
+          <dt class="col-5 text-muted fw-normal">Teléfono</dt><dd class="col-7">{{ empresa.telefono|default:"—" }}</dd>
+          <dt class="col-5 text-muted fw-normal">Dirección</dt><dd class="col-7">{{ empresa.direccion|default:"—" }}</dd>
+          <dt class="col-5 text-muted fw-normal">Empleados</dt><dd class="col-7">{{ empresa.get_num_empleados_display|default:"—" }}</dd>
+          <dt class="col-5 text-muted fw-normal">Creada</dt><dd class="col-7">{{ empresa.fecha_creacion|date:"j M Y" }}</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+{% endblock %}

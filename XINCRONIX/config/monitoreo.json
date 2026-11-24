@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "descripcion": "Panel de monitoreo del superadministrador (/administracion/monitoreo/). El código solo interpreta este archivo: para cambiar qué se ve, se edita aquí. Después de editarlo, reinicia runserver y corre 'python manage.py check'.",
+
+  "filas_por_pagina": 25,
+  "dias_grafica": 14,
+  "actividad_reciente": 8,
+
+  "campos_ocultos": {
+    "descripcion": "Campos cuyo valor nunca se muestra ni se exporta (se ve '••••••'). 'nombres' son nombres exactos; 'contienen' oculta todo campo cuyo nombre incluya ese texto.",
+    "nombres": ["password", "session_key", "session_data", "key", "client_id", "secret", "token", "token_secret"],
+    "contienen": ["password", "secret", "token"]
+  },
+
+  "tablas_solo_conteo": {
+    "descripcion": "Tablas que se cuentan pero no se pueden abrir fila por fila. Las sesiones se ven en la pestaña 'Sesiones' sin exponer su clave.",
+    "modelos": ["sessions.session", "socialaccount.socialtoken"]
+  },
+
+  "grupos": {
+    "cuentas": "Cuentas y empresas",
+    "dashboard": "Proyectos y trabajo",
+    "comunicacion": "Comunicación",
+    "account": "Correos (allauth)",
+    "socialaccount": "Google (allauth)",
+    "auth": "Permisos de Django",
+    "admin": "Historial del admin de Django",
+    "sessions": "Sesiones",
+    "contenttypes": "Sistema"
+  },
+
+  "tarjetas": [
+    {"texto": "Usuarios", "icono": "bi-people", "modelo": "cuentas.usuario",
+     "detalle": {"texto": "activos", "filtro": {"is_active": true}}},
+    {"texto": "Empresas", "icono": "bi-buildings", "modelo": "cuentas.empresa",
+     "detalle": {"texto": "sin propietario", "filtro": {"propietario__isnull": true}}},
+    {"texto": "Proyectos", "icono": "bi-kanban", "modelo": "dashboard.proyecto",
+     "detalle": {"texto": "completados", "filtro": {"estado": "completado"}}},
+    {"texto": "Tareas", "icono": "bi-check2-square", "modelo": "dashboard.tarea",
+     "detalle": {"texto": "completadas", "filtro": {"estado": "completada"}}}
+  ],
+
+  "alertas": [
+    {"texto": "Tareas vencidas sin terminar", "nivel": "danger", "modelo": "dashboard.tarea",
+     "filtro": {"fecha_vencimiento__lt": "@hoy"}, "excluir": {"estado": "completada"}},
+    {"texto": "Empresas sin propietario", "nivel": "warning", "modelo": "cuentas.empresa",
+     "filtro": {"propietario__isnull": true}},
+    {"texto": "Usuarios sin empresa", "nivel": "info", "modelo": "cuentas.usuario",
+     "filtro": {"empresa__isnull": true, "is_superuser": false}},
+    {"texto": "Usuarios sin rol", "nivel": "warning", "modelo": "cuentas.usuario",
+     "filtro": {"rol__isnull": true}},
+    {"texto": "Cuentas desactivadas", "nivel": "secondary", "modelo": "cuentas.usuario",
+     "filtro": {"is_active": false}},
+    {"texto": "Proyectos sin tareas", "nivel": "info", "modelo": "dashboard.proyecto",
+     "filtro": {"tareas__isnull": true}},
+    {"texto": "Tickets de soporte abiertos", "nivel": "warning", "modelo": "comunicacion.ticketsoporte",
+     "excluir": {"estado": "cerrado"}}
+  ],
+
+  "distribuciones": [
+    {"texto": "Usuarios por rol", "modelo": "cuentas.usuario", "campo": "rol__nombre"},
+    {"texto": "Proyectos por estado", "modelo": "dashboard.proyecto", "campo": "estado"},
+    {"texto": "Tareas por estado", "modelo": "dashboard.tarea", "campo": "estado"},
+    {"texto": "Empresas por sector", "modelo": "cuentas.empresa", "campo": "sector"}
+  ],
+
+  "graficas": [
+    {"texto": "Registros de usuarios", "modelo": "cuentas.usuario", "campo_fecha": "date_joined"},
+    {"texto": "Proyectos creados", "modelo": "dashboard.proyecto", "campo_fecha": "fecha_creacion"},
+    {"texto": "Tareas creadas", "modelo": "dashboard.tarea", "campo_fecha": "fecha_creacion"}
+  ],
+
+  "recientes": [
+    {"texto": "Últimos registros", "icono": "bi-person-plus", "modelo": "cuentas.usuario", "campo_fecha": "date_joined"},
+    {"texto": "Últimos inicios de sesión", "icono": "bi-box-arrow-in-right", "modelo": "cuentas.usuario", "campo_fecha": "last_login"},
+    {"texto": "Actividad en proyectos", "icono": "bi-activity", "modelo": "dashboard.actividad", "campo_fecha": "fecha"}
+  ]
+}

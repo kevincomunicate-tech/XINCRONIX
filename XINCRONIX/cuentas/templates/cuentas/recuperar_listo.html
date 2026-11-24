@@ -1,0 +1,16 @@
+{% extends "cuentas/recuperar.html" %}
+
+{% block titulo %}Contraseña actualizada{% endblock %}
+
+{% block volver %}{% url 'login' as destino %}{% include "partials/volver_auth.html" with url=destino texto="Volver al login" %}{% endblock %}
+
+{% block contenido %}
+  <h1 class="form-title">¡Listo!</h1>
+  <p class="form-sub">Tu contraseña se actualizó correctamente.</p>
+
+  <div id="reset-password-form" class="estado-card">
+    <div class="estado-icono is-ok"><i class="bi bi-check2-circle"></i></div>
+    <p>Ya puedes iniciar sesión con tu contraseña nueva.</p>
+    <a href="{% url 'login' %}" class="btn-login"><span class="btn-label">Iniciar sesión <i class="bi bi-arrow-right"></i></span></a>
+  </div>
+{% endblock %}

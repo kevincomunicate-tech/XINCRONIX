@@ -1,0 +1,27 @@
+{% comment %}
+  Tarjetas de métricas de una empresa.  Uso: {% include "partials/metricas.html" with m=metricas %}
+  "m" lo arma dashboard/metricas.py -> metricas_empresa()
+{% endcomment %}
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl-3"><div class="stat-card h-100"><div class="stat-icon-wrap"><i class="bi bi-kanban"></i></div><div class="stat-label mt-2">Proyectos</div><div class="stat-value">{{ m.proyectos }}</div><div class="small text-muted mt-2">{{ m.proyectos_activos }} en curso · {{ m.proyectos_completados }} completados</div></div></div>
+  <div class="col-6 col-xl-3"><div class="stat-card h-100"><div class="stat-icon-wrap"><i class="bi bi-check2-square"></i></div><div class="stat-label mt-2">Tareas completadas</div><div class="stat-value">{{ m.tareas_completadas }}<span class="fs-6 text-muted">/{{ m.tareas }}</span></div><div class="xnx-progress mt-3"><div class="xnx-progress-bar" style="width: {{ m.avance }}%"></div></div></div></div>
+  <div class="col-6 col-xl-3"><div class="stat-card h-100"><div class="stat-icon-wrap"><i class="bi bi-alarm"></i></div><div class="stat-label mt-2">Tareas vencidas</div><div class="stat-value{% if m.tareas_vencidas %} text-danger{% endif %}">{{ m.tareas_vencidas }}</div><div class="small text-muted mt-2">{{ m.tareas_en_progreso }} en progreso</div></div></div>
+  <div class="col-6 col-xl-3"><div class="stat-card h-100"><div class="stat-icon-wrap"><i class="bi bi-people"></i></div><div class="stat-label mt-2">Integrantes</div><div class="stat-value">{{ m.integrantes }}</div><div class="small text-muted mt-2">Avance general: {{ m.avance }}%</div></div></div>
+</div>
+
+{% if m.por_proyecto %}
+  <div class="xnx-card mb-4">
+    <div class="xnx-card-header"><span class="xnx-card-title"><i class="bi bi-bar-chart-line me-2"></i>Avance por proyecto</span></div>
+    <div class="xnx-card-body">
+      {% for p in m.por_proyecto %}
+        <div class="mb-3">
+          <div class="d-flex justify-content-between small mb-1">
+            <span class="fw-semibold">{{ p.nombre }}</span>
+            <span class="text-muted">{{ p.hechas }}/{{ p.total }} tareas · {{ p.avance }}%</span>
+          </div>
+          <div class="xnx-progress"><div class="xnx-progress-bar" style="width: {{ p.avance }}%"></div></div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}

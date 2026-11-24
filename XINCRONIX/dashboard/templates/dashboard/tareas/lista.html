@@ -1,0 +1,34 @@
+{% extends "base_dashboard.html" %}
+
+{% block titulo %}Tareas{% endblock %}
+{% block volver %}{% url 'panel' as destino %}{% include "partials/volver.html" with url=destino texto="Panel" %}{% endblock %}
+{% block titulo_pagina %}Tareas{% endblock %}
+{% block subtitulo_pagina %}De los proyectos donde trabajas{% endblock %}
+
+{% block contenido %}
+  <ul class="nav nav-pills mb-3 gap-2">
+    <li class="nav-item"><a class="nav-link{% if ver == 'mias' %} active{% endif %}" href="?ver=mias">Asignadas a mí</a></li>
+    <li class="nav-item"><a class="nav-link{% if ver == 'pendientes' %} active{% endif %}" href="?ver=pendientes">Pendientes</a></li>
+    <li class="nav-item"><a class="nav-link{% if ver == 'todas' %} active{% endif %}" href="?ver=todas">Todas</a></li>
+  </ul>
+  <div class="xnx-card">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead><tr><th>Tarea</th><th>Proyecto</th><th>Estado</th><th>Fecha límite</th><th>Responsable</th></tr></thead>
+        <tbody>
+          {% for t in tareas %}
+            <tr>
+              <td class="fw-semibold">{{ t.titulo }}</td>
+              <td><a href="{% url 'proyecto_detalle' t.proyecto_id %}" class="text-decoration-none">{{ t.proyecto }}</a></td>
+              <td><span class="badge {% if t.estado == 'completada' %}text-bg-success{% else %}text-bg-light border{% endif %}">{{ t.get_estado_display }}</span></td>
+              <td class="small {% if t.vencida %}text-danger fw-semibold{% endif %}">{{ t.fecha_vencimiento|date:"j M Y"|default:"—" }}</td>
+              <td class="small">{{ t.asignado_a|default:"—" }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="5"><div class="xnx-vacio"><i class="bi bi-list-check"></i><p class="small mt-2 mb-0">No hay tareas en esta vista.</p></div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}
