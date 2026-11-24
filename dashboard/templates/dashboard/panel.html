@@ -10,6 +10,12 @@
   {% endif %}
 {% endblock %}
 
+{% block accion_principal %}
+  {% if puede_crear_proyecto and empresa %}
+    <a href="{% url 'proyecto_crear' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Nuevo proyecto</a>
+  {% endif %}
+{% endblock %}
+
 {% block contenido %}
   <div class="jarvis-hero mb-4">
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
