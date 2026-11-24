@@ -30,13 +30,14 @@ crear una cuenta de integrante se define su contraseña inicial.
 | **Empresas y equipos** | CRUD de integrantes, roles y equipos, aislados por empresa | `/app/equipo/` · `/app/equipo/miembros/` |
 | **Proyectos** | CRUD de proyectos individuales o de equipo, con fechas, prioridad y repositorio público opcional | `/app/proyectos/` |
 | **Tareas** | Tablero Kanban por estado y CRUD de tareas, con responsable, prioridad y fecha límite | `/app/tareas/` |
+| **Analytics** | Resumen de proyectos y tareas visibles, avance, vencimientos y próximos plazos | `/app/analytics/` |
 | **Referencias GitHub** | Guardar enlaces de un repositorio, issues y pull requests; sin sincronización ni cambios en GitHub | Desde cada proyecto |
 
-**Pendiente de implementar:** Analytics, tablero de ideas, Canvas, asistente
-virtual, automatizaciones y seguimiento de despliegues. Las rutas de Analytics,
-ideas, Canvas y automatizaciones aún muestran páginas provisionales. La
-vinculación actual con GitHub guarda enlaces manuales: no verifica la visibilidad
-del repositorio ni consulta su API.
+**Pendiente de implementar:** tablero de ideas, Canvas, asistente virtual,
+automatizaciones y seguimiento de despliegues. Las rutas de ideas, Canvas y
+automatizaciones aún muestran páginas provisionales. Analytics usa únicamente
+proyectos visibles para la persona; la vinculación actual con GitHub guarda
+enlaces manuales, no verifica la visibilidad del repositorio ni consulta su API.
 
 Todo funciona en **modo claro y oscuro**.
 
@@ -87,7 +88,8 @@ flowchart LR
 | Crear proyectos y tareas | ✅ | ✅ | ✅ | ✅ |
 | Editar cualquier proyecto | ✅ | ✅ | ❌ | Solo donde es miembro |
 | Agregar integrantes y crear equipos | ✅ | ✅ | ❌ | ❌ |
-| Ver Analytics, ideas y Canvas | En construcción | En construcción | En construcción | En construcción |
+| Consultar Analytics | Proyectos de la empresa | Proyectos de la empresa | Proyectos de la empresa | Solo donde participa |
+| Ver ideas y Canvas | En construcción | En construcción | En construcción | En construcción |
 
 Nadie ve nunca la información de otra empresa.
 

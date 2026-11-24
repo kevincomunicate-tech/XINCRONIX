@@ -1,9 +1,10 @@
+from datetime import timedelta
 from functools import wraps
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -82,6 +83,90 @@ def panel(request):
         "cantidad_equipos": Equipo.objects.filter(empresa=request.user.empresa).count(),
     }
     return render(request, "dashboard/panel.html", contexto)
+
+
+@login_required
+@requiere_empresa
+def analytics(request):
+    proyectos = _proyectos_visibles(request.user)
+    tareas = Tarea.objects.filter(proyecto__in=proyectos)
+    total_proyectos = proyectos.count()
+    total_tareas = tareas.count()
+    fecha_hoy = timezone.localdate()
+
+    conteo_proyectos = dict(
+        proyectos.values("estado")
+        .annotate(total=Count("pk"))
+        .values_list("estado", "total")
+    )
+    estadisticas_proyectos = [
+        {
+            "nombre": nombre,
+            "total": conteo_proyectos.get(estado, 0),
+            "porcentaje": round(conteo_proyectos.get(estado, 0) * 100 / total_proyectos)
+            if total_proyectos
+            else 0,
+        }
+        for estado, nombre in Proyecto.Estado.choices
+    ]
+
+    conteo_tareas = dict(
+        tareas.values("estado")
+        .annotate(total=Count("pk"))
+        .values_list("estado", "total")
+    )
+    estadisticas_tareas = [
+        {
+            "nombre": nombre,
+            "total": conteo_tareas.get(estado, 0),
+            "porcentaje": round(conteo_tareas.get(estado, 0) * 100 / total_tareas)
+            if total_tareas
+            else 0,
+        }
+        for estado, nombre in Tarea.Estado.choices
+    ]
+
+    proyectos_destacados = list(
+        proyectos.annotate(
+            total_tareas=Count("tareas", distinct=True),
+            tareas_completadas=Count(
+                "tareas",
+                filter=Q(tareas__estado=Tarea.Estado.COMPLETADA),
+                distinct=True,
+            ),
+        ).order_by("-total_tareas", "nombre")[:5]
+    )
+    for proyecto in proyectos_destacados:
+        proyecto.porcentaje_completado = (
+            round(proyecto.tareas_completadas * 100 / proyecto.total_tareas)
+            if proyecto.total_tareas
+            else 0
+        )
+
+    tareas_proximas = (
+        tareas.exclude(estado=Tarea.Estado.COMPLETADA)
+        .filter(fecha_limite__gte=fecha_hoy, fecha_limite__lte=fecha_hoy + timedelta(days=7))
+        .select_related("proyecto", "responsable")
+        .order_by("fecha_limite", "titulo")[:6]
+    )
+
+    contexto = {
+        "cantidad_proyectos": total_proyectos,
+        "cantidad_tareas": total_tareas,
+        "porcentaje_completadas": (
+            round(conteo_tareas.get(Tarea.Estado.COMPLETADA, 0) * 100 / total_tareas)
+            if total_tareas
+            else 0
+        ),
+        "tareas_vencidas": tareas.exclude(estado=Tarea.Estado.COMPLETADA)
+        .filter(fecha_limite__lt=fecha_hoy)
+        .count(),
+        "estadisticas_proyectos": estadisticas_proyectos,
+        "estadisticas_tareas": estadisticas_tareas,
+        "proyectos_destacados": proyectos_destacados,
+        "tareas_proximas": tareas_proximas,
+    }
+    return render(request, "dashboard/analytics.html", contexto)
 
 
 @login_required

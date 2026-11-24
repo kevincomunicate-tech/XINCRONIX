@@ -1,0 +1,129 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+
+{% block titulo %}Analytics{% endblock %}
+{% block titulo_pagina %}Analytics{% endblock %}
+{% block subtitulo_pagina %}Estado general de tus proyectos y tareas visibles{% endblock %}
+{% block css %}
+  <link rel="stylesheet" href="{% static 'css/analytics.css' %}">
+{% endblock %}
+
+{% block contenido %}
+  <div class="analytics-stats-row">
+    <article class="analytics-stat-card">
+      <div class="stat-label">Proyectos visibles</div>
+      <div class="stat-value">{{ cantidad_proyectos }}</div>
+      <div class="stat-trend"><i class="bi bi-kanban" aria-hidden="true"></i> En tu espacio de trabajo</div>
+    </article>
+    <article class="analytics-stat-card">
+      <div class="stat-label">Tareas visibles</div>
+      <div class="stat-value">{{ cantidad_tareas }}</div>
+      <div class="stat-trend"><i class="bi bi-list-task" aria-hidden="true"></i> En tus proyectos</div>
+    </article>
+    <article class="analytics-stat-card">
+      <div class="stat-label">Tareas completadas</div>
+      <div class="stat-value">{{ porcentaje_completadas }}%</div>
+      <div class="stat-trend"><i class="bi bi-check2-circle" aria-hidden="true"></i> Del total de tareas</div>
+    </article>
+    <article class="analytics-stat-card">
+      <div class="stat-label">Tareas vencidas</div>
+      <div class="stat-value">{{ tareas_vencidas }}</div>
+      <div class="stat-trend"><i class="bi bi-calendar-x" aria-hidden="true"></i> Pendientes con fecha pasada</div>
+    </article>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-6">
+      <section class="xnx-card h-100">
+        <div class="xnx-card-header">
+          <h2 class="xnx-card-title h6 mb-0">Proyectos por estado</h2>
+        </div>
+        <div class="xnx-card-body">
+          {% for estado in estadisticas_proyectos %}
+            <div class="mb-3">
+              <div class="d-flex justify-content-between small mb-1">
+                <span>{{ estado.nombre }}</span><strong>{{ estado.total }}</strong>
+              </div>
+              <div class="xnx-progress" role="progressbar" aria-label="{{ estado.nombre }}" aria-valuenow="{{ estado.porcentaje }}" aria-valuemin="0" aria-valuemax="100">
+                <div class="xnx-progress-bar" style="width: {{ estado.porcentaje }}%"></div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </section>
+    </div>
+    <div class="col-lg-6">
+      <section class="xnx-card h-100">
+        <div class="xnx-card-header">
+          <h2 class="xnx-card-title h6 mb-0">Tareas por estado</h2>
+        </div>
+        <div class="xnx-card-body">
+          {% for estado in estadisticas_tareas %}
+            <div class="mb-3">
+              <div class="d-flex justify-content-between small mb-1">
+                <span>{{ estado.nombre }}</span><strong>{{ estado.total }}</strong>
+              </div>
+              <div class="xnx-progress" role="progressbar" aria-label="{{ estado.nombre }}" aria-valuenow="{{ estado.porcentaje }}" aria-valuemin="0" aria-valuemax="100">
+                <div class="xnx-progress-bar" style="width: {{ estado.porcentaje }}%"></div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="row g-3 mt-1">
+    <div class="col-lg-7">
+      <section class="xnx-card h-100">
+        <div class="xnx-card-header d-flex justify-content-between align-items-center">
+          <h2 class="xnx-card-title h6 mb-0">Proyectos destacados</h2>
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'proyectos' %}">Ver proyectos</a>
+        </div>
+        <div class="xnx-card-body">
+          {% if proyectos_destacados %}
+            <div class="table-responsive">
+              <table class="analytics-table">
+                <thead>
+                  <tr><th>Proyecto</th><th>Tareas</th><th>Completadas</th><th>Avance</th></tr>
+                </thead>
+                <tbody>
+                  {% for proyecto in proyectos_destacados %}
+                    <tr>
+                      <td><a href="{% url 'tareas' %}?proyecto={{ proyecto.pk }}">{{ proyecto.nombre }}</a></td>
+                      <td>{{ proyecto.total_tareas }}</td>
+                      <td>{{ proyecto.tareas_completadas }}</td>
+                      <td>{{ proyecto.porcentaje_completado }}%</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <p class="text-muted mb-0">Aún no hay proyectos visibles para mostrar.</p>
+          {% endif %}
+        </div>
+      </section>
+    </div>
+    <div class="col-lg-5">
+      <section class="xnx-card h-100">
+        <div class="xnx-card-header d-flex justify-content-between align-items-center">
+          <h2 class="xnx-card-title h6 mb-0">Próximos vencimientos</h2>
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'tareas' %}">Ver tareas</a>
+        </div>
+        <div class="xnx-card-body">
+          <ul class="analytics-list">
+            {% for tarea in tareas_proximas %}
+              <li>
+                <strong>{{ tarea.titulo }}</strong>
+                <span class="d-block text-muted">{{ tarea.proyecto.nombre }} · {{ tarea.fecha_limite|date:"j M" }}</span>
+              </li>
+            {% empty %}
+              <li class="text-muted">No hay tareas pendientes con vencimiento en los próximos 7 días.</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </section>
+    </div>
+  </div>
+{% endblock %}

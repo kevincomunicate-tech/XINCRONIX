@@ -9,6 +9,7 @@ al repositorio. Usa .env.example como guía.
 import os
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 # Carpeta raíz del proyecto (donde está manage.py)
@@ -22,9 +23,13 @@ load_dotenv(BASE_DIR / ".env")
 # Seguridad
 # ---------------------------------------------------------------------------
 
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "solo-para-desarrollo-cambiame")
-
 DEBUG = os.getenv("DJANGO_DEBUG", "True").strip().lower() in {"1", "true", "yes", "on"}
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "").strip()
+if not DEBUG and not SECRET_KEY:
+    raise ImproperlyConfigured(
+        "Configura DJANGO_SECRET_KEY con una clave segura cuando DEBUG=False."
+    )
+SECRET_KEY = SECRET_KEY or "solo-para-desarrollo-cambiame"
 
 ALLOWED_HOSTS = [h.strip() for h in os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",") if h.strip()]
 if DEBUG:

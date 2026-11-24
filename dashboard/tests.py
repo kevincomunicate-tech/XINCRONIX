@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.test import TestCase
 from django.urls import reverse
 
@@ -235,6 +237,64 @@ class DashboardCrudTests(TestCase):
         response = self.client.get(reverse("tareas"), {"proyecto": visible.pk})
         self.assertContains(response, "Tarea visible")
         self.assertNotContains(response, "Tarea diferente")
+
+    def test_analytics_respeta_proyectos_visibles_y_resume_tareas(self):
+        visible = Proyecto.objects.create(
+            empresa=self.empresa, nombre="Proyecto propio", creado_por=self.admin
+        )
+        oculto = Proyecto.objects.create(
+            empresa=self.empresa, nombre="Proyecto privado", creado_por=self.admin
+        )
+        colaborador = Usuario.objects.create_user(
+            "analytics@uno.test",
+            "ClaveSegura#2026",
+            empresa=self.empresa,
+            rol=Usuario.Rol.COLABORADOR,
+        )
+        visible.miembros.add(colaborador)
+        Tarea.objects.create(
+            proyecto=visible,
+            titulo="Tarea pendiente",
+            fecha_limite=date(2000, 1, 1),
+        )
+        Tarea.objects.create(
+            proyecto=visible,
+            titulo="Tarea lista",
+            estado=Tarea.Estado.COMPLETADA,
+        )
+        Tarea.objects.create(
+            proyecto=oculto,
+            titulo="Tarea de otro proyecto",
+        )
+
+        self.client.force_login(colaborador)
+        response = self.client.get(reverse("analytics"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["cantidad_proyectos"], 1)
+        self.assertEqual(response.context["cantidad_tareas"], 2)
+        self.assertEqual(response.context["porcentaje_completadas"], 50)
+        self.assertEqual(response.context["tareas_vencidas"], 1)
+        self.assertContains(response, "Proyecto propio")
+        self.assertNotContains(response, "Proyecto privado")
+
+    def test_analytics_muestra_estado_vacio_sin_dividir_por_cero(self):
+        response = self.client.get(reverse("analytics"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["porcentaje_completadas"], 0)
+        self.assertTrue(
+            all(
+                estadistica["porcentaje"] == 0
+                for estadistica in response.context["estadisticas_proyectos"]
+            )
+        )
+        self.assertTrue(
+            all(
+                estadistica["porcentaje"] == 0
+                for estadistica in response.context["estadisticas_tareas"]
+            )
+        )
 
     def test_empresa_conserva_al_menos_un_administrador(self):
         self.assertEqual(self.admin.rol, Usuario.Rol.ADMIN)
