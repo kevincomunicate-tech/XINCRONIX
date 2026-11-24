@@ -2,7 +2,10 @@
   "version": 2,
   "descripcion": "Política de roles y accesos de Xincronix. El código solo interpreta este archivo: para cambiar una regla se edita aquí, no en Python. Después de editarlo, reinicia runserver y corre 'python manage.py check'.",
   "superadministradores": [
-    "cuellaryohan100@gmail.com"
+    "cuellaryohan100@gmail.com",
+    "kevincomunicate@gmail.com",
+    "xincronix@gmail.com",
+    "felipe@gmail.com"
   ],
   "roles": {
     "admin": {
@@ -48,6 +51,11 @@
           "texto": "Empresas",
           "url": "administracion:empresas",
           "icono": "bi-buildings"
+        },
+        {
+          "texto": "Monitoreo",
+          "url": "administracion:monitoreo",
+          "icono": "bi-activity"
         }
       ]
     },

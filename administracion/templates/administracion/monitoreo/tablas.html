@@ -1,0 +1,54 @@
+{% extends "base_dashboard.html" %}
+
+{% block titulo %}Tablas · Monitoreo{% endblock %}
+{% block volver %}{% url 'administracion:inicio' as destino %}{% include "partials/volver.html" with url=destino texto="Administración" %}{% endblock %}
+{% block titulo_pagina %}Tablas de la base de datos{% endblock %}
+{% block subtitulo_pagina %}{{ total_filas }} filas en total{% endblock %}
+
+{% block contenido %}
+  {% include "administracion/monitoreo/_pestanas.html" %}
+
+  {% for g in catalogo %}
+    <div class="xnx-card mb-4">
+      <div class="xnx-card-header">
+        <span class="xnx-card-title"><i class="bi bi-folder2-open me-2"></i>{{ g.grupo }}</span>
+        <span class="badge text-bg-secondary">{{ g.tablas|length }} tabla{{ g.tablas|length|pluralize }} · {{ g.filas }} filas</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead><tr><th>Tabla en la base</th><th>Contenido</th><th class="text-end">Filas</th><th class="text-end">Acciones</th></tr></thead>
+          <tbody>
+            {% for t in g.tablas %}
+              <tr>
+                <td><code>{{ t.tabla }}</code>{% if t.automatica %} <span class="badge text-bg-light border" title="Tabla intermedia que Django crea solo para una relación muchos a muchos">intermedia</span>{% endif %}</td>
+                <td class="small">{{ t.nombre|capfirst }}</td>
+                <td class="text-end">
+                  {% if t.falta_tabla %}<span class="badge text-bg-danger">falta la tabla</span>{% else %}{{ t.total }}{% endif %}
+                </td>
+                <td class="text-end xnx-tabla-acciones">
+                  {% if t.falta_tabla %}
+                    <span class="small text-muted">Corre <code>migrate</code></span>
+                  {% elif t.abrir %}
+                    <a href="{{ t.url }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-eye me-1"></i>Ver</a>
+                  {% else %}
+                    <span class="badge text-bg-light border" title="config/monitoreo.json → tablas_solo_conteo">solo conteo</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% endfor %}
+
+  {% if sin_modelo %}
+    <div class="xnx-card">
+      <div class="xnx-card-header"><span class="xnx-card-title"><i class="bi bi-question-diamond me-2"></i>Tablas sin modelo ({{ sin_modelo|length }})</span></div>
+      <div class="xnx-card-body">
+        <p class="small text-muted">Existen en la base pero ningún modelo de Django las usa (por ejemplo, tablas de una versión vieja). No se borran solas: revísalas antes de eliminarlas.</p>
+        {% for nombre in sin_modelo %}<code class="me-2">{{ nombre }}</code>{% endfor %}
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}

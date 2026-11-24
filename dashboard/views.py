@@ -65,8 +65,24 @@ def proximamente(request, seccion):
     return render(request, "dashboard/proximamente.html", {"seccion": seccion})
 
 
+@login_required
+def canvas(request):
+    """Canvas interactivo + vista de hitos próximos (calendario simple)."""
+    from .models import Hito
+    from django.utils import timezone
+    hitos = (
+        Hito.objects.filter(
+            proyecto__in=Proyecto.objects.visibles_para(request.user),
+            fecha_objetivo__gte=timezone.now().date(),
+        )
+        .select_related("proyecto")
+        .order_by("fecha_objetivo")[:15]
+    )
+    return render(request, "dashboard/canvas/tablero.html", {"hitos": hitos})
+
+
 # ---------------------------------------------------------------------------
-# Mi empresa
+# Mi empresa (compatibilidad; ya no es el eje de la plataforma)
 # ---------------------------------------------------------------------------
 
 @login_required
@@ -175,16 +191,63 @@ def proyectos(request):
 
 @requiere_accion("crear_proyecto")
 def proyecto_crear(request):
-    if request.user.empresa is None:
-        messages.info(request, "Primero crea tu empresa: los proyectos pertenecen a una empresa.")
-        return redirect("mi_empresa")
+    """
+    Flujo de creación:
+    1. Cuestionario opcional (propósito, metodología, educativo, grupal).
+    2. Formulario principal del proyecto.
+    Los datos del cuestionario se pasan por sesión o por POST oculto.
+    """
+    from .forms import CuestionarioProyectoForm, ProyectoForm
+
+    # Paso 1: cuestionario (GET o POST con step=cuestionario)
+    step = request.POST.get("step") or request.GET.get("step") or "cuestionario"
+
+    if step == "cuestionario" and request.method == "GET":
+        form_q = CuestionarioProyectoForm()
+        return render(request, "dashboard/proyectos/cuestionario.html", {"form": form_q})
+
+    if step == "cuestionario" and request.method == "POST":
+        form_q = CuestionarioProyectoForm(request.POST)
+        if form_q.is_valid():
+            # Guardamos respuestas en sesión para el siguiente paso
+            request.session["proyecto_cuestionario"] = form_q.cleaned_data
+            form = ProyectoForm(initial={
+                "proposito": form_q.cleaned_data.get("proposito") or "",
+                "metodologia": form_q.cleaned_data.get("metodologia") or "",
+                "es_educativo": form_q.cleaned_data.get("es_educativo") or False,
+                "es_grupal": form_q.cleaned_data.get("es_grupal") or False,
+                "descripcion": form_q.cleaned_data.get("notas") or "",
+            })
+            return render(request, "dashboard/proyectos/form.html", {
+                "form": form,
+                "desde_cuestionario": True,
+            })
+        return render(request, "dashboard/proyectos/cuestionario.html", {"form": form_q})
+
+    # Paso 2: formulario final
     form = ProyectoForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         proyecto = form.save(commit=False)
-        proyecto.empresa = request.user.empresa
+        # Empresa opcional (ya no es obligatoria)
+        if getattr(request.user, "empresa_id", None):
+            proyecto.empresa = request.user.empresa
         proyecto.creado_por = request.user
+        # Recuperar del cuestionario si quedó algo
+        datos_q = request.session.pop("proyecto_cuestionario", {}) or {}
+        if not proyecto.proposito and datos_q.get("proposito"):
+            proyecto.proposito = datos_q["proposito"]
+        if not proyecto.metodologia and datos_q.get("metodologia"):
+            proyecto.metodologia = datos_q["metodologia"]
+        if datos_q.get("es_educativo"):
+            proyecto.es_educativo = True
+        if datos_q.get("es_grupal"):
+            proyecto.es_grupal = True
         proyecto.save()
-        messages.success(request, f"Proyecto «{proyecto}» creado. Agrega a tu equipo y sus tareas.")
+        messages.success(
+            request,
+            f"Proyecto «{proyecto}» creado. "
+            + ("Puedes invitar a tu equipo por correo." if proyecto.es_grupal else "Agrega tareas cuando quieras.")
+        )
         return redirect("proyecto_detalle", pk=proyecto.pk)
     return render(request, "dashboard/proyectos/form.html", {"form": form})
 

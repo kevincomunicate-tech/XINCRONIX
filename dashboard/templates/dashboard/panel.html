@@ -2,7 +2,13 @@
 
 {% block titulo %}Panel{% endblock %}
 {% block titulo_pagina %}Hola, {{ request.user.first_name|default:"bienvenido" }} 👋{% endblock %}
-{% block subtitulo_pagina %}{% now "l j \d\e F" %}{% endblock %}
+{% block subtitulo_pagina %}{% now "l j \d\e F" %} · Plataforma de proyectos de tecnología y software{% endblock %}
+
+{% block accion_principal %}
+  {% if puede_crear_proyecto %}
+    <a href="{% url 'proyecto_crear' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Nuevo proyecto</a>
+  {% endif %}
+{% endblock %}
 
 {% block accion_principal %}
   {% if puede_crear_proyecto and empresa %}
@@ -11,26 +17,26 @@
 {% endblock %}
 
 {% block contenido %}
-  {% if not empresa and puede_crear_empresa %}
-    <div class="xnx-card mb-4">
-      <div class="xnx-card-body d-flex flex-wrap align-items-center gap-3">
-        <i class="bi bi-building-add fs-2" style="color:var(--xnx-primary)"></i>
-        <div class="flex-grow-1">
-          <h2 class="h6 fw-bold mb-1">Crea tu empresa para empezar</h2>
-          <p class="text-muted small mb-0">Con tu empresa podrás crear proyectos, invitar personas y ver tus métricas. Si te invitan a un proyecto, también lo verás aquí.</p>
-        </div>
-        <a href="{% url 'mi_empresa' %}" class="btn btn-primary btn-sm">Crear mi empresa</a>
+  <div class="jarvis-hero mb-4">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+      <div>
+        <span class="jarvis-badge">SISTEMA ONLINE</span>
+        <h2 class="h5 fw-bold mt-2 mb-1">Centro de mando de proyectos</h2>
+        <p class="text-muted small mb-0">Gestiona, optimiza y documenta proyectos de software desde el ideado hasta el despliegue. Ideal también para entornos educativos.</p>
       </div>
+      {% if puede_crear_proyecto %}
+        <a href="{% url 'proyecto_crear' %}" class="btn btn-primary"><i class="bi bi-rocket-takeoff me-1"></i>Iniciar proyecto</a>
+      {% endif %}
     </div>
-  {% endif %}
+  </div>
 
   {% if metricas %}
-    <h2 class="h6 fw-bold mb-3">Métricas de {{ empresa }}</h2>
+    <h2 class="h6 fw-bold mb-3">Indicadores</h2>
     {% include "partials/metricas.html" with m=metricas %}
   {% endif %}
 
   <div class="dashboard-grid">
-    <div class="xnx-card">
+    <div class="xnx-card jarvis-card">
       <div class="xnx-card-header">
         <span class="xnx-card-title"><i class="bi bi-kanban me-2"></i>Proyectos ({{ total_proyectos }})</span>
         <a href="{% url 'proyectos' %}" class="xnx-card-action">Ver todos</a>
@@ -45,12 +51,12 @@
             <div class="xnx-progress"><div class="xnx-progress-bar" style="width: {{ p.avance }}%"></div></div>
           </a>
         {% empty %}
-          <div class="xnx-vacio"><i class="bi bi-kanban"></i><p class="small mt-2 mb-0">Todavía no tienes proyectos.</p></div>
+          <div class="xnx-vacio"><i class="bi bi-kanban"></i><p class="small mt-2 mb-0">Todavía no tienes proyectos. {% if puede_crear_proyecto %}<a href="{% url 'proyecto_crear' %}">Crea el primero</a>.{% endif %}</p></div>
         {% endfor %}
       </div>
     </div>
 
-    <div class="xnx-card">
+    <div class="xnx-card jarvis-card">
       <div class="xnx-card-header">
         <span class="xnx-card-title"><i class="bi bi-check2-square me-2"></i>Mis tareas pendientes ({{ total_pendientes }})</span>
         <a href="{% url 'tareas' %}" class="xnx-card-action">Ver todas</a>

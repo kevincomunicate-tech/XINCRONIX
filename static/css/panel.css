@@ -2248,3 +2248,128 @@ html[data-theme="dark"] .xnx-volver:hover { color: #7b9bff; }
 @media (max-width: 640px) {
   .xnx-volver span { display: none; }
 }
+
+/* ══ MONITOREO (superadministrador) ══ */
+.xnx-pestanas { display: flex; flex-wrap: wrap; gap: 8px; }
+.xnx-pestana {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 999px;
+  border: 1px solid rgba(7, 16, 31, 0.12);
+  color: var(--xnx-blue-dark); background: var(--xnx-white);
+  font-size: 13px; font-weight: 600; text-decoration: none;
+  transition: border-color .2s ease, color .2s ease, background-color .2s ease;
+}
+.xnx-pestana:hover { border-color: var(--xnx-primary); color: var(--xnx-primary); }
+.xnx-pestana.activa { background: var(--xnx-primary); border-color: var(--xnx-primary); color: var(--xnx-white); }
+.xnx-pestana:focus-visible { outline: 3px solid rgba(42, 91, 255, .35); outline-offset: 2px; }
+
+.xnx-grafica { display: flex; align-items: flex-end; gap: 4px; height: 120px; }
+.xnx-grafica-col { flex: 1; height: 100%; display: flex; align-items: flex-end; }
+.xnx-grafica-barra {
+  width: 100%; min-height: 3px; border-radius: 4px 4px 0 0;
+  background: linear-gradient(180deg, var(--xnx-primary), var(--xnx-blue-dark));
+}
+.xnx-tabla-datos td { max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
+
+html[data-theme="dark"] .xnx-pestana { border-color: rgba(148, 170, 220, 0.3); color: var(--d-text); background: var(--d-surface-2); }
+html[data-theme="dark"] .xnx-pestana.activa { background: var(--xnx-primary); border-color: var(--xnx-primary); color: var(--xnx-white); }
+
+/* ═══════════════════════════════════════════════════════════════
+   JARVIS / Tech aesthetic overrides — Xincronix Tech Platform
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  --jarvis-cyan: #00f0ff;
+  --jarvis-blue: #0a84ff;
+  --jarvis-glow: 0 0 12px rgba(0, 240, 255, 0.35);
+  --jarvis-border: rgba(0, 240, 255, 0.25);
+  --jarvis-bg-card: rgba(10, 18, 30, 0.85);
+}
+
+[data-theme="dark"],
+body.dark,
+html[data-bs-theme="dark"] {
+  --xnx-primary: #00d4ff;
+  --xnx-primary-hover: #00f0ff;
+}
+
+.jarvis-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--jarvis-cyan, #00f0ff);
+  border: 1px solid var(--jarvis-border);
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  background: rgba(0, 240, 255, 0.08);
+  box-shadow: var(--jarvis-glow);
+}
+
+.jarvis-card {
+  border: 1px solid var(--jarvis-border, rgba(0, 240, 255, 0.2)) !important;
+  box-shadow: 0 0 20px rgba(0, 180, 255, 0.06);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.jarvis-card:hover {
+  border-color: rgba(0, 240, 255, 0.45) !important;
+  box-shadow: 0 0 28px rgba(0, 200, 255, 0.12);
+}
+
+.jarvis-hero {
+  background: linear-gradient(135deg, rgba(0, 40, 80, 0.4), rgba(0, 20, 40, 0.2));
+  border: 1px solid var(--jarvis-border);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+.jarvis-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 20% 50%, rgba(0, 240, 255, 0.08), transparent 60%);
+  pointer-events: none;
+}
+
+/* Sidebar tech feel */
+.xnx-sidebar {
+  border-right: 1px solid rgba(0, 200, 255, 0.12);
+}
+.xnx-sidebar-item.active {
+  box-shadow: inset 3px 0 0 var(--jarvis-cyan, #00f0ff);
+}
+.xnx-logo-text span {
+  color: var(--jarvis-cyan, #00f0ff);
+}
+
+/* Progress bars glow */
+.xnx-progress-bar {
+  background: linear-gradient(90deg, #0a84ff, #00f0ff) !important;
+  box-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
+}
+
+/* Topbar refinement */
+.xnx-topbar {
+  border-bottom: 1px solid rgba(0, 200, 255, 0.1);
+  backdrop-filter: blur(8px);
+}
+
+/* Canvas interactive area */
+.canvas-workspace {
+  min-height: 520px;
+  background: radial-gradient(circle at center, #0a1525 0%, #050a12 100%);
+  border: 1px solid var(--jarvis-border);
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+}
+.canvas-toolbar {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--jarvis-border);
+  background: rgba(0, 20, 40, 0.6);
+}

@@ -5,12 +5,7 @@ from . import views
 urlpatterns = [
     path("", views.panel, name="panel"),
 
-    # Mi empresa: crearla, ver sus métricas, editarla y eliminarla
-    path("empresa/", views.mi_empresa, name="mi_empresa"),
-    path("empresa/editar/", views.mi_empresa_editar, name="mi_empresa_editar"),
-    path("empresa/eliminar/", views.mi_empresa_eliminar, name="mi_empresa_eliminar"),
-
-    # Proyectos (CRUD) con sus miembros y tareas
+    # Proyectos (CRUD) con miembros, tareas, hitos e invitaciones
     path("proyectos/", views.proyectos, name="proyectos"),
     path("proyectos/nuevo/", views.proyecto_crear, name="proyecto_crear"),
     path("proyectos/<int:pk>/", views.proyecto_detalle, name="proyecto_detalle"),
@@ -23,11 +18,18 @@ urlpatterns = [
     path("tareas/<int:pk>/editar/", views.tarea_editar, name="tarea_editar"),
     path("tareas/<int:pk>/eliminar/", views.tarea_eliminar, name="tarea_eliminar"),
 
-    # Secciones que todavía se están migrando
+    # Canvas interactivo
+    path("canvas/", views.canvas, name="canvas"),
+
+    # Secciones en desarrollo / próximamente
     path("ideas/", views.proximamente, {"seccion": "Tablero de ideas"}, name="ideas"),
-    path("canvas/", views.proximamente, {"seccion": "Canvas"}, name="canvas"),
     path("analytics/", views.proximamente, {"seccion": "Analytics"}, name="analytics"),
     path("equipo/", views.proximamente, {"seccion": "Equipo"}, name="equipo"),
     path("asistente/", views.proximamente, {"seccion": "Asistente virtual"}, name="asistente"),
     path("automatizaciones/", views.proximamente, {"seccion": "Automatizaciones"}, name="automatizaciones"),
+
+    # Empresa se mantiene por compatibilidad pero ya no es el eje central
+    path("empresa/", views.mi_empresa, name="mi_empresa"),
+    path("empresa/editar/", views.mi_empresa_editar, name="mi_empresa_editar"),
+    path("empresa/eliminar/", views.mi_empresa_eliminar, name="mi_empresa_eliminar"),
 ]

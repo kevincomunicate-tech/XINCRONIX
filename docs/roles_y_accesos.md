@@ -19,7 +19,7 @@ Para cambiar una regla:
 | `perfiles.<perfil>.inicio` | A dónde entra cada perfil después del login | superadministrador → `administracion:inicio` |
 | `perfiles.<perfil>.puede_asignar` | Qué roles puede dar | solo el superadministrador tiene la lista llena |
 | `perfiles.<perfil>.acciones` | Acciones generales | `crear_empresa`, `crear_proyecto`, `editar_cuenta`, `eliminar_cuenta` |
-| `perfiles.<perfil>.menu` | Enlaces extra del menú | "Usuarios" y "Empresas" para el superadministrador |
+| `perfiles.<perfil>.menu` | Enlaces extra del menú | "Usuarios", "Empresas" y "Monitoreo" para el superadministrador |
 | `empresas` | Permisos sobre una empresa | el propietario la ve, edita, elimina y ve sus métricas |
 | `proyectos` | Permisos sobre un proyecto | un editor ve, edita y maneja tareas |
 | `rutas_restringidas` | URLs solo para ciertos perfiles | `/administracion/` → superadministrador |

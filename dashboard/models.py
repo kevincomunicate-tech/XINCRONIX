@@ -77,8 +77,30 @@ class Proyecto(models.Model):
         BACKEND = "backend", "Backend"
         FULL_STACK = "full_stack", "Full Stack"
         IA_ML = "ia_ml", "IA / ML"
+        MOBILE = "mobile", "Mobile / App"
+        DEVOPS = "devops", "DevOps / Infra"
+        DATA = "data", "Datos / Analytics"
         QA = "qa", "QA / Testing"
         OTRO = "otro", "Otro"
+
+    class Proposito(models.TextChoices):
+        """Para qué se crea el proyecto (cuestionario inicial)."""
+        ESCOLAR = "escolar", "Proyecto escolar / académico"
+        PERSONAL = "personal", "Proyecto personal / aprendizaje"
+        COMERCIAL = "comercial", "Para vender / producto comercial"
+        DESPLIEGUE = "despliegue", "Para desplegar en producción"
+        OPEN_SOURCE = "open_source", "Open source / comunidad"
+        INTERNO = "interno", "Interno de equipo / startup"
+        OTRO = "otro", "Otro"
+
+    class Metodologia(models.TextChoices):
+        SCRUM = "scrum", "Scrum"
+        KANBAN = "kanban", "Kanban"
+        GAES = "gaes", "GAES (Grupos de Aprendizaje)"
+        WATERFALL = "waterfall", "Cascada / Waterfall"
+        POMODORO = "pomodoro", "Pomodoro + sprints cortos"
+        HYBRID = "hybrid", "Híbrida"
+        NINGUNA = "ninguna", "Sin metodología formal"
 
     class Importancia(models.IntegerChoices):
         BAJA = 1, "Baja"
@@ -91,20 +113,43 @@ class Proyecto(models.Model):
     descripcion = models.TextField("descripción", blank=True)
     estado = models.CharField(max_length=15, choices=Estado.choices, default=Estado.ACTIVO)
     nivel_importancia = models.PositiveSmallIntegerField(choices=Importancia.choices, default=Importancia.MEDIA)
-    tipo_proyecto = models.CharField("tipo", max_length=15, choices=Tipo.choices, blank=True)
+    tipo_proyecto = models.CharField("tipo técnico", max_length=15, choices=Tipo.choices, blank=True)
+    proposito = models.CharField(
+        "propósito", max_length=20, choices=Proposito.choices, blank=True, default="",
+        help_text="Respuesta del cuestionario: ¿para qué es este proyecto?",
+    )
+    metodologia = models.CharField(
+        "metodología", max_length=15, choices=Metodologia.choices, blank=True, default="",
+        help_text="Metodología de trabajo elegida en el cuestionario.",
+    )
+    es_educativo = models.BooleanField(
+        "proyecto educativo", default=False,
+        help_text="Si es escolar/universitario: el supervisor (profesor) puede ver y comentar todo.",
+    )
+    es_grupal = models.BooleanField("es grupal", default=False)
     fecha_inicio = models.DateField(null=True, blank=True)
     fecha_fin = models.DateField(null=True, blank=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
 
-    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, related_name="proyectos", db_column="id_empresa")
+    # Empresa queda opcional: la plataforma ya no gira en torno a empresas.
+    empresa = models.ForeignKey(
+        Empresa, on_delete=models.SET_NULL, related_name="proyectos",
+        db_column="id_empresa", null=True, blank=True,
+    )
     equipo = models.ForeignKey(
         Equipo, on_delete=models.SET_NULL, related_name="proyectos",
         db_column="id_equipo", null=True, blank=True,
-        help_text="Equipo asignado: todos sus miembros trabajan en el proyecto.",
+        help_text="Equipo asignado (opcional).",
     )
     creado_por = models.ForeignKey(
         Usuario, on_delete=models.SET_NULL, related_name="proyectos_creados",
         db_column="id_creador", null=True, blank=True,
+    )
+    # Supervisor típico de proyectos educativos (profesor / mentor)
+    supervisor = models.ForeignKey(
+        Usuario, on_delete=models.SET_NULL, related_name="proyectos_supervisados",
+        db_column="id_supervisor", null=True, blank=True,
+        help_text="En proyectos educativos: el profesor o mentor que supervisa.",
     )
     miembros = models.ManyToManyField(
         Usuario, through="ProyectoMiembro", related_name="proyectos", blank=True,
@@ -134,8 +179,11 @@ class Proyecto(models.Model):
         return self.nombre
 
     def clean(self):
-        if self.equipo_id and self.empresa_id and self.equipo.empresa_id != self.empresa_id:
+        if self.equipo_id and self.empresa_id and getattr(self.equipo, "empresa_id", None) and self.equipo.empresa_id != self.empresa_id:
             raise ValidationError({"equipo": "El equipo debe ser de la misma empresa del proyecto."})
+        if self.es_educativo and not self.supervisor_id and self.proposito == self.Proposito.ESCOLAR:
+            # Solo aviso suave; se puede asignar después
+            pass
 
     def relaciones_con(self, usuario):
         """Relaciones de una persona con el proyecto, ej. {"creador"} o {"editor", "equipo"}."""
@@ -203,6 +251,61 @@ class ProyectoMiembro(models.Model):
     def clean(self):
         if self.usuario_id and self.proyecto_id and self.usuario_id == self.proyecto.creado_por_id:
             raise ValidationError("El creador ya tiene todos los permisos: no hace falta agregarlo.")
+
+
+# ---------------------------------------------------------------------------
+# Roadmap / Milestones (estilo GitHub Projects)
+# ---------------------------------------------------------------------------
+
+class Hito(models.Model):
+    """Hito o milestone del roadmap de un proyecto."""
+
+    class Estado(models.TextChoices):
+        PENDIENTE = "pendiente", "Pendiente"
+        EN_PROGRESO = "en_progreso", "En progreso"
+        COMPLETADO = "completado", "Completado"
+        CANCELADO = "cancelado", "Cancelado"
+
+    id = models.BigAutoField(primary_key=True, db_column="id_hito")
+    proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE, related_name="hitos", db_column="id_proyecto")
+    titulo = models.CharField(max_length=150)
+    descripcion = models.TextField(blank=True)
+    fecha_objetivo = models.DateField(null=True, blank=True)
+    estado = models.CharField(max_length=15, choices=Estado.choices, default=Estado.PENDIENTE)
+    orden = models.PositiveSmallIntegerField(default=0)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "hito"
+        verbose_name = "hito"
+        verbose_name_plural = "hitos"
+        ordering = ["orden", "fecha_objetivo", "id"]
+
+    def __str__(self):
+        return f"{self.titulo} ({self.proyecto})"
+
+
+class InvitacionProyecto(models.Model):
+    """Invitación por correo (enlace único) para unirse a un proyecto grupal."""
+
+    id = models.BigAutoField(primary_key=True)
+    proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE, related_name="invitaciones")
+    email = models.EmailField()
+    token = models.CharField(max_length=64, unique=True)
+    rol = models.CharField(max_length=15, choices=ProyectoMiembro.RolProyecto.choices, default=ProyectoMiembro.RolProyecto.EDITOR)
+    creada_por = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True, blank=True)
+    aceptada = models.BooleanField(default=False)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_expiracion = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = "invitacion_proyecto"
+        verbose_name = "invitación a proyecto"
+        verbose_name_plural = "invitaciones a proyectos"
+        unique_together = [("proyecto", "email")]
+
+    def __str__(self):
+        return f"Invitación a {self.email} → {self.proyecto}"
 
 
 # ---------------------------------------------------------------------------

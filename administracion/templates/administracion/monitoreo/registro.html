@@ -1,0 +1,51 @@
+{% extends "base_dashboard.html" %}
+
+{% block titulo %}{{ modelo.db_table }} #{{ objeto.pk }} · Monitoreo{% endblock %}
+{% block volver %}{% include "partials/volver.html" with url=url_tabla texto=modelo.db_table %}{% endblock %}
+{% block titulo_pagina %}{{ objeto }}{% endblock %}
+{% block subtitulo_pagina %}{{ modelo.verbose_name|capfirst }} · <code>{{ modelo.db_table }}</code> #{{ objeto.pk }}{% endblock %}
+
+{% block contenido %}
+  {% include "administracion/monitoreo/_pestanas.html" %}
+
+  <div class="dashboard-grid">
+    <div class="xnx-card">
+      <div class="xnx-card-header"><span class="xnx-card-title"><i class="bi bi-card-list me-2"></i>Campos</span></div>
+      <div class="table-responsive">
+        <table class="table align-middle mb-0 small">
+          <tbody>
+            {% for c in campos %}
+              <tr>
+                <th class="text-nowrap" style="width: 35%">{{ c.nombre|capfirst }}<div class="fw-normal text-muted"><code>{{ c.columna }}</code></div></th>
+                <td class="text-break">
+                  {% if c.url %}<a href="{{ c.url }}">{{ c.texto }}</a>
+                  {% elif c.oculto %}<span class="text-muted" title="Campo sensible: nunca se muestra">{{ c.texto }}</span>
+                  {% else %}{{ c.texto|linebreaksbr }}{% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+            {% for m in muchos %}
+              <tr><th>{{ m.nombre|capfirst }}</th><td>{{ m.valores|join:", "|default:"—" }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="xnx-card">
+      <div class="xnx-card-header"><span class="xnx-card-title"><i class="bi bi-diagram-3 me-2"></i>Registros relacionados</span></div>
+      <ul class="list-group list-group-flush">
+        {% for r in inversas %}
+          <li class="list-group-item d-flex justify-content-between align-items-center small">
+            <span>{% if r.url %}<a href="{{ r.url }}" class="text-decoration-none">{{ r.tabla|capfirst }}</a>{% else %}{{ r.tabla|capfirst }}{% endif %} <span class="text-muted">({{ r.campo }})</span></span>
+            {% if r.total is None %}<span class="badge text-bg-danger">falta la tabla</span>{% else %}<span class="badge text-bg-primary">{{ r.total }}</span>{% endif %}
+          </li>
+        {% empty %}
+          <li class="list-group-item small text-muted">Ninguna otra tabla apunta a este registro.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <p class="text-muted small mt-3 mb-0"><i class="bi bi-lock me-1"></i>Vista de solo lectura. Los campos sensibles (contraseñas, tokens, claves) se ocultan según <code>config/monitoreo.json</code>.</p>
+{% endblock %}

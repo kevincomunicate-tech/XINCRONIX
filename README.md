@@ -106,6 +106,9 @@ Las reglas viven en [`config/politica_accesos.json`](config/politica_accesos.jso
 
 El **superadministrador** (`cuellaryohan100@gmail.com`) entra a `/administracion/`,
 crea empresas y las vincula con usuarios, y es el único que asigna roles.
+Además tiene un **panel de monitoreo** (`/administracion/monitoreo/`) para vigilar
+toda la base de datos: tablas y filas, alertas, sesiones activas, migraciones y
+estado del sistema. Guía: [`docs/monitoreo.md`](docs/monitoreo.md).
 
 ---
 
@@ -216,7 +219,7 @@ y la estructura en SQL en [`docs/xincronix_bd.sql`](docs/xincronix_bd.sql).
 XINCRONIX/
 ├── config/          configuración general (settings, urls)
 ├── cuentas/         cuentas, empresas, roles, equipos, política de accesos y Google
-├── administracion/  panel del superadministrador (usuarios y empresas)
+├── administracion/  panel del superadministrador (usuarios, empresas y monitoreo)
 ├── dashboard/       panel, proyectos, tareas, analytics, ideas y canvas
 ├── comunicacion/    mensajes, reuniones, calendario, asistente IA y soporte
 ├── sitio/           página pública de inicio

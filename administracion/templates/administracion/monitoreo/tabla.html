@@ -1,0 +1,97 @@
+{% extends "base_dashboard.html" %}
+
+{% block titulo %}{{ modelo.db_table }} · Monitoreo{% endblock %}
+{% block volver %}{% url 'administracion:monitoreo_tablas' as destino %}{% include "partials/volver.html" with url=destino texto="Tablas" %}{% endblock %}
+{% block titulo_pagina %}{{ modelo.verbose_name_plural|capfirst }}{% endblock %}
+{% block subtitulo_pagina %}Tabla <code>{{ modelo.db_table }}</code> · {{ total|default_if_none:"—" }} fila{{ total|pluralize }}{% endblock %}
+
+{% block accion_principal %}
+  {% if not falta_tabla %}
+    <a href="{% url 'administracion:monitoreo_exportar' modelo.app_label modelo.model_name %}?q={{ busqueda|urlencode }}&campo={{ filtro_campo|urlencode }}&valor={{ filtro_valor|urlencode }}" class="btn btn-outline-primary btn-sm">
+      <i class="bi bi-filetype-csv me-1"></i>Exportar CSV
+    </a>
+  {% endif %}
+{% endblock %}
+
+{% block contenido %}
+  {% include "administracion/monitoreo/_pestanas.html" %}
+
+  {% if falta_tabla %}
+    <div class="alert alert-danger"><i class="bi bi-exclamation-octagon me-2"></i>La tabla <code>{{ modelo.db_table }}</code> no existe en la base. Ejecuta <code>python manage.py migrate</code>.</div>
+  {% endif %}
+
+  <ul class="nav nav-tabs mb-3">
+    <li class="nav-item"><a class="nav-link{% if vista != 'estructura' %} active{% endif %}" href="?vista=datos">Datos</a></li>
+    <li class="nav-item"><a class="nav-link{% if vista == 'estructura' %} active{% endif %}" href="?vista=estructura">Estructura</a></li>
+  </ul>
+
+  {% if vista == 'estructura' %}
+    <div class="xnx-card">
+      <div class="table-responsive">
+        <table class="table align-middle mb-0 small">
+          <thead><tr><th>Campo</th><th>Columna</th><th>Tipo</th><th>Tipo en la base</th><th>Nulo</th><th>Único</th><th>Relación</th></tr></thead>
+          <tbody>
+            {% for c in estructura %}
+              <tr>
+                <td class="fw-semibold">{{ c.nombre }}{% if c.pk %} <span class="badge text-bg-warning">PK</span>{% endif %}{% if c.oculto %} <span class="badge text-bg-dark" title="Su valor nunca se muestra">oculto</span>{% endif %}</td>
+                <td><code>{{ c.columna }}</code></td>
+                <td>{{ c.tipo }}</td>
+                <td><code>{{ c.tipo_bd }}</code></td>
+                <td>{{ c.nulo|yesno:"Sí,No" }}</td>
+                <td>{{ c.unico|yesno:"Sí,No" }}</td>
+                <td>{% if c.relacion %}<code>{{ c.relacion }}</code>{% else %}—{% endif %}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% else %}
+    <div class="xnx-card">
+      <div class="xnx-card-header">
+        <span class="xnx-card-title"><i class="bi bi-table me-2"></i>Filas</span>
+        <form method="get" class="d-flex gap-2" role="search">
+          <input type="search" name="q" value="{{ busqueda }}" class="form-control form-control-sm"
+                 placeholder="{% if buscables %}Buscar en {{ buscables|join:', ' }}{% else %}Buscar por id{% endif %}" aria-label="Buscar en la tabla">
+          <button type="submit" class="btn btn-outline-secondary btn-sm"><i class="bi bi-search"></i></button>
+        </form>
+      </div>
+      {% if filtro_campo %}
+        <div class="px-3 pt-3 small">
+          Filtrando por <code>{{ filtro_campo }} = {{ filtro_valor }}</code>
+          · <a href="?">quitar filtro</a>
+        </div>
+      {% endif %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 small xnx-tabla-datos">
+          <thead><tr>{% for c in campos %}<th title="Columna {{ c.column }}">{{ c.name }}</th>{% endfor %}</tr></thead>
+          <tbody>
+            {% for f in filas %}
+              <tr>
+                {% for celda in f.celdas %}
+                  <td class="text-nowrap">
+                    {% if forloop.first %}<a href="{{ f.url }}" class="fw-semibold">{{ celda.texto }}</a>
+                    {% elif celda.url %}<a href="{{ celda.url }}" class="text-decoration-none">{{ celda.texto }}</a>
+                    {% elif celda.oculto %}<span class="text-muted" title="Campo sensible: config/monitoreo.json → campos_ocultos">{{ celda.texto }}</span>
+                    {% else %}{{ celda.texto }}{% endif %}
+                  </td>
+                {% endfor %}
+              </tr>
+            {% empty %}
+              <tr><td colspan="{{ campos|length }}"><div class="xnx-vacio"><i class="bi bi-inbox"></i><p class="small mt-2 mb-0">No hay filas{% if busqueda or filtro_campo %} que coincidan{% endif %}.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% if pagina and pagina.paginator.num_pages > 1 %}
+        <div class="xnx-card-body d-flex justify-content-between align-items-center small">
+          <span class="text-muted">Página {{ pagina.number }} de {{ pagina.paginator.num_pages }}</span>
+          <div class="btn-group">
+            {% if pagina.has_previous %}<a class="btn btn-outline-secondary btn-sm" href="?q={{ busqueda|urlencode }}&campo={{ filtro_campo|urlencode }}&valor={{ filtro_valor|urlencode }}&pagina={{ pagina.previous_page_number }}"><i class="bi bi-chevron-left"></i> Anterior</a>{% endif %}
+            {% if pagina.has_next %}<a class="btn btn-outline-secondary btn-sm" href="?q={{ busqueda|urlencode }}&campo={{ filtro_campo|urlencode }}&valor={{ filtro_valor|urlencode }}&pagina={{ pagina.next_page_number }}">Siguiente <i class="bi bi-chevron-right"></i></a>{% endif %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+{% endblock %}

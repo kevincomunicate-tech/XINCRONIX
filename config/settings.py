@@ -204,6 +204,8 @@ LOGIN_REDIRECT_URL = "panel"  # respaldo: el inicio real de cada perfil sale del
 # Reglas de roles y rutas (quién es superadministrador, qué rol recibe el registro,
 # a dónde entra cada perfil y qué rutas están restringidas). Sin "ifs" en el código.
 POLITICA_ACCESOS = BASE_DIR / "config" / "politica_accesos.json"
+# Qué muestra el panel de monitoreo del superadministrador (/administracion/monitoreo/)
+MONITOREO = BASE_DIR / "config" / "monitoreo.json"
 LOGOUT_REDIRECT_URL = "login"
 
 # 1) correo + contraseña (nuestro login)   2) cuentas de Google (allauth)
