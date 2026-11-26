@@ -20,7 +20,7 @@
             <tr>
               <td class="fw-semibold">{{ t.titulo }}</td>
               <td><a href="{% url 'proyecto_detalle' t.proyecto_id %}" class="text-decoration-none">{{ t.proyecto }}</a></td>
-              <td><span class="badge {% if t.estado == 'completada' %}text-bg-success{% else %}text-bg-light border{% endif %}">{{ t.get_estado_display }}</span></td>
+              <td><span class="badge {% if t.estado == 'hecha' %}text-bg-success{% else %}text-bg-light border{% endif %}">{{ t.get_estado_display }}</span></td>
               <td class="small {% if t.vencida %}text-danger fw-semibold{% endif %}">{{ t.fecha_vencimiento|date:"j M Y"|default:"—" }}</td>
               <td class="small">{{ t.asignado_a|default:"—" }}</td>
             </tr>

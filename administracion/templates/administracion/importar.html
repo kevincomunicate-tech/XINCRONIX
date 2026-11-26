@@ -1,0 +1,53 @@
+{% extends "base_dashboard.html" %}
+{% block titulo %}Carga masiva{% endblock %}
+{% block titulo_pagina %}Carga masiva de datos{% endblock %}
+{% block subtitulo_pagina %}Sube un CSV con usuarios o proyectos. Primero se valida; si algo falla, no se guarda nada.{% endblock %}
+{% block contenido %}
+<div class="xnx-card mb-3">
+  <div class="xnx-card-header"><span class="xnx-card-title"><i class="bi bi-upload me-2"></i>Archivo CSV</span></div>
+  <div class="xnx-card-body">
+    <form method="post" enctype="multipart/form-data" class="row g-3">
+      {% csrf_token %}
+      <div class="col-md-4">
+        <label class="form-label small fw-semibold" for="tipo">¿Qué vas a cargar?</label>
+        <select id="tipo" name="tipo" class="form-select">
+          <option value="usuarios" {% if tipo_sel == "usuarios" %}selected{% endif %}>Usuarios</option>
+          <option value="proyectos" {% if tipo_sel == "proyectos" %}selected{% endif %}>Proyectos</option>
+        </select>
+      </div>
+      <div class="col-md-5">
+        <label class="form-label small fw-semibold" for="archivo">Archivo CSV (máximo 2 MB y 2 000 filas)</label>
+        <input id="archivo" type="file" name="archivo" accept=".csv,text/csv" class="form-control" required>
+      </div>
+      <div class="col-md-3 d-flex align-items-end gap-2">
+        <button name="accion" value="validar" class="btn btn-outline-primary btn-sm">Validar</button>
+        <button name="accion" value="importar" class="btn btn-primary btn-sm">Importar</button>
+      </div>
+    </form>
+    <div class="small text-muted mt-3">
+      Plantillas: <a href="{% url 'administracion:importar_plantilla' 'usuarios' %}">usuarios</a> ·
+      <a href="{% url 'administracion:importar_plantilla' 'proyectos' %}">proyectos</a>.
+      Columnas de usuarios: email, nombre, apellido, perfil, cargo, telefono. Perfiles: estudiante, profesional, profesor.
+      Los usuarios importados no tienen contraseña: deben usar «Recuperar contraseña».
+      Columnas de proyectos: nombre, descripcion, creado_por_email, finalidad, metodologia, modalidad, visibilidad, estado, fecha_inicio, fecha_fin, tecnologia, repositorio_url.
+    </div>
+  </div>
+</div>
+
+{% if resultado %}
+<div class="xnx-card">
+  <div class="xnx-card-header"><span class="xnx-card-title"><i class="bi bi-list-check me-2"></i>Resultado</span></div>
+  <div class="xnx-card-body">
+    <p class="mb-2">Filas en el archivo: <strong>{{ resultado.total }}</strong>. Con errores: <strong>{{ resultado.errores|length }}</strong>.</p>
+    {% if resultado.errores %}
+      <div class="table-responsive"><table class="table table-sm table-hover mb-0">
+        <thead><tr><th>Línea</th><th>Problema</th></tr></thead>
+        <tbody>{% for linea, mensaje in resultado.errores %}<tr><td>{{ linea }}</td><td>{{ mensaje }}</td></tr>{% endfor %}</tbody>
+      </table></div>
+    {% elif resultado.valido %}
+      <p class="text-success mb-0">Todas las filas son válidas. Pulsa «Importar» para guardarlas.</p>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

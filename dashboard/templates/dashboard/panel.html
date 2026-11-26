@@ -1,78 +1,11 @@
 {% extends "base_dashboard.html" %}
-
-{% block titulo %}Panel{% endblock %}
-{% block titulo_pagina %}Hola, {{ request.user.first_name|default:"bienvenido" }} 👋{% endblock %}
-{% block subtitulo_pagina %}{% now "l j \d\e F" %} · Plataforma de proyectos de tecnología y software{% endblock %}
-
-{% block accion_principal %}
-  {% if puede_crear_proyecto %}
-    <a href="{% url 'proyecto_crear' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Nuevo proyecto</a>
-  {% endif %}
-{% endblock %}
-
-{% block accion_principal %}
-  {% if puede_crear_proyecto and empresa %}
-    <a href="{% url 'proyecto_crear' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Nuevo proyecto</a>
-  {% endif %}
-{% endblock %}
-
+{% block titulo %}Centro de proyectos{% endblock %}
+{% block titulo_pagina %}Centro de proyectos{% endblock %}
+{% block subtitulo_pagina %}Tu estación de control para construir software{% endblock %}
+{% block accion_principal %}<a href="{% url 'proyecto_orientacion' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Iniciar proyecto</a>{% endblock %}
 {% block contenido %}
-  <div class="jarvis-hero mb-4">
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
-      <div>
-        <span class="jarvis-badge">SISTEMA ONLINE</span>
-        <h2 class="h5 fw-bold mt-2 mb-1">Centro de mando de proyectos</h2>
-        <p class="text-muted small mb-0">Gestiona, optimiza y documenta proyectos de software desde el ideado hasta el despliegue. Ideal también para entornos educativos.</p>
-      </div>
-      {% if puede_crear_proyecto %}
-        <a href="{% url 'proyecto_crear' %}" class="btn btn-primary"><i class="bi bi-rocket-takeoff me-1"></i>Iniciar proyecto</a>
-      {% endif %}
-    </div>
-  </div>
-
-  {% if metricas %}
-    <h2 class="h6 fw-bold mb-3">Indicadores</h2>
-    {% include "partials/metricas.html" with m=metricas %}
-  {% endif %}
-
-  <div class="dashboard-grid">
-    <div class="xnx-card jarvis-card">
-      <div class="xnx-card-header">
-        <span class="xnx-card-title"><i class="bi bi-kanban me-2"></i>Proyectos ({{ total_proyectos }})</span>
-        <a href="{% url 'proyectos' %}" class="xnx-card-action">Ver todos</a>
-      </div>
-      <div class="xnx-card-body">
-        {% for p in proyectos %}
-          <a href="{% url 'proyecto_detalle' p.pk %}" class="d-block text-reset text-decoration-none mb-3">
-            <div class="d-flex justify-content-between small mb-1">
-              <span class="fw-semibold">{{ p.nombre }}</span>
-              <span class="text-muted">{{ p.avance }}%</span>
-            </div>
-            <div class="xnx-progress"><div class="xnx-progress-bar" style="width: {{ p.avance }}%"></div></div>
-          </a>
-        {% empty %}
-          <div class="xnx-vacio"><i class="bi bi-kanban"></i><p class="small mt-2 mb-0">Todavía no tienes proyectos. {% if puede_crear_proyecto %}<a href="{% url 'proyecto_crear' %}">Crea el primero</a>.{% endif %}</p></div>
-        {% endfor %}
-      </div>
-    </div>
-
-    <div class="xnx-card jarvis-card">
-      <div class="xnx-card-header">
-        <span class="xnx-card-title"><i class="bi bi-check2-square me-2"></i>Mis tareas pendientes ({{ total_pendientes }})</span>
-        <a href="{% url 'tareas' %}" class="xnx-card-action">Ver todas</a>
-      </div>
-      <div class="xnx-card-body">
-        {% for t in mis_tareas %}
-          <div class="activity-item">
-            <div>
-              <div class="activity-text fw-semibold">{{ t.titulo }}</div>
-              <div class="activity-time">{{ t.proyecto }} · {% if t.fecha_vencimiento %}{% if t.vencida %}<span class="text-danger">venció el {{ t.fecha_vencimiento|date:"j M" }}</span>{% else %}vence el {{ t.fecha_vencimiento|date:"j M" }}{% endif %}{% else %}sin fecha{% endif %}</div>
-            </div>
-          </div>
-        {% empty %}
-          <div class="xnx-vacio"><i class="bi bi-emoji-smile"></i><p class="small mt-2 mb-0">No tienes tareas pendientes.</p></div>
-        {% endfor %}
-      </div>
-    </div>
-  </div>
+<div class="jarvis-status mb-4"><span class="jarvis-dot"></span><strong>SISTEMA OPERATIVO</strong><span>· {{ metricas.proyectos }} proyectos visibles · {{ metricas.avance }}% de avance global</span></div>
+<div class="row g-3 mb-4"><div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-label">Proyectos activos</div><div class="stat-value">{{ metricas.activos }}</div></div></div><div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-label">Tareas hechas</div><div class="stat-value">{{ metricas.hechas }}/{{ metricas.tareas }}</div></div></div><div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-label">En curso</div><div class="stat-value">{{ metricas.en_progreso }}</div></div></div><div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-label">Alertas de fecha</div><div class="stat-value">{{ metricas.vencidas }}</div></div></div></div>
+<div class="dashboard-grid"><div class="xnx-card"><div class="xnx-card-header"><span class="xnx-card-title"><i class="bi bi-kanban me-2"></i>Proyectos</span><a href="{% url 'proyectos' %}" class="xnx-card-action">Ver todos</a></div><div class="xnx-card-body">{% for p in proyectos %}<a href="{% url 'proyecto_detalle' p.pk %}" class="d-block text-reset text-decoration-none mb-3"><div class="d-flex justify-content-between small mb-1"><span class="fw-semibold">{{ p.nombre }}</span><span class="text-muted">{{ p.avance }}%</span></div><div class="xnx-progress"><div class="xnx-progress-bar" style="width:{{ p.avance }}%"></div></div><div class="small text-muted mt-1">{{ p.get_metodologia_display }} · {{ p.get_finalidad_display }}</div></a>{% empty %}<div class="xnx-vacio"><i class="bi bi-rocket-takeoff"></i><p class="small mt-2 mb-0">Inicia tu primer proyecto tecnológico.</p></div>{% endfor %}</div></div>
+<div class="xnx-card"><div class="xnx-card-header"><span class="xnx-card-title"><i class="bi bi-check2-square me-2"></i>Mis próximas tareas</span><a href="{% url 'tareas' %}" class="xnx-card-action">Ver todas</a></div><div class="xnx-card-body">{% for t in mis_tareas %}<div class="activity-item"><div><div class="activity-text fw-semibold">{{ t.titulo }}</div><div class="activity-time">{{ t.proyecto }} · {{ t.fecha_vencimiento|date:"j M Y"|default:"sin fecha" }}</div></div></div>{% empty %}<div class="xnx-vacio"><i class="bi bi-stars"></i><p class="small mt-2 mb-0">No tienes tareas pendientes.</p></div>{% endfor %}</div></div></div>
 {% endblock %}

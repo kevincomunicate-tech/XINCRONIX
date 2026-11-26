@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views, views_monitoreo as monitoreo
+from . import views, views_importacion as importacion, views_monitoreo as monitoreo, views_reportes as reportes
 
 app_name = "administracion"
 
@@ -10,14 +10,12 @@ urlpatterns = [
     path("usuarios/nuevo/", views.crear_usuario, name="crear_usuario"),
     path("usuarios/<int:pk>/", views.editar_usuario, name="editar_usuario"),
     path("usuarios/<int:pk>/eliminar/", views.eliminar_usuario, name="eliminar_usuario"),
-    # Empresas
-    path("empresas/", views.empresas, name="empresas"),
-    path("empresas/nueva/", views.crear_empresa, name="crear_empresa"),
-    path("empresas/<int:pk>/", views.empresa_detalle, name="empresa_detalle"),
-    path("empresas/<int:pk>/editar/", views.editar_empresa, name="editar_empresa"),
-    path("empresas/<int:pk>/eliminar/", views.eliminar_empresa, name="eliminar_empresa"),
-    path("empresas/<int:pk>/vincular/", views.vincular_usuario, name="vincular_usuario"),
-    path("empresas/<int:pk>/desvincular/<int:usuario_pk>/", views.desvincular_usuario, name="desvincular_usuario"),
+    # Carga masiva desde CSV (validación previa, todo o nada)
+    path("importar/", importacion.importar, name="importar"),
+    path("importar/plantilla/<str:tipo>/", importacion.plantilla, name="importar_plantilla"),
+    # Reportes con filtros de varios criterios (Excel y PDF)
+    path("reportes/", reportes.reportes, name="reportes"),
+    path("reportes/exportar/<str:formato>/", reportes.reportes_exportar, name="reportes_exportar"),
     # Monitoreo de la base de datos (solo lectura, salvo cerrar sesiones)
     path("monitoreo/", monitoreo.resumen, name="monitoreo"),
     path("monitoreo/tablas/", monitoreo.tablas, name="monitoreo_tablas"),

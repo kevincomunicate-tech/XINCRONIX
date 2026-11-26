@@ -28,6 +28,15 @@ DEBUG = os.getenv("DJANGO_DEBUG", "True") == "True"
 
 ALLOWED_HOSTS = [h.strip() for h in os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",") if h.strip()]
 
+# HTTPS: apagado en desarrollo (http://127.0.0.1). En producción, detrás de HTTPS, pon DJANGO_HTTPS=True.
+HTTPS_ACTIVO = os.getenv("DJANGO_HTTPS", "False") == "True"
+SECURE_SSL_REDIRECT = HTTPS_ACTIVO
+SESSION_COOKIE_SECURE = HTTPS_ACTIVO
+CSRF_COOKIE_SECURE = HTTPS_ACTIVO
+SECURE_HSTS_SECONDS = 31536000 if HTTPS_ACTIVO else 0
+SECURE_HSTS_INCLUDE_SUBDOMAINS = HTTPS_ACTIVO
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
 
 # ---------------------------------------------------------------------------
 # Aplicaciones
@@ -35,7 +44,6 @@ ALLOWED_HOSTS = [h.strip() for h in os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1
 
 INSTALLED_APPS = [
     # Apps de Django
-    "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -109,7 +117,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Los datos de conexión se leen del archivo .env (no se sube a GitHub).
 # ---------------------------------------------------------------------------
 
-DB_ENGINE = os.getenv("DB_ENGINE", "mysql").strip().lower()
+DB_ENGINE = os.getenv("DB_ENGINE", "sqlite").strip().lower()
 
 if DB_ENGINE == "sqlite":
     # Un solo archivo; no necesita servidor, usuario ni contraseña.
@@ -244,7 +252,7 @@ SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
 SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 SOCIALACCOUNT_AUTO_SIGNUP = True
 SOCIALACCOUNT_STORE_TOKENS = False  # no guardamos tokens de Google: solo usamos el inicio de sesión
-# Rol, empresa y redirección salen de la política (config/politica_accesos.json)
+# La redirección separa el área administrativa y el espacio de proyectos.
 ACCOUNT_ADAPTER = "cuentas.adaptadores.CuentaAdapter"
 SOCIALACCOUNT_ADAPTER = "cuentas.adaptadores.GoogleAdapter"
 
@@ -283,7 +291,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 # ---------------------------------------------------------------------------
 
 EMAIL_BACKEND = os.getenv("DJANGO_EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
-DEFAULT_FROM_EMAIL = "Xincronix <no-responder@xincronix.com>"
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "Xincronix <no-responder@xincronix.local>")
 
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

@@ -1,0 +1,16 @@
+{% extends "base_dashboard.html" %}{% load static %}
+{% block titulo %}Canvas · {{ proyecto.nombre }}{% endblock %}
+{% block css %}<link rel="stylesheet" href="{% static 'css/canvas.css' %}">{% endblock %}
+{% block titulo_pagina %}Canvas colaborativo{% endblock %}
+{% block subtitulo_pagina %}Pizarra compartida del proyecto · se guarda en el servidor{% endblock %}
+{% block contenido %}
+<div class="project-command-bar mb-3"><a href="{% url 'proyecto_detalle' proyecto.pk %}">Resumen</a><a href="{% url 'proyecto_tablero' proyecto.pk %}">Tablero</a><a href="{% url 'proyecto_calendario' proyecto.pk %}">Calendario</a><a href="{% url 'proyecto_roadmap' proyecto.pk %}">Roadmap</a><a class="active" href="{% url 'proyecto_canvas' proyecto.pk %}">Canvas</a><a href="{% url 'proyecto_analytics' proyecto.pk %}">Estadísticas</a></div>
+<div class="canvas-page"><div class="canvas-toolbar">
+  <input id="nombreLienzo" value="{{ lienzo.nombre }}" aria-label="Nombre del canvas">
+  <button class="canvas-tool active" data-tool="select" title="Seleccionar"><i class="bi bi-cursor"></i></button><button class="canvas-tool" data-tool="pen" title="Lápiz"><i class="bi bi-pencil"></i></button><button class="canvas-tool" data-tool="rect" title="Rectángulo"><i class="bi bi-square"></i></button><button class="canvas-tool" data-tool="ellipse" title="Círculo"><i class="bi bi-circle"></i></button><button class="canvas-tool" data-tool="arrow" title="Flecha"><i class="bi bi-arrow-up-right"></i></button><button class="canvas-tool" data-tool="text" title="Texto">T</button><button class="canvas-tool" data-tool="note" title="Nota"><i class="bi bi-sticky"></i></button><button class="canvas-tool" data-tool="eraser" title="Borrador"><i class="bi bi-eraser"></i></button>
+  <button class="canvas-color active" data-color="ink"></button><button class="canvas-color" data-color="#2a5bff"></button><button class="canvas-color" data-color="#10b981"></button><button class="canvas-color" data-color="#f5b43c"></button><button class="canvas-color" data-color="#ef4444"></button><button class="canvas-color" data-color="#8b5cf6"></button><input id="grosor" type="range" min="1" max="10" value="3">
+  <button id="btnDeshacer" title="Deshacer"><i class="bi bi-arrow-counterclockwise"></i></button><button id="btnRehacer" title="Rehacer"><i class="bi bi-arrow-clockwise"></i></button><button id="btnBorrarSel" title="Eliminar selección"><i class="bi bi-trash"></i></button><button id="btnLimpiar">Limpiar</button><button id="btnNuevaNota">Nueva nota</button><button id="btnZoomMenos">−</button><span id="zoomNivel">100%</span><button id="btnZoomMas">+</button><button id="btnAjustar">Ajustar</button><button id="btnExportar">PNG</button>
+</div><div id="canvasWrap" class="canvas-wrap"><canvas id="lienzo"></canvas><textarea id="editorTexto" class="canvas-editor" hidden></textarea><div id="canvasHint" class="canvas-hint">Doble clic para crear una nota · arrastra para dibujar</div></div></div>
+<div class="toast position-fixed bottom-0 end-0 m-3" id="canvasToast"><div class="toast-body" id="canvasToastBody">Guardado</div></div>
+{{ lienzo.contenido|json_script:"lienzoInicial" }}<meta id="canvasGuardarUrl" data-url="{% url 'canvas_guardar' proyecto.pk %}">
+{% endblock %}{% block scripts %}<script src="{% static 'js/canvas.js' %}"></script>{% endblock %}

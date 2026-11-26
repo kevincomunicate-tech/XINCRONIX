@@ -485,7 +485,7 @@ button {
   display: block;
   margin-top: 14px;
   color: rgba(42, 91, 255, 0.7);
-  content: "●  ACCESO SEGURO  ·  ENTORNO EMPRESARIAL";
+  content: "●  ACCESO SEGURO  ·  PROYECTOS DE SOFTWARE";
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.12em;
@@ -1201,7 +1201,7 @@ input:focus-visible {
 }
 
 .form-sub::after {
-  content: "●  REGISTRO SEGURO  ·  ENTORNO EMPRESARIAL";
+  content: "●  REGISTRO SEGURO  ·  PROYECTOS DE SOFTWARE";
 }
 
 .field-hint {

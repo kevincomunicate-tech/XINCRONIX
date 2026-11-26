@@ -5,13 +5,13 @@
 {% block css %}<link rel="stylesheet" href="{% static 'css/registro.css' %}">{% endblock %}
 
 {% block insignia %}Crea tu cuenta · 2026{% endblock %}
-{% block titular %}Empieza a<br>organizar tu <em>empresa</em>{% endblock %}
-{% block subtitulo %}Solo necesitas tu nombre, tu correo y una contraseña. En menos de un minuto tendrás tu espacio de trabajo listo.{% endblock %}
+{% block titular %}Empieza a<br>crear <em>software</em>{% endblock %}
+{% block subtitulo %}Crea proyectos, documenta decisiones y coordina a tu equipo desde un solo espacio.{% endblock %}
 
 {% block caracteristicas %}
-  <div class="left-feature"><div class="left-feature-icon"><i class="bi bi-robot"></i></div>Agentes de IA para tu equipo</div>
+  <div class="left-feature"><div class="left-feature-icon"><i class="bi bi-mortarboard"></i></div>Proyectos educativos con supervisión</div>
   <div class="left-feature"><div class="left-feature-icon"><i class="bi bi-kanban"></i></div>Proyectos y tareas en tiempo real</div>
-  <div class="left-feature"><div class="left-feature-icon"><i class="bi bi-lightbulb"></i></div>Tablero de ideas colaborativo</div>
+  <div class="left-feature"><div class="left-feature-icon"><i class="bi bi-easel"></i></div>Canvas y documentación colaborativa</div>
 {% endblock %}
 
 {% block contenido %}
@@ -22,6 +22,7 @@
     {% csrf_token %}
     {% include "partials/campo_auth.html" with campo=form.nombre icono="bi-person" %}
     {% include "partials/campo_auth.html" with campo=form.email icono="bi-envelope" %}
+    {% include "partials/campo_auth.html" with campo=form.perfil icono="bi-person-badge" %}
     {% include "partials/campo_auth.html" with campo=form.password icono="bi-lock" ver_password=True fortaleza=True %}
 
     <button type="submit" class="btn-login">

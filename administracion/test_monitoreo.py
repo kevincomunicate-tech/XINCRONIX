@@ -4,7 +4,7 @@ from django.db import DatabaseError
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from cuentas.models import Empresa, Usuario
+from cuentas.models import Usuario
 from dashboard.models import Proyecto, Tarea
 
 from . import monitoreo
@@ -14,12 +14,11 @@ CLAVE = "Clave$egura2026"
 
 class Base(TestCase):
     def setUp(self):
-        self.super = Usuario.objects.create_superuser("cuellaryohan100@gmail.com", CLAVE, first_name="Yohan")
-        self.ana = Usuario.objects.create_user("ana@x.com", CLAVE, first_name="Ana")
-        self.acme = Empresa.objects.create(nombre="Acme", propietario=self.ana)
-        self.proyecto = Proyecto.objects.create(nombre="Web", empresa=self.acme, creado_por=self.ana)
+        self.super = Usuario.objects.create_superuser("cuellaryohan100@gmail.com", CLAVE, first_name="Yohan", last_name="Usuario")
+        self.ana = Usuario.objects.create_user("ana@x.com", CLAVE, first_name="Ana", last_name="Usuario")
+        self.proyecto = Proyecto.objects.create(nombre="Web", creado_por=self.ana, descripcion="Descripción de prueba")
         Tarea.objects.create(titulo="Diseño", proyecto=self.proyecto)
-        Tarea.objects.create(titulo="Pruebas", proyecto=Proyecto.objects.create(nombre="App", empresa=self.acme))
+        Tarea.objects.create(titulo="Pruebas", proyecto=Proyecto.objects.create(nombre="App", creado_por=self.ana, descripcion="Descripción de prueba"), descripcion="Descripción de prueba")
         self.client.force_login(self.super)
 
 
@@ -60,8 +59,8 @@ class ResumenTests(Base):
         tarjetas = {t["texto"]: t["total"] for t in r.context["tarjetas"]}
         self.assertEqual((tarjetas["Usuarios"], tarjetas["Proyectos"], tarjetas["Tareas"]), (2, 2, 2))
         alertas = {a["texto"]: a["total"] for a in r.context["alertas"]}
-        self.assertEqual(alertas["Usuarios sin empresa"], 1)  # Ana (el superadministrador no cuenta)
-        self.assertEqual(alertas["Empresas sin propietario"], 0)
+        self.assertEqual(alertas["Cuentas desactivadas"], 0)
+        self.assertEqual(alertas["Proyectos sin tareas"], 0)  # los dos proyectos tienen tarea
 
     def test_tabla_que_falta_no_rompe_la_pagina(self):
         def falla():

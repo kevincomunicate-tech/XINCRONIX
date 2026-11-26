@@ -4,8 +4,8 @@
 {% block titulo %}Iniciar sesión{% endblock %}
 {% block css %}<link rel="stylesheet" href="{% static 'css/login.css' %}">{% endblock %}
 
-{% block titular %}El sistema nervioso<br>de tu <em>empresa</em>{% endblock %}
-{% block subtitulo %}Organiza equipos, automatiza procesos y supervisa agentes de IA en un único espacio de trabajo inteligente.{% endblock %}
+{% block titular %}El centro de mando<br>de tus <em>proyectos</em>{% endblock %}
+{% block subtitulo %}Planifica, construye y documenta productos de tecnología y software desde un único espacio de trabajo.{% endblock %}
 
 {% block caracteristicas %}
   <div class="left-feature"><div class="left-feature-icon"><i class="bi bi-robot"></i></div>Gestión multiagente con IA integrada</div>
@@ -17,14 +17,14 @@
 {% block panel_extra %}
   <div class="left-stats">
     <div class="left-stat"><div class="num">3×</div><div class="lbl">Productividad media</div></div>
-    <div class="left-stat"><div class="num">100%</div><div class="lbl">Empresarial</div></div>
+    <div class="left-stat"><div class="num">100%</div><div class="lbl">Proyectos</div></div>
     <div class="left-stat"><div class="num">IA</div><div class="lbl">Agentes nativos</div></div>
   </div>
 {% endblock %}
 
 {% block contenido %}
   <h1 class="form-title">Bienvenido de vuelta</h1>
-  <p class="form-sub">Accede a tu espacio de trabajo corporativo</p>
+  <p class="form-sub">Accede a tu espacio de proyectos</p>
 
   <form id="loginForm" method="post" novalidate>
     {% csrf_token %}

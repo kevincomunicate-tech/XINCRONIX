@@ -1,238 +1,74 @@
-# Xincronix
+# Xincronix — plataforma de proyectos de software
 
-Xincronix es una plataforma web donde las empresas organizan el trabajo de
-sus equipos en un solo lugar: proyectos, tareas, ideas y una pizarra
-compartida, con indicadores para ver cómo avanza todo.
+Xincronix es una aplicación Django para gestionar proyectos de tecnología y software. Cada proyecto pertenece a su creador y puede reunir colaboradores invitados.
 
----
+## Capacidades
 
-## Product Goal
+- Proyectos con asistente de orientación (finalidad, metodología Scrum, GAES, Pomodoro o Kanban, modalidad individual o grupal).
+- Visibilidad a elección del líder: **privado** (solo el equipo) o **público** con un enlace de solo lectura que no pide inicio de sesión. Muestra nombre, descripción, avance y tareas, pero no personas ni documentos. El líder puede generar un enlace nuevo, y el anterior deja de funcionar.
+- Invitar a alguien está siempre disponible para el líder. Si el proyecto era individual, pasa a grupal automáticamente al invitar.
+- El líder da permisos a cada integrante: **Colaborador** (edita tareas, calendario, canvas y documentos) o **Solo lectura**. Puede cambiarlos cuando quiera.
+- Tablero Kanban arrastrable, calendario, roadmap, estadísticas, documentos, correcciones del supervisor y canvas compartido.
+- Área de administración en `/administracion/`, solo para el **superusuario**: gestión de cuentas y panel de **Monitoreo** de solo lectura (`/administracion/monitoreo/`).
+- **Reportes** (`/administracion/reportes/`), solo para el superusuario, el cargo más alto: filtros de hasta 4 criterios (con «todos» o «alguno»), elección de columnas, vista previa y exportación a **Excel** (encabezados, filtros, panel fijo y hoja de criterios) o **PDF** (horizontal, con pie de página). Librerías: `openpyxl` y `reportlab`.
+- Mensajes directos, reuniones por proyecto, calendario personal y tickets de soporte (app `comunicacion`; por ahora solo tiene modelos).
 
-> Que cualquier empresa pueda organizar, repartir y seguir el trabajo de sus
-> equipos desde una sola plataforma, donde cada persona ve solo lo que le
-> corresponde.
+## Ejecución local
 
-**Entrega:** 1 de diciembre de 2026.
+Requiere Python 3.11+ y pip.
 
----
+En Windows (PowerShell):
 
-## Partes del proyecto
-
-Para usar cualquier módulo primero hay que **registrarse** (con correo o con
-**Google**) e **iniciar sesión**. Quien se registra queda como **Usuario**:
-crea su propia empresa, sus proyectos e invita a quien necesite. El único que
-asigna roles (incluido Administrador) es el **superadministrador**.
-
-| Módulo | Para qué sirve | Ruta | Necesitas antes |
-|---|---|---|---|
-| **Cuentas** | Crear la cuenta, entrar (correo o Google) y recuperar la contraseña | `/cuentas/registro/` · `/cuentas/login/` | — |
-| **Mi cuenta** | Ver, editar o eliminar la propia información | `/cuentas/mi-cuenta/` | Iniciar sesión |
-| **Panel** | Ver de un vistazo cómo va el trabajo | `/app/` | Iniciar sesión |
-| **Mi empresa** | Crear la empresa, editarla y ver sus métricas | `/app/empresa/` | Iniciar sesión |
-| **Administración** | CRUD de usuarios y empresas, asignar roles | `/administracion/` | Ser superadministrador |
-| **Empresas y equipos** | Agrupar a las personas de la empresa en equipos, con su rol | `/app/equipo/` | Ser Administrador o Manager |
-| **Proyectos** | Crear proyectos, sumar miembros y organizarlos en un Kanban | `/app/proyectos/` | Iniciar sesión |
-| **Tareas** | Repartir el trabajo con responsable, prioridad y fecha | `/app/tareas/` | Tener un proyecto |
-| **Analytics** | Medir el avance frente a las metas | `/app/analytics/` | Tener tareas |
-| **Tablero de ideas** | Proponer y votar ideas en equipo | `/app/ideas/` | Iniciar sesión |
-| **Canvas** | Diseñar en conjunto sobre una pizarra compartida | `/app/canvas/` | Iniciar sesión |
-
-Todo funciona en **modo claro y oscuro**.
-
-### Recorrido del usuario
-
-```mermaid
-flowchart LR
-    V([Visitante]) --> I[Inicio<br>/]
-
-    subgraph C1 [Cuentas: antes de entrar]
-        direction TB
-        R[Registro<br>/cuentas/registro/]
-        L[Login<br>/cuentas/login/]
-        G[Continuar con Google]
-        RC[Recuperar contraseña<br>/cuentas/recuperar/]
-        L -. olvidó la contraseña .-> RC
-        RC -. nueva contraseña .-> L
-    end
-
-    I --> R
-    I --> L
-    I --> G
-    R -->|entra como Usuario| P
-    G --> P
-    L --> P
-    L -->|superadministrador| AD
-
-    subgraph APP [Aplicación: con sesión iniciada]
-        direction TB
-        P[Panel<br>/app/]
-        P --> ME[Mi empresa + métricas<br>/app/empresa/]
-        P --> MC[Mi cuenta<br>/cuentas/mi-cuenta/]
-        P --> E[Equipo<br>/app/equipo/]
-        P --> A[Analytics<br>/app/analytics/]
-        P --> ID[Ideas<br>/app/ideas/]
-        P --> CV[Canvas<br>/app/canvas/]
-        P --> PR[Proyectos + Kanban<br>/app/proyectos/]
-        PR -->|cada proyecto tiene| T[Tareas<br>/app/tareas/]
-    end
-
-    subgraph ADM [Solo superadministrador]
-        AD[Administración<br>/administracion/<br>usuarios · empresas · roles]
-    end
-```
-
-### Ejemplo: crear un proyecto
-
-1. **Regístrate** en `/cuentas/registro/` (o con **Continuar con Google**).
-2. Llegas al **Panel** (`/app/`) y creas **Mi empresa**.
-3. En **Proyectos**, pulsa **Nuevo proyecto** y llena nombre, tipo, importancia y fechas.
-4. En el proyecto, **agrega personas por su correo** (pueden ser de otra empresa) con su rol:
-   responsable, editor u observador.
-5. Crea las **tareas** con responsable y fecha límite. Tú y quienes agregaste
-   ajustan fechas, estados y tareas; el avance y las métricas se calculan solos.
-
-### Qué puede hacer cada quien
-
-Las reglas viven en [`config/politica_accesos.json`](config/politica_accesos.json)
-(sin `if` en el código). Guía: [`docs/roles_y_accesos.md`](docs/roles_y_accesos.md).
-
-| En un proyecto | Ver | Editar datos y fechas | Tareas | Miembros | Eliminar |
-|---|---|---|---|---|---|
-| Creador | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Responsable | ✅ | ✅ | ✅ | ✅ | ❌ |
-| Editor | ✅ | ✅ | ✅ | ❌ | ❌ |
-| Observador | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Administrador de la empresa | ✅ | ✅ | ✅ | ✅ | ✅ |
-
-El **superadministrador** (`cuellaryohan100@gmail.com`) entra a `/administracion/`,
-crea empresas y las vincula con usuarios, y es el único que asigna roles.
-Además tiene un **panel de monitoreo** (`/administracion/monitoreo/`) para vigilar
-toda la base de datos: tablas y filas, alertas, sesiones activas, migraciones y
-estado del sistema. Guía: [`docs/monitoreo.md`](docs/monitoreo.md).
-
----
-
-## Sprint actual — Sprint 2
-
-| Módulos | Responsable | Fechas |
-|---|---|---|
-| Empresas y equipos · Panel | Felipe ([@FelipeNavarrete0313](https://github.com/FelipeNavarrete0313)) | 16 – 20 de noviembre de 2026 |
-
-### Sprint Goal
-
-> Cada empresa organiza a su gente en equipos y conoce de un vistazo el estado
-> real de su trabajo, sin tener que preguntarle a cada persona.
-
-**Qué entrega este sprint:**
-- Cada empresa tiene sus propios usuarios, roles y equipos, separados de las demás.
-- Cada persona ve solo los proyectos y la información que le corresponden.
-- El panel muestra el resumen real del trabajo: proyectos activos, tareas
-  completadas y vencidas, actividad reciente y avance de cada proyecto.
-
-El plan de todos los sprints (historias de usuario, story points y criterios
-de aceptación) está en [`docs/plan_sprints.md`](docs/plan_sprints.md).
-
----
-
-## Tecnologías y requisitos
-
-- **Python 3.10+** con **Django 5.2** y **django-allauth** (inicio con Google)
-- **Base de datos:** MariaDB 10.5+ / MySQL 8+, SQLite o PostgreSQL
-- **Interfaz:** Bootstrap 5.3, Bootstrap Icons y Chart.js
-- **Git** y **pip**
-
-> El XAMPP con MariaDB 10.4 **no** es compatible con Django 5.2.
-
----
-
-## Instalación
-
-```bash
-# 1. Clonar el repositorio
-git clone https://github.com/kevincomunicate-tech/XINCRONIX.git
+```powershell
 cd XINCRONIX
-
-# 2. Crear y activar el entorno virtual
 python -m venv .venv
-#    Windows (PowerShell):  .venv\Scripts\Activate.ps1
-#    Linux / macOS:         source .venv/bin/activate
-
-# 3. Instalar las dependencias
+.\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-
-# 4. Crear el archivo .env (y cambiar la clave secreta)
-#    Windows:        copy .env.example .env
-#    Linux / macOS:  cp .env.example .env
-
-# 5. Crear las tablas de la base de datos
+Copy-Item .env.example .env
 python manage.py migrate
-
-# 6. Crear el superadministrador (usa el correo de config/politica_accesos.json)
 python manage.py createsuperuser
-
-# 7. (Opcional) Inicio con Google: ver docs/google_login.md
-
-# 8. (Opcional) Datos de ejemplo en la empresa de un usuario que ya exista.
-#    Si no tiene empresa, se le crea "Empresa demo" (queda como propietario).
-python manage.py cargar_demo tu@correo.com
-
-# 9. Iniciar el servidor
 python manage.py runserver
 ```
 
-Abre http://127.0.0.1:8000
-
-### Uso diario
+En Linux:
 
 ```bash
-source .venv/bin/activate      # o .venv\Scripts\Activate.ps1 en Windows
-python manage.py migrate       # por si alguien cambió los modelos
+cd XINCRONIX
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+python manage.py migrate
+python manage.py createsuperuser
 python manage.py runserver
 ```
 
-Si instalas un paquete nuevo: `pip install paquete` y luego `pip freeze > requirements.txt`.
+Abre `http://127.0.0.1:8000/`. Las cuentas normales se registran en `/cuentas/registro/`. El superusuario entra a `/administracion/`.
 
-En desarrollo, los correos de **recuperar contraseña** no se envían: se
-imprimen en la terminal donde corre `runserver`.
-
----
+Datos de ejemplo: `python manage.py cargar_demo correo@ejemplo.com` (el usuario debe existir y quedará como líder de esos proyectos).
 
 ## Base de datos
 
-El motor se elige en `.env` con `DB_ENGINE`: **mysql** (MariaDB de XAMPP, por
-defecto), **sqlite** o **postgresql**. Crea la base vacía `xincronix_bd`
-(`utf8mb4_unicode_ci`), configura `.env` (ver `.env.example`) y corre
-`python manage.py migrate`. Paso a paso en
-[`docs/guia_base_de_datos.md`](docs/guia_base_de_datos.md).
+Esta versión **no migra datos de versiones anteriores**. Cada persona del equipo debe recrear su base:
 
-El diagrama entidad-relación está en [`docs/modelo_datos.md`](docs/modelo_datos.md)
-y la estructura en SQL en [`docs/xincronix_bd.sql`](docs/xincronix_bd.sql).
+1. Hacer un respaldo de la base actual, si la necesita.
+2. Crear una base nueva (o un archivo SQLite nuevo).
+3. Ejecutar `python manage.py migrate` y `python manage.py createsuperuser`.
 
-> Borra los datos desde la aplicación o desde `/admin`, no con `DELETE`
-> directo en phpMyAdmin.
+## Integridad de los datos
 
----
+- Los campos importantes son obligatorios: nombres y apellidos, nombre y descripción del proyecto, título de tareas y eventos, asunto y descripción de los tickets, contenido de mensajes, comentarios de correcciones, etc. La base de datos rechaza un texto vacío aunque se salte la web.
+- Las relaciones se validan: el responsable de una tarea debe ser integrante del proyecto; una corrección solo puede apuntar a una tarea de su mismo proyecto; el supervisor debe ser profesor; un mensaje no puede ir a la misma persona que lo envía.
+- El historial (quién creó una tarea o subió un documento) puede quedar vacío solo si esa cuenta se borra; el trabajo se conserva.
+- Para revisar lo guardado: `python manage.py auditar_datos`. Muestra cada problema y termina con error si encuentra alguno.
+- `createsuperuser` pide nombres y apellidos.
 
-## Estructura
+## Superusuarios
 
-```
-XINCRONIX/
-├── config/          configuración general (settings, urls)
-├── cuentas/         cuentas, empresas, roles, equipos, política de accesos y Google
-├── administracion/  panel del superadministrador (usuarios, empresas y monitoreo)
-├── dashboard/       panel, proyectos, tareas, analytics, ideas y canvas
-├── comunicacion/    mensajes, reuniones, calendario, asistente IA y soporte
-├── sitio/           página pública de inicio
-├── templates/       plantillas base
-├── static/          CSS, JS e imágenes
-├── docs/            modelo de datos, guías y plan de sprints
-├── sql/             consultas de solo lectura para revisar los datos
-├── scripts/         publicar el backlog en GitHub
-├── requirements.txt dependencias
-└── .env.example     guía para crear .env
-```
-
----
+- Debe quedar **siempre al menos un superusuario activo**. El sistema lo impide al borrar, desactivar, quitar el permiso o hacerlo en lote, también desde la consola.
+- Un superusuario puede borrar a otro o borrarse a sí mismo, siempre que quede otro activo.
+- Un `staff` que no sea superusuario no tiene acceso a la administración.
+- El panel de administración de Django (`/admin/`) no existe en esta versión.
 
 ## Pruebas
 
@@ -240,18 +76,35 @@ XINCRONIX/
 python manage.py test
 ```
 
----
+- **Caja blanca** (`test_caja_blanca.py`, `test_superusuarios.py`): lógica interna de la política, el gestor de usuarios, la regla de superusuarios (modelo, lotes, señales y servicio), la visibilidad y los permisos por rol, las validaciones y las propiedades de los modelos.
+- **Caja negra** (`test_caja_negra*.py`, `test_comandos.py`): HTTP como lo haría una persona. Matriz de acceso por rol, flujo completo de proyectos, invitaciones, tablero, calendario, documentos, correcciones, canvas, aislamiento entre proyectos y reglas de administración.
+- **Adversarias** (`test_adversarias.py`): un cliente exigente que intenta romper la aplicación con entradas raras, métodos HTTP extraños, escalada de privilegios y consultas fuera de lo permitido.
 
-## Flujo de trabajo con Git
+Cobertura (opcional):
 
-- `main` solo recibe cambios revisados.
-- Cada historia va en su propia rama: `feature/HU-18-listado-proyectos`.
-- Los cambios entran por **pull request**, revisado por otra persona.
-- En el pull request escribe `Closes #N` para cerrar el issue al unirlo.
+```bash
+pip install coverage
+coverage run --source=cuentas,dashboard,administracion,comunicacion manage.py test
+coverage report -m
+```
 
-### Definición de terminado
+`coverage` no está en `requirements.txt` porque solo se usa para revisar las pruebas.
 
-Una historia está terminada cuando cumple sus criterios de aceptación, tiene
-pruebas y `python manage.py test` pasa, funciona en modo claro, oscuro y en
-móvil, respeta los permisos, incluye su migración si cambia el modelo de datos
-y su pull request fue revisado por otra persona.
+## Seguridad
+
+- Solo el superusuario administra cuentas y ve el monitoreo.
+- Los documentos del proyecto solo aceptan PDF, Office, texto, imagen o ZIP, de hasta 10 MB.
+- El canvas tiene un límite de 512 KB y de profundidad de anidación.
+- El monitoreo nunca muestra contraseñas, tokens ni claves de sesión, no permite filtrar por esos campos y no los exporta. Las celdas del CSV que empiezan con `= + - @` se escapan.
+
+## Correo e invitaciones
+
+Por defecto el correo se imprime en consola: el enlace de la invitación aparece donde corre `runserver`. Para correos reales, configura un backend SMTP en `.env`; no subas credenciales al repositorio.
+
+## Limitaciones conocidas
+
+- **Los documentos se guardan en `media/` y, mientras `DEBUG` esté activo, se sirven por su URL sin pedir inicio de sesión.** Quien tenga el enlace puede abrirlo. Antes de producción hay que servirlos con una vista protegida o un almacenamiento privado.
+- No hay límite de intentos de inicio de sesión. Antes de producción conviene agregarlo.
+- El canvas guarda el último envío recibido; no hay edición simultánea en tiempo real.
+- El calendario no sincroniza con Google Calendar, Outlook ni otros servicios.
+- Antes de producción, cambia `DJANGO_SECRET_KEY`, `DEBUG`, `ALLOWED_HOSTS`, el correo y la base de datos.

@@ -1,24 +1,20 @@
 """
 Comunicación: chat, reuniones, calendario, asistente de IA y soporte.
 
-Son tablas de la base original que todavía no tienen pantalla en la
-aplicación, corregidas y normalizadas.
+Las reuniones pertenecen a un proyecto y los tickets pertenecen a quien los crea.
 """
 
 from django.conf import settings
 from django.db import models
-from django.db.models import Q
 
-from cuentas.models import Empresa, Equipo
+from cuentas.restricciones import distinto_de, no_vacio
+
 
 Usuario = settings.AUTH_USER_MODEL
 
 
 class Mensaje(models.Model):
-    """Chat: un mensaje va a UNA persona o a UN equipo, nunca a ambos.
-
-    La base original tenía 'estado' y 'leido' para lo mismo: queda 'leido'.
-    """
+    """Chat directo: un mensaje va a UNA persona."""
 
     id = models.BigAutoField(primary_key=True, db_column="id_mensajes")
     contenido = models.TextField()
@@ -27,27 +23,18 @@ class Mensaje(models.Model):
     remitente = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name="mensajes_enviados", db_column="id_usuario")
     destinatario = models.ForeignKey(
         Usuario, on_delete=models.CASCADE, related_name="mensajes_recibidos",
-        db_column="id_destinatario", null=True, blank=True,
-    )
-    equipo = models.ForeignKey(
-        Equipo, on_delete=models.CASCADE, related_name="mensajes",
-        db_column="id_equipo", null=True, blank=True,
+        db_column="id_destinatario",
     )
 
     class Meta:
+        constraints = [
+            no_vacio("mensaje", "contenido"),
+            distinto_de("mensaje", "remitente", "destinatario"),
+        ]
         db_table = "mensajes"
         verbose_name = "mensaje"
         verbose_name_plural = "mensajes"
         ordering = ["fecha_envio"]
-        constraints = [
-            # Exactamente uno de los dos: destinatario o equipo
-            models.CheckConstraint(
-                condition=(Q(destinatario__isnull=False) & Q(equipo__isnull=True))
-                | (Q(destinatario__isnull=True) & Q(equipo__isnull=False)),
-                name="ck_mensaje_un_destino",
-                violation_error_message="El mensaje debe ir a una persona o a un equipo.",
-            ),
-        ]
         indexes = [
             models.Index(fields=["remitente", "destinatario", "fecha_envio"], name="idx_mensajes_conversacion"),
         ]
@@ -72,9 +59,9 @@ class Reunion(models.Model):
     fecha = models.DateTimeField()
     estado = models.CharField(max_length=12, choices=Estado.choices, default=Estado.PROGRAMADA)
     grabacion_url = models.URLField("grabación", max_length=500, blank=True)
-    equipo = models.ForeignKey(
-        Equipo, on_delete=models.SET_NULL, related_name="reuniones",
-        db_column="id_equipo", null=True, blank=True,
+    proyecto = models.ForeignKey(
+        "dashboard.Proyecto", on_delete=models.SET_NULL, related_name="reuniones",
+        null=True, blank=True,
     )
     organizador = models.ForeignKey(
         Usuario, on_delete=models.SET_NULL, related_name="reuniones_organizadas",
@@ -82,6 +69,9 @@ class Reunion(models.Model):
     )
 
     class Meta:
+        constraints = [
+            no_vacio("reunion", "nombre"),
+        ]
         db_table = "reuniones"
         verbose_name = "reunión"
         verbose_name_plural = "reuniones"
@@ -112,8 +102,7 @@ class EventoCalendario(models.Model):
 class ConversacionIA(models.Model):
     """Chat con el asistente virtual.
 
-    Sin id_empresa (la base original lo tenía): la empresa se obtiene del
-    usuario. Guardarla dos veces viola la 3FN y puede contradecirse.
+    Pertenece solo a su usuario.
     """
 
     id = models.BigAutoField(primary_key=True, db_column="id_conversacion")
@@ -124,6 +113,9 @@ class ConversacionIA(models.Model):
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name="conversaciones_ia", db_column="id_usuario")
 
     class Meta:
+        constraints = [
+            no_vacio("conversacion", "titulo"),
+        ]
         db_table = "ia_conversaciones"
         verbose_name = "conversación con IA"
         verbose_name_plural = "conversaciones con IA"
@@ -147,6 +139,9 @@ class MensajeIA(models.Model):
     fecha_envio = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        constraints = [
+            no_vacio("mensaje_ia", "contenido"),
+        ]
         db_table = "ia_mensajes"
         verbose_name = "mensaje de IA"
         verbose_name_plural = "mensajes de IA"
@@ -166,21 +161,21 @@ class TicketSoporte(models.Model):
 
     id = models.BigAutoField(primary_key=True, db_column="id_ticket")
     asunto = models.CharField(max_length=200)
-    descripcion = models.TextField("descripción", blank=True)
+    descripcion = models.TextField("descripción")
     prioridad = models.CharField(max_length=10, choices=Prioridad.choices, default=Prioridad.MEDIA)
     estado = models.CharField(max_length=12, choices=Estado.choices, default=Estado.ABIERTO)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_cierre = models.DateTimeField(null=True, blank=True)
-    empresa = models.ForeignKey(
-        Empresa, on_delete=models.SET_NULL, related_name="tickets",
-        db_column="id_empresa", null=True, blank=True,
-    )
     creado_por = models.ForeignKey(
         Usuario, on_delete=models.SET_NULL, related_name="tickets",
         db_column="id_usuario", null=True, blank=True,
     )
 
     class Meta:
+        constraints = [
+            no_vacio("ticket", "asunto"),
+            no_vacio("ticket", "descripcion"),
+        ]
         db_table = "tickets_soporte"
         verbose_name = "ticket de soporte"
         verbose_name_plural = "tickets de soporte"

@@ -1,27 +1,32 @@
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError
 from django.test import TestCase
 
-from cuentas.models import Empresa, Equipo, Usuario
+from cuentas.models import Usuario
+from dashboard.models import Proyecto
 
-from .models import Mensaje
+from .models import Mensaje, Reunion, TicketSoporte
 
 
-class MensajeTests(TestCase):
+class ComunicacionTests(TestCase):
     def setUp(self):
-        empresa = Empresa.objects.create(nombre="Acme")
-        self.ana = Usuario.objects.create_user("ana@acme.com", "Clave$egura2026", empresa=empresa)
-        self.beto = Usuario.objects.create_user("beto@acme.com", "Clave$egura2026", empresa=empresa)
-        self.equipo = Equipo.objects.create(nombre="Backend", empresa=empresa)
+        self.ana = Usuario.objects.create_user("ana@ejemplo.com", "Clave$egura2026", first_name="Prueba", last_name="Usuario")
+        self.beto = Usuario.objects.create_user("beto@ejemplo.com", "Clave$egura2026", first_name="Prueba", last_name="Usuario")
 
-    def test_mensaje_directo_o_de_equipo(self):
-        Mensaje.objects.create(contenido="Hola", remitente=self.ana, destinatario=self.beto)
-        Mensaje.objects.create(contenido="Hola equipo", remitente=self.ana, equipo=self.equipo)
-        self.assertEqual(Mensaje.objects.count(), 2)
+    def test_mensaje_directo_entre_dos_personas(self):
+        m = Mensaje.objects.create(contenido="Hola Beto", remitente=self.ana, destinatario=self.beto)
+        self.assertFalse(m.leido)
+        self.assertEqual(str(m), "Hola Beto")
 
-    def test_sin_destino_lo_rechaza_la_base_de_datos(self):
-        with self.assertRaises(IntegrityError), transaction.atomic():
-            Mensaje.objects.create(contenido="¿A quién?", remitente=self.ana)
+    def test_mensaje_sin_destinatario_no_se_guarda(self):
+        with self.assertRaises(IntegrityError):
+            Mensaje.objects.create(contenido="Sin destino", remitente=self.ana, destinatario=None)
 
-    def test_con_ambos_destinos_lo_rechaza(self):
-        with self.assertRaises(IntegrityError), transaction.atomic():
-            Mensaje.objects.create(contenido="Doble", remitente=self.ana, destinatario=self.beto, equipo=self.equipo)
+    def test_reunion_pertenece_a_un_proyecto(self):
+        proyecto = Proyecto.objects.create(nombre="Web", creado_por=self.ana, descripcion="Descripción de prueba")
+        r = Reunion.objects.create(nombre="Revisión", fecha="2026-12-01T10:00:00Z", proyecto=proyecto, organizador=self.ana)
+        self.assertEqual(proyecto.reuniones.get(), r)
+
+    def test_ticket_queda_a_nombre_de_quien_lo_crea(self):
+        t = TicketSoporte.objects.create(asunto="No carga el tablero", creado_por=self.ana, descripcion="Descripción de prueba")
+        self.assertEqual(t.estado, TicketSoporte.Estado.ABIERTO)
+        self.assertEqual(self.ana.tickets.get(), t)
