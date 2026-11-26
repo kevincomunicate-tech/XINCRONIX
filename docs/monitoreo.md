@@ -2,20 +2,20 @@
 
 Ruta: **`/administracion/monitoreo/`**. En el menú aparece como **Monitoreo**.
 
-Solo entra el **superadministrador**: la ruta está dentro de `/administracion/`,
-que protege `rutas_restringidas` de `config/politica_accesos.json`.
+Solo entra el **superusuario** (`is_superuser`): la ruta está dentro de `/administracion/`,
+que exige ser superusuario en `cuentas/politica.py` y en el decorador `administrador`.
 
 - Un usuario normal recibe **403**.
 - Quien no ha iniciado sesión va al login.
 
 El panel es de **solo lectura**. Lo único que modifica es cerrar sesiones.
-Para cambiar usuarios o empresas se usan sus pestañas de Administración.
+Para cambiar usuarios se usa la pantalla de Administración.
 
 ## Pestañas
 
 | Pestaña | Qué muestra |
 |---|---|
-| **Resumen** | Tarjetas (usuarios, empresas, proyectos, tareas), tamaño de la base, número de tablas y filas, sesiones activas, versión de Django. También **alertas** (tareas vencidas, empresas sin propietario…), **distribución** (usuarios por rol, tareas por estado…), **gráficas** de los últimos días y lo más **reciente** (registros, inicios de sesión, actividad) |
+| **Resumen** | Tarjetas (usuarios, proyectos, tareas), tamaño de la base, número de tablas y filas, sesiones activas, versión de Django. También **alertas** (tareas vencidas, proyectos sin tareas, cuentas desactivadas…), **distribución** (usuarios por perfil, tareas por estado…), **gráficas** de los últimos días y lo más **reciente** (registros, inicios de sesión, eventos) |
 | **Tablas** | Todas las tablas de la base agrupadas, con su número de filas. Marca en rojo las que **faltan** (falta correr `migrate`) y lista las **tablas sin modelo** (tablas viejas que Django no usa) |
 | **Tabla** (al pulsar *Ver*) | Las filas, con buscador y paginación. **Estructura** muestra columnas, tipos, nulos, únicos y relaciones. **Exportar CSV** descarga la tabla |
 | **Registro** (al pulsar un id) | Todos los campos de una fila y cuántos registros de otras tablas apuntan a ella. Por ejemplo, las tareas de un proyecto, con enlace para verlas |
@@ -30,7 +30,7 @@ Para cambiar usuarios o empresas se usan sus pestañas de Administración.
 
 ## Todo se configura en `config/monitoreo.json`
 
-Como la política de roles, el código no tiene nada escrito a mano: lee el JSON.
+El código no tiene nada escrito a mano sobre qué mostrar: lee el JSON.
 
 | Clave | Para qué | Ejemplo |
 |---|---|---|
@@ -43,7 +43,7 @@ Como la política de roles, el código no tiene nada escrito a mano: lee el JSON
 | `grupos` | Nombre de cada grupo de tablas (por app) | `"dashboard": "Proyectos y trabajo"` |
 | `tarjetas` | Tarjetas del resumen, con un detalle filtrado | Usuarios → "activos" |
 | `alertas` | Conteos que conviene vigilar; `nivel`: danger, warning, info, secondary, success, primary | Tareas vencidas |
-| `distribuciones` | Barras "X por Y" | `"campo": "rol__nombre"` |
+| `distribuciones` | Barras "X por Y" | `"campo": "perfil"` |
 | `graficas` | Registros por día según un campo de fecha | `"campo_fecha": "date_joined"` |
 | `recientes` | Últimos registros según un campo de fecha | Últimos inicios de sesión |
 

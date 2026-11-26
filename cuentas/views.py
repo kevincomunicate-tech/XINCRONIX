@@ -10,6 +10,7 @@ from .forms import (
     PerfilForm, RecuperarForm, RegistroForm,
 )
 from .politica import obtener_politica
+from .models import SuperusuarioProtegido
 from .servicios import consecuencias_de_eliminar_cuenta, eliminar_cuenta as eliminar_cuenta_y_datos
 
 
@@ -100,8 +101,12 @@ def eliminar_cuenta(request):
     form = EliminarCuentaForm(request.POST or None, usuario=request.user)
     if request.method == "POST" and form.is_valid():
         usuario = request.user
+        try:
+            eliminar_cuenta_y_datos(usuario)
+        except SuperusuarioProtegido as error:
+            messages.error(request, str(error))
+            return redirect("mi_cuenta")
         logout(request)
-        eliminar_cuenta_y_datos(usuario)
         messages.success(request, "Tu cuenta fue eliminada. ¡Gracias por usar Xincronix!")
         return redirect("login")
     return render(request, "confirmar_eliminar.html", {

@@ -1,71 +1,66 @@
-from django import forms
+import os
 
-from cuentas.forms import CampoFecha, FormularioBootstrap
+from django import forms
+from django.core.exceptions import ValidationError
+
+from cuentas.forms import CampoFecha, CampoFechaHora, FormularioBootstrap
 from cuentas.models import Usuario
 
-from .models import Proyecto, ProyectoMiembro, Tarea, Hito, InvitacionProyecto
+from .models import Correccion, DocumentoProyecto, Evento, InvitacionProyecto, Proyecto, ProyectoMiembro, Tarea
 
 
-class CuestionarioProyectoForm(FormularioBootstrap, forms.Form):
-    """Preguntas sugeridas antes de crear el proyecto (pueden omitirse)."""
+class OrientacionProyectoForm(FormularioBootstrap, forms.Form):
+    """Primera pantalla opcional: da contexto sin bloquear la creación."""
 
-    proposito = forms.ChoiceField(
-        label="¿Para qué es este proyecto?",
-        choices=[("", "— Prefiero no responder —")] + list(Proyecto.Proposito.choices),
-        required=False,
-        help_text="Escolar, comercial, despliegue, open source…",
-    )
-    metodologia = forms.ChoiceField(
-        label="¿Qué metodología usarán?",
-        choices=[("", "— Prefiero no responder —")] + list(Proyecto.Metodologia.choices),
-        required=False,
-        help_text="Scrum, Kanban, GAES, Pomodoro…",
-    )
-    es_educativo = forms.BooleanField(
-        label="Es un proyecto educativo (colegio / universidad / institución)",
-        required=False,
-        help_text="Si marcas esto, podrás asignar un profesor como supervisor para correcciones y seguimiento.",
-    )
-    es_grupal = forms.BooleanField(
-        label="Será un proyecto grupal (invitaré a más personas)",
-        required=False,
-        help_text="Podrás enviar enlaces de invitación por correo.",
-    )
-    notas = forms.CharField(
-        label="Notas iniciales (opcional)",
-        required=False,
-        widget=forms.Textarea(attrs={"rows": 2, "placeholder": "Cualquier contexto útil para el equipo…"}),
-    )
+    finalidad = forms.ChoiceField(label="¿Para qué es este proyecto?", choices=[("", "Prefiero omitirlo")] + list(Proyecto.Finalidad.choices), required=False)
+    metodologia = forms.ChoiceField(label="¿Cómo quieres trabajar?", choices=[("", "Prefiero decidir después")] + list(Proyecto.Metodologia.choices), required=False)
+    modalidad = forms.ChoiceField(label="¿Trabajarás solo o en grupo?", choices=[("", "Aún no lo sé")] + list(Proyecto.Modalidad.choices), required=False)
+    contexto_educativo = forms.CharField(label="Curso, institución o reto (opcional)", max_length=180, required=False)
+    supervisor_email = forms.EmailField(label="Correo del profesor supervisor (opcional)", required=False)
 
 
 class ProyectoForm(FormularioBootstrap, forms.ModelForm):
     class Meta:
         model = Proyecto
-        fields = [
-            "nombre", "descripcion", "estado", "nivel_importancia",
-            "tipo_proyecto", "proposito", "metodologia", "es_educativo", "es_grupal",
-            "fecha_inicio", "fecha_fin",
-        ]
-        labels = {
-            "nivel_importancia": "Importancia",
-            "tipo_proyecto": "Tipo técnico",
-            "proposito": "Propósito",
-            "metodologia": "Metodología",
-            "es_educativo": "Proyecto educativo",
-            "es_grupal": "Proyecto grupal",
-        }
-        widgets = {
-            "descripcion": forms.Textarea(attrs={"rows": 3}),
-            "fecha_inicio": CampoFecha(),
-            "fecha_fin": CampoFecha(),
-        }
+        fields = ["nombre", "descripcion", "tecnologia", "repositorio_url", "estado", "fecha_inicio", "fecha_fin", "supervisor"]
+        labels = {"repositorio_url": "Repositorio o demo", "supervisor": "Profesor supervisor"}
+        widgets = {"descripcion": forms.Textarea(attrs={"rows": 4}), "fecha_inicio": CampoFecha(), "fecha_fin": CampoFecha()}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["supervisor"].queryset = Usuario.objects.filter(perfil=Usuario.Perfil.PROFESOR, is_active=True).order_by("first_name", "email")
+        self.fields["supervisor"].required = False
+
+
+class ProyectoLiderForm(ProyectoForm):
+    """Lo que solo decide el líder: si el proyecto es individual o grupal, y si es público o privado."""
+
+    class Meta(ProyectoForm.Meta):
+        fields = ProyectoForm.Meta.fields + ["modalidad", "visibilidad"]
+        labels = {**ProyectoForm.Meta.labels, "modalidad": "¿Trabajas solo o en grupo?", "visibilidad": "Visibilidad"}
+
+
+class InvitacionForm(FormularioBootstrap, forms.ModelForm):
+    class Meta:
+        model = InvitacionProyecto
+        fields = ["email", "rol"]
+        labels = {"email": "Correo de la persona invitada", "rol": "Acceso"}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Nadie puede invitar como líder: solo editor o lector. El líder es quien creó el proyecto.
+        roles_invitables = {ProyectoMiembro.Rol.EDITOR, ProyectoMiembro.Rol.LECTOR}
+        self.fields["rol"].choices = [(v, t) for v, t in ProyectoMiembro.Rol.choices if v in roles_invitables]
+
+    def clean_email(self):
+        return self.cleaned_data["email"].strip().lower()
 
 
 class TareaForm(FormularioBootstrap, forms.ModelForm):
     class Meta:
         model = Tarea
         fields = ["titulo", "descripcion", "estado", "prioridad", "fecha_vencimiento", "asignado_a"]
-        labels = {"fecha_vencimiento": "Fecha límite", "asignado_a": "Responsable"}
+        labels = {"asignado_a": "Responsable", "fecha_vencimiento": "Fecha límite"}
         widgets = {"descripcion": forms.Textarea(attrs={"rows": 3}), "fecha_vencimiento": CampoFecha()}
 
     def __init__(self, *args, proyecto, **kwargs):
@@ -74,66 +69,43 @@ class TareaForm(FormularioBootstrap, forms.ModelForm):
         self.fields["asignado_a"].required = False
 
 
-class MiembroForm(FormularioBootstrap, forms.Form):
-    """Agregar a alguien al proyecto por su correo o generar invitación."""
+class EventoForm(FormularioBootstrap, forms.ModelForm):
+    class Meta:
+        model = Evento
+        fields = ["titulo", "descripcion", "inicia_en", "termina_en"]
+        widgets = {"descripcion": forms.Textarea(attrs={"rows": 2}), "inicia_en": CampoFechaHora(), "termina_en": CampoFechaHora()}
 
-    email = forms.EmailField(
-        label="Correo de la persona",
-        widget=forms.EmailInput(attrs={"placeholder": "persona@correo.com"}),
-    )
-    rol = forms.ChoiceField(
-        label="Rol en el proyecto",
-        choices=ProyectoMiembro.RolProyecto.choices,
-        initial=ProyectoMiembro.RolProyecto.EDITOR,
-    )
-    enviar_invitacion = forms.BooleanField(
-        label="Si no tiene cuenta, enviar enlace de invitación por correo",
-        required=False,
-        initial=True,
-    )
+
+# Tipos y tamaño permitidos para documentos del proyecto. Nada ejecutable ni HTML:
+# un .html o .js subido podría ejecutarse en el navegador de quien lo abra.
+EXTENSIONES_DOCUMENTO = {".pdf", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx",
+                         ".txt", ".md", ".csv", ".png", ".jpg", ".jpeg", ".zip"}
+TAMANO_MAXIMO_DOCUMENTO = 10 * 1024 * 1024  # 10 MB
+
+
+class DocumentoForm(FormularioBootstrap, forms.ModelForm):
+    class Meta:
+        model = DocumentoProyecto
+        fields = ["nombre", "archivo"]
+
+    def clean_archivo(self):
+        archivo = self.cleaned_data["archivo"]
+        extension = os.path.splitext(archivo.name)[1].lower()
+        if extension not in EXTENSIONES_DOCUMENTO:
+            raise ValidationError("Tipo de archivo no permitido. Usa PDF, Office, texto, imagen o ZIP.")
+        if archivo.size > TAMANO_MAXIMO_DOCUMENTO:
+            raise ValidationError("El archivo supera el máximo de 10 MB.")
+        return archivo
+
+
+class CorreccionForm(FormularioBootstrap, forms.ModelForm):
+    class Meta:
+        model = Correccion
+        fields = ["tarea", "comentario", "sugerencia_calificacion"]
+        labels = {"sugerencia_calificacion": "Calificación sugerida (solo referencia)"}
+        widgets = {"comentario": forms.Textarea(attrs={"rows": 3})}
 
     def __init__(self, *args, proyecto, **kwargs):
         super().__init__(*args, **kwargs)
-        self.proyecto = proyecto
-        self.usuario = None
-
-    def clean_email(self):
-        email = self.cleaned_data["email"].strip().lower()
-        usuario = Usuario.objects.filter(email=email, is_active=True).first()
-        if usuario:
-            if usuario.pk == self.proyecto.creado_por_id:
-                raise forms.ValidationError("Es quien creó el proyecto: ya tiene todos los permisos.")
-            if self.proyecto.proyectomiembro_set.filter(usuario=usuario).exists():
-                raise forms.ValidationError("Esa persona ya está en el proyecto.")
-            self.usuario = usuario
-        return email
-
-    def save(self, creado_por=None):
-        if self.usuario:
-            return ProyectoMiembro.objects.create(
-                proyecto=self.proyecto, usuario=self.usuario, rol=self.cleaned_data["rol"]
-            )
-        import secrets
-        from django.utils import timezone
-        from datetime import timedelta
-
-        token = secrets.token_urlsafe(32)
-        inv = InvitacionProyecto.objects.create(
-            proyecto=self.proyecto,
-            email=self.cleaned_data["email"],
-            token=token,
-            rol=self.cleaned_data["rol"],
-            creada_por=creado_por,
-            fecha_expiracion=timezone.now() + timedelta(days=14),
-        )
-        return inv
-
-
-class HitoForm(FormularioBootstrap, forms.ModelForm):
-    class Meta:
-        model = Hito
-        fields = ["titulo", "descripcion", "fecha_objetivo", "estado", "orden"]
-        widgets = {
-            "descripcion": forms.Textarea(attrs={"rows": 2}),
-            "fecha_objetivo": CampoFecha(),
-        }
+        self.fields["tarea"].queryset = proyecto.tareas.all()
+        self.fields["tarea"].required = False

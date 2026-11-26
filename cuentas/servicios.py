@@ -1,48 +1,43 @@
-"""Operaciones de cuentas que tocan varias tablas a la vez."""
+"""Operaciones de cuenta con sus reglas de seguridad.
+
+Regla central: después de cualquier operación debe quedar al menos un
+superusuario ACTIVO. Esta función es la única fuente de esa regla; las
+vistas y las señales (cuentas/signals.py) la usan.
+"""
 
 from django.db import transaction
 
-from .models import Empresa, Usuario
+from .models import Usuario
 
 
-def empresas_que_se_eliminan(usuario):
-    """Empresas de las que es propietario y en las que no hay nadie más."""
-    propias = Empresa.objects.filter(propietario=usuario)
-    con_otros = Usuario.objects.filter(empresa__in=propias).exclude(pk=usuario.pk).values("empresa")
-    return propias.exclude(pk__in=con_otros)
+def bloquear_superusuarios():
+    """Bloquea las filas de los superusuarios activos hasta terminar la transacción.
+
+    Así dos operaciones simultáneas no pueden leer "quedan dos" y borrar cada una a una
+    dejando cero. En SQLite el bloqueo lo hace la base completa.
+    """
+    list(Usuario.objects.select_for_update().filter(is_superuser=True, is_active=True).values_list("pk", flat=True))
 
 
-# Textos en primera persona (Mi cuenta) o tercera (administración)
-TEXTOS = {
-    True: {
-        "datos": "Se borran tus datos personales y ya no podrás iniciar sesión con esta cuenta.",
-        "sola": "Se elimina tu empresa «{}» con sus proyectos, tareas e ideas (no tiene más integrantes).",
-        "compartida": "La empresa «{}» sigue existiendo para sus integrantes, pero quedará sin propietario.",
-        "proyectos": "Los proyectos que creaste en empresas que siguen existiendo se conservan para su equipo.",
-    },
-    False: {
-        "datos": "Se borran sus datos personales y ya no podrá iniciar sesión.",
-        "sola": "Se elimina su empresa «{}» con sus proyectos, tareas e ideas (no tiene más integrantes).",
-        "compartida": "La empresa «{}» sigue existiendo para sus integrantes, pero quedará sin propietario.",
-        "proyectos": "Los proyectos que creó en empresas que siguen existiendo se conservan para su equipo.",
-    },
-}
+def otros_superusuarios_activos(pk_excluido):
+    return Usuario.objects.filter(is_superuser=True, is_active=True).exclude(pk=pk_excluido)
+
+
+def quitaria_el_ultimo_superusuario(usuario):
+    """¿Borrar o desactivar a este usuario dejaría cero superusuarios activos?"""
+    return usuario.is_superuser and usuario.is_active and not otros_superusuarios_activos(usuario.pk).exists()
 
 
 def consecuencias_de_eliminar_cuenta(usuario, propia=True):
-    """Textos para la página de confirmación."""
-    textos = TEXTOS[propia]
-    solas = list(empresas_que_se_eliminan(usuario))
-    compartidas = Empresa.objects.filter(propietario=usuario).exclude(pk__in=[e.pk for e in solas])
-    return (
-        [textos["datos"]]
-        + [textos["sola"].format(e.nombre) for e in solas]
-        + [textos["compartida"].format(e.nombre) for e in compartidas]
-        + [textos["proyectos"]]
-    )
+    sujeto = "tus" if propia else "sus"
+    return [
+        f"Se borrarán {sujeto} datos personales y no se podrá iniciar sesión con esta cuenta.",
+        "Los proyectos creados por esta cuenta se eliminarán junto con sus tareas, documentos, eventos y canvas.",
+        "Las invitaciones y participaciones en otros proyectos dejarán de estar disponibles.",
+    ]
 
 
-@transaction.atomic  # todo o nada
+@transaction.atomic
 def eliminar_cuenta(usuario):
-    empresas_que_se_eliminan(usuario).delete()
-    usuario.delete()
+    # El borrado pasa por UsuarioQuerySet.delete(), que aplica la regla del último superusuario.
+    Usuario.objects.filter(pk=usuario.pk).delete()

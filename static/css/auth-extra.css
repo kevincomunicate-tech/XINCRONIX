@@ -49,3 +49,31 @@ html[data-theme="dark"] .auth-volver:hover { color: var(--d-accent, #7b9bff); }
 @media (max-width: 600px) {
   .auth-volver { height: 36px; padding: 0 13px; font-size: 12px; }
 }
+/* Los selectores comparten el tamaño, espacio para icono y foco de los campos. */
+.field-wrap select {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  height: 66px;
+  padding: 0 42px 0 62px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  color: var(--ink);
+  background-color: #fbfcff;
+  font: 400 15px "DM Sans", Arial, sans-serif;
+}
+.field-wrap select:focus {
+  border-color: var(--electric);
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(42, 91, 255, .1);
+}
+.field.has-error select { border-color: var(--danger); }
+html[data-theme="dark"] .field-wrap select {
+  color: var(--d-text, #e9eefb);
+  background-color: var(--d-surface, #15243c);
+  border-color: rgba(255,255,255,.16);
+  color-scheme: dark;
+}
+@media (max-width: 600px) {
+  .field-wrap select { height: 56px; font-size: 16px; }
+}

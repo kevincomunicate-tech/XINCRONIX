@@ -18,7 +18,7 @@ from django.core.paginator import Paginator
 from django.http import Http404, StreamingHttpResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 
 from . import monitoreo as m
 
@@ -42,6 +42,7 @@ def _modelo_abrible_o_404(app_label, nombre):
 # Resumen
 # ---------------------------------------------------------------------------
 
+@require_GET
 def resumen(request):
     monitoreo = m.obtener_monitoreo()
     catalogo = m.catalogo()
@@ -65,6 +66,7 @@ def resumen(request):
 # Tablas
 # ---------------------------------------------------------------------------
 
+@require_GET
 def tablas(request):
     catalogo = m.catalogo()
     return render(request, "administracion/monitoreo/tablas.html", {
@@ -75,6 +77,7 @@ def tablas(request):
     })
 
 
+@require_GET
 def tabla(request, app_label, modelo):
     monitoreo = m.obtener_monitoreo()
     clase = _modelo_abrible_o_404(app_label, modelo)
@@ -108,6 +111,7 @@ def tabla(request, app_label, modelo):
     })
 
 
+@require_GET
 def registro(request, app_label, modelo, pk):
     monitoreo = m.obtener_monitoreo()
     clase = _modelo_abrible_o_404(app_label, modelo)
@@ -145,6 +149,17 @@ class _Eco:
         return valor
 
 
+# Excel y otras hojas de cálculo ejecutan una celda que empieza por estos caracteres
+# (inyección de fórmulas). Se neutraliza anteponiendo una comilla simple.
+_PREFIJOS_PELIGROSOS = ("=", "+", "-", "@", "\t", "\r")
+
+
+def _celda_segura(texto):
+    texto = str(texto)
+    return "'" + texto if texto.startswith(_PREFIJOS_PELIGROSOS) else texto
+
+
+@require_GET
 def exportar(request, app_label, modelo):
     """Descarga la tabla en CSV. Los campos sensibles NO se exportan (ni siquiera la columna)."""
     monitoreo = m.obtener_monitoreo()
@@ -155,9 +170,9 @@ def exportar(request, app_label, modelo):
 
     def filas():
         yield "﻿"  # BOM: Excel abre bien las tildes
-        yield escritor.writerow([c.column for c in campos])
+        yield escritor.writerow([_celda_segura(c.column) for c in campos])
         for objeto in consulta.iterator(chunk_size=500):
-            yield escritor.writerow([monitoreo.valor(objeto, c, completo=True)["texto"] for c in campos])
+            yield escritor.writerow([_celda_segura(monitoreo.valor(objeto, c, completo=True)["texto"]) for c in campos])
 
     nombre = f"{clase._meta.db_table}_{timezone.localdate():%Y%m%d}.csv"
     respuesta = StreamingHttpResponse(filas(), content_type="text/csv; charset=utf-8")
@@ -169,6 +184,7 @@ def exportar(request, app_label, modelo):
 # Sesiones
 # ---------------------------------------------------------------------------
 
+@require_GET
 def sesiones(request):
     lista = m.sesiones_activas(request.session.session_key or "")
     return render(request, "administracion/monitoreo/sesiones.html", {
@@ -210,6 +226,7 @@ def cerrar_sesiones(request):
 # Sistema
 # ---------------------------------------------------------------------------
 
+@require_GET
 def sistema(request):
     return render(request, "administracion/monitoreo/sistema.html", {
         "pestana": "sistema",

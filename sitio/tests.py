@@ -12,5 +12,5 @@ class InicioTests(TestCase):
         self.assertContains(r, reverse("registro"))
 
     def test_con_sesion_va_a_su_inicio(self):
-        self.client.force_login(Usuario.objects.create_user("ana@x.com", "Clave$egura2026"))
+        self.client.force_login(Usuario.objects.create_user("ana@x.com", "Clave$egura2026", first_name="Prueba", last_name="Usuario"))
         self.assertRedirects(self.client.get(reverse("inicio")), reverse("panel"))

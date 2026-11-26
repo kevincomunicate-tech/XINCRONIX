@@ -1,0 +1,82 @@
+{% extends "base_dashboard.html" %}
+{% block titulo %}Reportes{% endblock %}
+{% block titulo_pagina %}Reportes{% endblock %}
+{% block subtitulo_pagina %}Filtros de varios criterios y exportación a Excel o PDF{% endblock %}
+{% block contenido %}
+<form method="get" class="xnx-card mb-3">
+  <div class="xnx-card-header"><span class="xnx-card-title"><i class="bi bi-funnel me-2"></i>Qué quieres ver</span></div>
+  <div class="xnx-card-body">
+    <div class="row g-2 mb-3">
+      <div class="col-md-5">
+        <label class="form-label small fw-semibold" for="tabla">Tabla</label>
+        <select id="tabla" name="tabla" class="form-select">
+          {% for clave_tabla, t in tablas.items %}<option value="{{ clave_tabla }}" {% if clave_tabla == clave %}selected{% endif %}>{{ t.titulo }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-7">
+        <label class="form-label small fw-semibold" for="logica">Cómo combinar los criterios</label>
+        <select id="logica" name="logica" class="form-select">
+          <option value="y" {% if logica == "y" %}selected{% endif %}>Todos deben cumplirse (Y)</option>
+          <option value="o" {% if logica == "o" %}selected{% endif %}>Basta con que se cumpla uno (O)</option>
+        </select>
+      </div>
+    </div>
+
+    <p class="small fw-semibold mb-1">Criterios (hasta {{ max_criterios }})</p>
+    {% for fila in filas_criterio %}
+    <div class="row g-2 mb-2">
+      <div class="col-md-3">
+        <select name="c{{ forloop.counter }}_campo" class="form-select form-select-sm" aria-label="Campo del criterio {{ forloop.counter }}">
+          <option value="">— sin criterio —</option>
+          {% for ruta, titulo in campos_filtro %}<option value="{{ ruta }}" {% if fila.campo == ruta %}selected{% endif %}>{{ titulo }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <select name="c{{ forloop.counter }}_op" class="form-select form-select-sm" aria-label="Operador del criterio {{ forloop.counter }}">
+          {% for op, texto in operadores.items %}<option value="{{ op }}" {% if fila.operador == op %}selected{% endif %}>{{ texto }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <input name="c{{ forloop.counter }}_valor" class="form-control form-control-sm" value="{{ fila.valor|default:'' }}" placeholder="Valor o fecha AAAA-MM-DD" aria-label="Valor del criterio {{ forloop.counter }}">
+      </div>
+      <div class="col-md-3">
+        <input name="c{{ forloop.counter }}_valor2" class="form-control form-control-sm" value="{{ fila.valor2|default:'' }}" placeholder="Hasta (solo para «está entre»)" aria-label="Segundo valor del criterio {{ forloop.counter }}">
+      </div>
+    </div>
+    {% endfor %}
+
+    <p class="small fw-semibold mt-3 mb-1">Columnas en el reporte</p>
+    <div class="d-flex flex-wrap gap-3 small mb-3">
+      {% for c in columnas_catalogo %}
+      <label class="d-flex align-items-center gap-1"><input type="checkbox" name="columnas" value="{{ c.ruta }}" {% if c.ruta in columnas_sel %}checked{% endif %}> {{ c.titulo }}</label>
+      {% endfor %}
+    </div>
+
+    <div class="d-flex flex-wrap gap-2">
+      <button name="ver" value="1" class="btn btn-primary btn-sm"><i class="bi bi-eye me-1"></i>Ver resultados</button>
+      <a class="btn btn-outline-success btn-sm" href="{% url 'administracion:reportes_exportar' 'xlsx' %}?{{ query }}"><i class="bi bi-file-earmark-excel me-1"></i>Descargar Excel</a>
+      <a class="btn btn-outline-danger btn-sm" href="{% url 'administracion:reportes_exportar' 'pdf' %}?{{ query }}"><i class="bi bi-file-earmark-pdf me-1"></i>Descargar PDF</a>
+    </div>
+    <p class="small text-muted mt-2 mb-0">Los archivos se generan con los mismos criterios de la vista. Como máximo se exportan {{ max_filas }} registros.</p>
+  </div>
+</form>
+
+{% if datos is not None %}
+<div class="xnx-card">
+  <div class="xnx-card-header">
+    <span class="xnx-card-title"><i class="bi bi-table me-2"></i>{{ tabla.titulo }}</span>
+    <span class="small text-muted">{{ total }} registro{{ total|pluralize:"s,s" }}{% if total > 200 %} · se muestran los primeros 200{% endif %}</span>
+  </div>
+  <div class="small text-muted px-3 pt-2">Criterios: {{ resumen }}</div>
+  <div class="table-responsive p-2">
+    <table class="table table-sm table-hover align-middle mb-0">
+      <thead><tr>{% for c in cols %}<th>{{ c.titulo }}</th>{% endfor %}</tr></thead>
+      <tbody>
+        {% for fila in datos %}<tr>{% for valor in fila %}<td>{{ valor|default_if_none:"" }}</td>{% endfor %}</tr>
+        {% empty %}<tr><td colspan="{{ cols|length }}" class="text-center text-muted py-4">Ningún registro cumple los criterios.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

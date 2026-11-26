@@ -15,7 +15,9 @@
 (function () {
   'use strict';
 
-  var CLAVE = 'xnx-canvas';
+  var inicialNodo = document.getElementById('lienzoInicial');
+  var guardarNodo = document.getElementById('canvasGuardarUrl');
+  var URL_GUARDAR = guardarNodo && guardarNodo.dataset.url;
   var ZOOM_MIN = 0.25;
   var ZOOM_MAX = 3;
   var NOTA_ANCHO = 190;
@@ -109,20 +111,33 @@
 
   function cargarLienzo() {
     try {
-      var datos = JSON.parse(localStorage.getItem(CLAVE));
+      var datos = inicialNodo ? JSON.parse(inicialNodo.textContent || '{}') : {};
       if (datos && Array.isArray(datos.objetos)) return datos;
-    } catch (e) { /* sin datos */ }
+    } catch (e) { /* lienzo nuevo */ }
     return null;
   }
 
+  function csrf() {
+    var encontrada = document.cookie.match(/(?:^|; )csrftoken=([^;]*)/);
+    return encontrada ? decodeURIComponent(encontrada[1]) : '';
+  }
+
   function guardarLienzo() {
-    try {
-      localStorage.setItem(CLAVE, JSON.stringify({
-        nombre: inputNombre.value,
-        objetos: estado.objetos,
-        vista: estado.vista
-      }));
-    } catch (e) { /* sin almacenamiento */ }
+    if (!URL_GUARDAR) return;
+    clearTimeout(estado.guardarServidor);
+    estado.guardarServidor = setTimeout(function () {
+      fetch(URL_GUARDAR, {
+        method: 'POST', credentials: 'same-origin',
+        headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrf()},
+        body: JSON.stringify({nombre: inputNombre.value, contenido: {
+          objetos: estado.objetos, vista: estado.vista
+        }})
+      }).then(function (r) {
+        if (!r.ok) throw new Error('No se pudo guardar');
+        return r.json();
+      }).then(function () { avisar('Canvas guardado'); })
+        .catch(function () { avisar('Sin conexión: intenta guardar de nuevo'); });
+    }, 450);
   }
 
   /* Guarda una foto del estado para poder deshacer */
