@@ -1,0 +1,425 @@
+/* =========================================================
+   XINCRONIX — CAPA FINAL DEL ESPACIO DE TRABAJO
+   Se carga en templates/base_dashboard.html después de
+   panel.css (o canvas.css) y proyectos.css.
+
+   1. Logo
+   2. Texto y botones que no se parten letra por letra
+   3. Barra superior
+   4. Filas de formulario
+   5. Tablas (se apilan en el celular)
+   6. Pestañas y barras de secciones
+   7. Kanban, línea de tiempo y estado del sistema
+   8. Canvas
+   9. Modo oscuro de las vistas de proyecto
+   ========================================================= */
+
+
+/* ---------------------------------------------------------
+   1. LOGO (partials/logo_xincronix.svg toma el color del texto)
+   --------------------------------------------------------- */
+
+.xnx-marca { display: block; flex: none; width: auto; height: 24px; }
+
+/* La barra lateral es oscura en los dos temas: logo blanco */
+.xnx-logo { color: #fff; text-decoration: none; }
+.xnx-logo .xnx-marca { height: 25px; filter: drop-shadow(0 4px 12px rgba(42, 91, 255, .35)); }
+
+@media (max-width: 1050px) { .xnx-logo .xnx-marca { height: 22px; } }
+@media (max-width: 650px)  { .xnx-logo .xnx-marca { height: 20px; } }
+
+
+/* ---------------------------------------------------------
+   2. TEXTO Y BOTONES
+   proyectos.css usaba "overflow-wrap: anywhere": el navegador
+   podía partir CUALQUIER palabra, así que encogía columnas y
+   botones hasta dejar una letra por renglón ("S u b i r").
+   "break-word" solo parte lo que de verdad no cabe.
+   --------------------------------------------------------- */
+
+.xnx-content { overflow-wrap: break-word; }
+.min-w-0 { min-width: 0; }
+
+.xnx-main .btn { white-space: nowrap; }
+.xnx-main .btn-ajustable { white-space: normal; text-align: left; }
+.xnx-main :is(.d-flex, .input-group, .xnx-form-fila) > .btn,
+.xnx-main :is(.d-flex, .xnx-form-fila) > form { flex-shrink: 0; }
+
+
+/* ---------------------------------------------------------
+   3. BARRA SUPERIOR
+   --------------------------------------------------------- */
+
+/* panel.css fija 37px de ancho para los botones de icono; los que llevan texto
+   ("Carga masiva", "Reportes"...) se montaban sobre el icono. */
+.xnx-topbar .btn-outline-secondary:not(.theme-btn) {
+  width: auto;
+  min-width: 37px;
+  padding: 0 .8rem;
+  gap: .35rem;
+}
+.xnx-topbar-right .btn.me-2 { margin-right: 0 !important; }
+.xnx-topbar-right > form { display: flex; margin: 0; }
+
+@media (max-width: 850px) {
+  /* Título a la izquierda y acciones a la derecha; si no caben, bajan a otra línea */
+  .xnx-topbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 16px;
+    min-height: auto;
+  }
+  .xnx-topbar-titulo-wrap { flex: 1 1 220px; }
+  .xnx-topbar-right {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px !important;
+    margin: 0 0 0 auto !important;
+  }
+
+  /* "Mi cuenta" y "Salir" solo con icono: así el menú cabe en tablet */
+  .xnx-mobile-account span { display: none; }
+  .xnx-mobile-account i { font-size: 1.1rem; }
+}
+
+@media (max-width: 430px) {
+  .xnx-topbar-right { justify-content: flex-start; margin-left: 0 !important; }
+  .xnx-topbar-right:has(> .btn:nth-child(3)) { width: 100%; }
+}
+
+
+/* ---------------------------------------------------------
+   4. FILAS DE FORMULARIO (campo + selector + botón)
+   --------------------------------------------------------- */
+
+.xnx-form-fila { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+.xnx-form-fila > .form-control,
+.xnx-form-fila > .form-select { flex: 1 1 160px; width: auto; min-width: 0; }
+.xnx-form-fila > .xnx-campo-corto { flex: 0 1 120px; }
+
+/* Buscador dentro de la cabecera de una tarjeta */
+.xnx-card-header form.d-flex { flex: 0 1 300px; min-width: 0; }
+.xnx-card-header form.d-flex > .form-control { min-width: 0; }
+
+@media (max-width: 650px) {
+  .xnx-card-header form.d-flex { flex: 1 1 100%; flex-wrap: nowrap !important; }
+  /* Los campos de fecha y hora no se cortan */
+  .xnx-content input[type="datetime-local"],
+  .xnx-content input[type="date"] { min-width: 0; }
+}
+
+
+/* ---------------------------------------------------------
+   5. TABLAS
+   Los encabezados nunca se parten. Las tablas con la clase
+   .xnx-tabla-apilable se vuelven tarjetas en el celular
+   (cada celda muestra su título con data-label).
+   --------------------------------------------------------- */
+
+.xnx-content .table th { white-space: nowrap; }
+.xnx-content .table-responsive { -webkit-overflow-scrolling: touch; }
+.xnx-content .table code { word-break: break-all; }
+.xnx-tabla-acciones { white-space: nowrap; }
+.xnx-tabla-acciones .btn + .btn,
+.xnx-tabla-acciones form + form { margin-left: .25rem; }
+
+@media (max-width: 650px) {
+  .xnx-tabla-apilable thead { display: none; }
+  .xnx-tabla-apilable,
+  .xnx-tabla-apilable tbody { display: block; width: 100%; }
+  .xnx-tabla-apilable tr {
+    display: block;
+    padding: .85rem 1rem;
+    border-bottom: 1px solid rgba(7, 16, 31, .08);
+  }
+  .xnx-tabla-apilable tr:last-child { border-bottom: 0; }
+  .xnx-tabla-apilable td {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: .2rem 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    text-align: right !important;
+  }
+  .xnx-tabla-apilable td::before {
+    content: attr(data-label);
+    flex: none;
+    color: #6b7891;
+    font-size: .78rem;
+    font-weight: 600;
+    text-align: left;
+  }
+  /* La primera celda es el título de la tarjeta */
+  .xnx-tabla-apilable td:first-child { display: block; padding-bottom: .4rem !important; text-align: left !important; }
+  .xnx-tabla-apilable td:first-child::before,
+  .xnx-tabla-apilable td[colspan]::before { content: none; }
+  .xnx-tabla-apilable td[colspan] { display: block; text-align: center !important; }
+  .xnx-tabla-apilable td.xnx-tabla-acciones { justify-content: flex-end; flex-wrap: wrap; gap: .4rem; padding-top: .55rem !important; }
+  .xnx-tabla-apilable td.xnx-tabla-acciones::before { content: none; }
+  .xnx-tabla-apilable td.xnx-tabla-acciones form { display: inline-flex; margin: 0 !important; }
+}
+
+
+/* ---------------------------------------------------------
+   6. PESTAÑAS Y BARRAS DE SECCIONES
+   En el celular quedan en una sola línea que se desliza.
+   --------------------------------------------------------- */
+
+.project-command-bar a { white-space: nowrap; }
+
+@media (max-width: 650px) {
+  .project-command-bar,
+  .xnx-pestanas,
+  .xnx-content > .nav-pills,
+  .xnx-content > .nav-tabs {
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .project-command-bar::-webkit-scrollbar,
+  .xnx-pestanas::-webkit-scrollbar,
+  .xnx-content > .nav-pills::-webkit-scrollbar,
+  .xnx-content > .nav-tabs::-webkit-scrollbar { display: none; }
+  .project-command-bar a,
+  .xnx-pestana,
+  .xnx-content > .nav-pills .nav-link,
+  .xnx-content > .nav-tabs .nav-link { flex: none; white-space: nowrap; }
+}
+
+
+/* ---------------------------------------------------------
+   7. KANBAN, LÍNEA DE TIEMPO Y ESTADO DEL SISTEMA
+   --------------------------------------------------------- */
+
+/* En claro, las columnas grises pesaban demasiado */
+.kanban-column { background: rgba(42, 91, 255, .035); border-color: rgba(42, 91, 255, .14); }
+.kanban-column h2 { color: #1a3a7c; }
+.kanban { padding-bottom: .5rem; }
+
+@media (max-width: 900px) {
+  .kanban { scroll-snap-type: x proximity; }
+  .kanban-column { scroll-snap-align: start; }
+}
+
+/* El aviso "sistema operativo" era celeste sobre celeste */
+.jarvis-status { color: #0b5f7a; }
+
+@media (max-width: 650px) {
+  .timeline, .roadmap { margin-left: .4rem; }
+  .timeline-item, .roadmap-item { padding-left: 1.15rem; }
+}
+
+
+/* ---------------------------------------------------------
+   8. CANVAS: muestras de color y botones de la barra
+   (no tenían estilo: se veían como botones del navegador)
+   --------------------------------------------------------- */
+
+.canvas-toolbar { gap: .35rem; }
+.canvas-color {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 2px solid rgba(7, 16, 31, .15);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.canvas-toolbar .canvas-color { min-height: 0; }
+.canvas-color[data-color="ink"]     { background: #07101f; }
+.canvas-color[data-color="#2a5bff"] { background: #2a5bff; }
+.canvas-color[data-color="#10b981"] { background: #10b981; }
+.canvas-color[data-color="#f5b43c"] { background: #f5b43c; }
+.canvas-color[data-color="#ef4444"] { background: #ef4444; }
+.canvas-color[data-color="#8b5cf6"] { background: #8b5cf6; }
+.canvas-color.active { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #2a5bff; }
+
+.canvas-toolbar > button:not(.canvas-tool):not(.canvas-color) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  min-height: 34px;
+  padding: 0 .65rem;
+  border: 1px solid rgba(7, 16, 31, .14);
+  border-radius: 8px;
+  color: #1a3a7c;
+  background: #fff;
+  font-size: .82rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.canvas-toolbar > button:not(.canvas-tool):not(.canvas-color):hover { border-color: #2a5bff; color: #2a5bff; }
+.canvas-toolbar > button:disabled { opacity: .45; }
+#zoomNivel { min-width: 3rem; font-size: .82rem; font-weight: 600; text-align: center; }
+.canvas-toolbar > input:first-child {
+  min-height: 34px;
+  padding: 0 .65rem;
+  border: 1px solid rgba(7, 16, 31, .14);
+  border-radius: 8px;
+}
+
+
+/* ---------------------------------------------------------
+   9. MODO OSCURO de lo que define proyectos.css
+   (proyectos.css no tenía reglas para el tema oscuro)
+   --------------------------------------------------------- */
+
+html[data-theme="dark"] .task-card { color: var(--d-text, #e9eefb); background: var(--d-surface-2, #0f1626); box-shadow: 0 4px 14px rgba(0, 0, 0, .45); }
+html[data-theme="dark"] .kanban-column { background: rgba(9, 24, 45, .45); border-color: rgba(25, 211, 255, .18); }
+html[data-theme="dark"] .kanban-column h2 { color: var(--d-text, #e9eefb); }
+html[data-theme="dark"] .project-card { background: var(--d-surface, #0a0f1a); border-color: var(--d-line-strong, rgba(148, 170, 220, .3)); }
+html[data-theme="dark"] .jarvis-status { color: #bfefff; }
+html[data-theme="dark"] .xnx-tabla-apilable tr { border-bottom-color: var(--d-line, rgba(148, 170, 220, .14)); }
+html[data-theme="dark"] .xnx-tabla-apilable td::before { color: var(--d-muted, #8b98b4); }
+
+html[data-theme="dark"] .canvas-color { border-color: rgba(255, 255, 255, .25); }
+html[data-theme="dark"] .canvas-color[data-color="ink"] { background: #e9eefb; }
+html[data-theme="dark"] .canvas-color.active { box-shadow: 0 0 0 2px var(--d-bg, #030509), 0 0 0 4px #7b9bff; }
+html[data-theme="dark"] .canvas-toolbar > button:not(.canvas-tool):not(.canvas-color),
+html[data-theme="dark"] .canvas-toolbar > input:first-child {
+  color: var(--d-text, #e9eefb);
+  background: var(--d-surface-2, #0f1626);
+  border-color: var(--d-line-strong, rgba(148, 170, 220, .3));
+}
+
+
+/* ---------------------------------------------------------
+   10. REPORTES: en el celular cada criterio es un bloque
+   numerado (antes eran 16 campos sueltos seguidos)
+   --------------------------------------------------------- */
+
+.xnx-criterios { counter-reset: criterio; }
+.xnx-criterio { counter-increment: criterio; }
+
+@media (max-width: 767.98px) {
+  .xnx-criterio {
+    margin: 0 0 .75rem !important;
+    padding: .35rem .6rem .75rem;
+    border: 1px solid rgba(42, 91, 255, .16);
+    border-radius: 10px;
+    background: rgba(42, 91, 255, .025);
+  }
+  .xnx-criterio::before {
+    content: "Criterio " counter(criterio);
+    flex: 0 0 100%;
+    padding-top: .35rem;
+    color: #1a3a7c;
+    font-size: .78rem;
+    font-weight: 700;
+  }
+  html[data-theme="dark"] .xnx-criterio { border-color: var(--d-line-strong, rgba(148, 170, 220, .3)); background: rgba(123, 155, 255, .04); }
+  html[data-theme="dark"] .xnx-criterio::before { color: var(--d-accent, #7b9bff); }
+}
+
+
+/* ---------------------------------------------------------
+   11. ASISTENTE IA (Gemini)
+   --------------------------------------------------------- */
+
+.ia-turno { margin-bottom: 1.25rem; }
+.ia-pregunta, .ia-respuesta { padding: .8rem 1rem; border-radius: 12px; }
+.ia-pregunta { margin-left: auto; max-width: 90%; width: fit-content; background: rgba(42, 91, 255, .08); }
+.ia-respuesta { margin-top: .6rem; border: 1px solid rgba(7, 16, 31, .08); background: #fff; }
+.ia-quien { display: block; margin-bottom: .25rem; color: #1a3a7c; font-size: .72rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.ia-texto { font-size: .92rem; line-height: 1.55; }
+.ia-texto p { margin-bottom: .55rem; }
+.ia-texto ul, .ia-texto ol { margin-bottom: .55rem; padding-left: 1.2rem; }
+.ia-texto li { margin-bottom: .2rem; }
+.ia-texto > :last-child { margin-bottom: 0; }
+.ia-texto .ia-titulo { margin: .7rem 0 .3rem; font-weight: 700; }
+.ia-vacio { padding: 1.5rem 1rem 1.75rem; text-align: center; }
+.ia-vacio > i { display: inline-block; margin-bottom: .5rem; color: #2a5bff; font-size: 1.8rem; }
+.ia-formulario { padding-top: 1rem; border-top: 1px solid rgba(7, 16, 31, .08); }
+.ia-formulario textarea { resize: vertical; min-height: 84px; }
+.ia-sugerencia { text-align: left !important; }
+.ia-config ol { padding-left: 1.2rem; }
+
+html[data-theme="dark"] .ia-pregunta { background: rgba(123, 155, 255, .12); }
+html[data-theme="dark"] .ia-respuesta { color: var(--d-text, #e9eefb); background: var(--d-surface-2, #0f1626); border-color: var(--d-line, rgba(148, 170, 220, .14)); }
+html[data-theme="dark"] .ia-quien { color: var(--d-accent, #7b9bff); }
+html[data-theme="dark"] .ia-formulario { border-top-color: var(--d-line, rgba(148, 170, 220, .14)); }
+
+@media (max-width: 650px) {
+  .ia-pregunta { max-width: 100%; }
+  .ia-pregunta, .ia-respuesta { padding: .7rem .8rem; }
+}
+
+
+/* ---------------------------------------------------------
+   12. REPOSITORIO (GitHub)
+   --------------------------------------------------------- */
+
+.repo-datos { display: flex; flex-wrap: wrap; gap: .45rem 1.1rem; color: #44516a; font-size: .85rem; }
+.repo-datos i { margin-right: .2rem; }
+.repo-commit { display: flex; justify-content: space-between; align-items: flex-start; gap: .75rem; padding: .6rem 0; border-bottom: 1px solid rgba(7, 16, 31, .07); }
+.repo-commit:last-child { border-bottom: 0; }
+.repo-sha { flex: none; padding: .1rem .45rem; border-radius: 6px; background: rgba(42, 91, 255, .08); font: 600 .78rem ui-monospace, SFMono-Regular, Consolas, monospace; text-decoration: none; }
+.repo-item { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: .75rem .5rem; border-bottom: 1px solid rgba(7, 16, 31, .07); border-radius: 8px; color: inherit; text-decoration: none; }
+.repo-item:last-child { border-bottom: 0; }
+.repo-item:hover { background: rgba(42, 91, 255, .05); }
+.repo-item-meta { display: flex; flex: none; gap: .9rem; white-space: nowrap; }
+
+html[data-theme="dark"] .repo-datos { color: var(--d-muted, #8b98b4); }
+html[data-theme="dark"] .repo-commit,
+html[data-theme="dark"] .repo-item { border-bottom-color: var(--d-line, rgba(148, 170, 220, .14)); }
+html[data-theme="dark"] .repo-sha { background: rgba(123, 155, 255, .14); color: var(--d-accent, #7b9bff); }
+html[data-theme="dark"] .repo-item:hover { background: rgba(123, 155, 255, .07); }
+
+@media (max-width: 650px) {
+  .repo-item { flex-direction: column; align-items: flex-start; gap: .35rem; }
+  .repo-item-meta { flex-wrap: wrap; white-space: normal; gap: .3rem .9rem; }
+}
+
+
+/* ---------------------------------------------------------
+   13. INVITACIONES: campana de notificaciones y tarjetas
+   --------------------------------------------------------- */
+
+.xnx-notif-boton { position: relative; }
+.xnx-notif-num {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  color: #fff;
+  background: #ef4444;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 14px;
+  text-align: center;
+}
+.xnx-notif-menu { width: min(360px, calc(100vw - 24px)); max-height: 70vh; overflow-y: auto; padding: .4rem; border-radius: 14px; box-shadow: 0 18px 40px rgba(7, 16, 31, .18); }
+.xnx-notif-titulo { padding: .5rem .7rem .4rem; color: #6b7891; font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.xnx-notif-vacio { margin: 0; padding: .9rem .7rem 1rem; color: #6b7891; font-size: .85rem; }
+.xnx-notif-menu .xnx-invitacion { padding: .7rem; border-radius: 10px; white-space: normal; }
+.xnx-notif-menu .xnx-invitacion + .xnx-invitacion { border-top: 1px solid rgba(7, 16, 31, .07); }
+.xnx-notif-menu .xnx-invitacion:hover { background: rgba(42, 91, 255, .04); }
+.flex-none { flex: none; }
+
+.xnx-invitaciones-panel { border-color: rgba(42, 91, 255, .35); }
+.xnx-invitaciones-rejilla { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: .75rem; }
+.xnx-invitaciones-rejilla .xnx-invitacion { padding: .85rem 1rem; border: 1px solid rgba(42, 91, 255, .18); border-radius: 12px; background: rgba(42, 91, 255, .03); }
+
+.xnx-pendiente { display: flex; justify-content: space-between; align-items: center; gap: .75rem; padding: .45rem 0; border-bottom: 1px dashed rgba(7, 16, 31, .1); }
+.xnx-pendiente:last-child { border-bottom: 0; }
+
+html[data-theme="dark"] .xnx-notif-num { border-color: var(--d-bg, #030509); }
+html[data-theme="dark"] .xnx-notif-menu { color: var(--d-text, #e9eefb); background: var(--d-surface, #0a0f1a); border-color: var(--d-line-strong, rgba(148, 170, 220, .3)); box-shadow: 0 18px 40px rgba(0, 0, 0, .6); }
+html[data-theme="dark"] .xnx-notif-menu .xnx-invitacion + .xnx-invitacion { border-top-color: var(--d-line, rgba(148, 170, 220, .14)); }
+html[data-theme="dark"] .xnx-notif-menu .xnx-invitacion:hover { background: rgba(123, 155, 255, .06); }
+html[data-theme="dark"] .xnx-notif-titulo,
+html[data-theme="dark"] .xnx-notif-vacio { color: var(--d-muted, #8b98b4); }
+html[data-theme="dark"] .xnx-invitaciones-rejilla .xnx-invitacion { border-color: var(--d-line-strong, rgba(148, 170, 220, .3)); background: rgba(123, 155, 255, .05); }
+html[data-theme="dark"] .xnx-pendiente { border-bottom-color: var(--d-line, rgba(148, 170, 220, .14)); }
+.xnx-form-fila > .xnx-campo-completo { flex: 1 1 100%; }
+.project-command-bar, .xnx-pestanas { position: relative; }

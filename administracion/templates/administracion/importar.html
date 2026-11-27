@@ -27,7 +27,7 @@
     <div class="small text-muted mt-3">
       Plantillas: <a href="{% url 'administracion:importar_plantilla' 'usuarios' %}">usuarios</a> ·
       <a href="{% url 'administracion:importar_plantilla' 'proyectos' %}">proyectos</a>.
-      Columnas de usuarios: email, nombre, apellido, perfil, cargo, telefono. Perfiles: estudiante, profesional, profesor.
+      Columnas de usuarios: email, nombre, apellido, rol, cargo, telefono. Usa usuario o supervisor. Si omites el rol, se asigna usuario.
       Los usuarios importados no tienen contraseña: deben usar «Recuperar contraseña».
       Columnas de proyectos: nombre, descripcion, creado_por_email, finalidad, metodologia, modalidad, visibilidad, estado, fecha_inicio, fecha_fin, tecnologia, repositorio_url.
     </div>

@@ -20,7 +20,7 @@ class VisibilidadCajaBlancaTests(TestCase):
         cls.lider = Usuario.objects.create_user("lider@prueba.com", CLAVE, first_name="Prueba", last_name="Usuario")
         cls.editor = Usuario.objects.create_user("editor@prueba.com", CLAVE, first_name="Prueba", last_name="Usuario")
         cls.lector = Usuario.objects.create_user("lector@prueba.com", CLAVE, first_name="Prueba", last_name="Usuario")
-        cls.supervisor = Usuario.objects.create_user("prof@prueba.com", CLAVE, perfil="profesor", first_name="Prueba", last_name="Usuario")
+        cls.supervisor = Usuario.objects.create_user("prof@prueba.com", CLAVE, rol=Usuario.Rol.SUPERVISOR, perfil="profesor", first_name="Prueba", last_name="Usuario")
         cls.ajeno = Usuario.objects.create_user("ajeno@prueba.com", CLAVE, first_name="Prueba", last_name="Usuario")
         cls.proyecto = Proyecto.objects.create(nombre="App", creado_por=cls.lider, supervisor=cls.supervisor,
                                                modalidad=Proyecto.Modalidad.GRUPAL, descripcion="Descripción de prueba")
@@ -55,7 +55,7 @@ class RelacionYPermisosCajaBlancaTests(TestCase):
         cls.lider = Usuario.objects.create_user("lider@prueba.com", CLAVE, first_name="Prueba", last_name="Usuario")
         cls.editor = Usuario.objects.create_user("editor@prueba.com", CLAVE, first_name="Prueba", last_name="Usuario")
         cls.lector = Usuario.objects.create_user("lector@prueba.com", CLAVE, first_name="Prueba", last_name="Usuario")
-        cls.supervisor = Usuario.objects.create_user("prof@prueba.com", CLAVE, perfil="profesor", first_name="Prueba", last_name="Usuario")
+        cls.supervisor = Usuario.objects.create_user("prof@prueba.com", CLAVE, rol=Usuario.Rol.SUPERVISOR, perfil="profesor", first_name="Prueba", last_name="Usuario")
         cls.ajeno = Usuario.objects.create_user("ajeno@prueba.com", CLAVE, first_name="Prueba", last_name="Usuario")
         cls.p = Proyecto.objects.create(nombre="App", creado_por=cls.lider, supervisor=cls.supervisor,
                                         modalidad=Proyecto.Modalidad.GRUPAL, descripcion="Descripción de prueba")
@@ -81,6 +81,12 @@ class RelacionYPermisosCajaBlancaTests(TestCase):
 
     def test_permisos_del_lector_solo_ver(self):
         self.assertEqual(self.p.permisos(self.lector), {"ver"})
+
+    def test_quitar_rol_de_supervisor_revoca_acceso_al_proyecto(self):
+        self.supervisor.rol = Usuario.Rol.USUARIO
+        self.supervisor.save(update_fields=["rol"])
+        self.assertNotIn(self.p, Proyecto.objects.visibles_para(self.supervisor))
+        self.assertEqual(self.p.permisos(self.supervisor), set())
 
     def test_permisos_del_supervisor_solo_correcciones_y_ver(self):
         self.assertEqual(self.p.permisos(self.supervisor), {"ver", "correcciones"})

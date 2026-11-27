@@ -1,0 +1,194 @@
+{% extends "base_dashboard.html" %}{% load texto_ia %}
+{% block titulo %}Asistente IA · {{ proyecto.nombre }}{% endblock %}
+{% block volver %}{% url 'proyecto_detalle' proyecto.pk as destino %}{% include "partials/volver.html" with url=destino texto="Proyecto" %}{% endblock %}
+{% block titulo_pagina %}Asistente IA{% endblock %}
+{% block subtitulo_pagina %}{{ proyecto.nombre }} · con Google Gemini{% endblock %}
+{% block contenido %}
+{% include "dashboard/proyectos/_secciones.html" with activa="asistente" %}
+
+{% if not disponible %}
+  <div class="xnx-card ia-config">
+    <div class="xnx-card-body">
+      <h2 class="h6 fw-bold mb-2"><i class="bi bi-plug me-2"></i>El asistente todavía no está conectado</h2>
+      <p class="small mb-2">Para activarlo, quien administra el servidor debe:</p>
+      <ol class="small mb-2">
+        <li>Crear una clave gratuita en <a href="https://aistudio.google.com/" target="_blank" rel="noopener">Google AI Studio</a>.</li>
+        <li>Agregar al archivo <code>.env</code>: <code>GEMINI_API_KEY=tu-clave</code></li>
+        <li>Reiniciar el servidor.</li>
+      </ol>
+      <p class="small text-muted mb-0">La guía completa está en <code>docs/integraciones.md</code>.</p>
+    </div>
+  </div>
+{% endif %}
+  <div class="row g-3 mt-1">
+    <div class="col-lg-8">
+      <div class="xnx-card ia-chat">
+        <div class="xnx-card-header">
+          <span class="xnx-card-title"><i class="bi bi-stars me-2"></i>Conversación</span>
+          <a href="{{ url_nuevo }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Nueva conversación</a>
+        </div>
+        <div class="xnx-card-body">
+          {% for turno in conversacion %}
+            <div class="ia-turno"{% if forloop.last %} id="ultima"{% endif %}>
+              <div class="ia-pregunta"><span class="ia-quien">Tú</span><div>{{ turno.pregunta|linebreaksbr }}</div></div>
+              <div class="ia-respuesta"><span class="ia-quien"><i class="bi bi-stars"></i> Gemini</span><div class="ia-texto">{{ turno.respuesta|markdown_simple }}</div></div>
+            </div>
+          {% empty %}
+            <div class="ia-vacio">
+              <i class="bi bi-stars"></i>
+              <p class="mb-1 fw-semibold">Pregunta lo que necesites sobre «{{ proyecto.nombre }}».</p>
+              <p class="small text-muted mb-0">El asistente conoce las tareas, fechas, eventos y correcciones de este proyecto.</p>
+            </div>
+          {% endfor %}
+
+          {% if disponible %}
+          <template id="ia-turno-en-vivo">
+            <div class="ia-turno">
+              <div class="ia-pregunta"><span class="ia-quien">Tú</span><div data-ia-pregunta></div></div>
+              <div class="ia-respuesta"><span class="ia-quien"><i class="bi bi-stars"></i> Gemini</span><div class="ia-texto" data-ia-texto style="white-space:pre-wrap"></div><p class="text-danger small mb-0" data-ia-error role="status"></p></div>
+            </div>
+          </template>
+          <form method="post" action="{{ url_actual }}" class="ia-formulario" data-ia-form>{% csrf_token %}
+            {% for error in form.pregunta.errors %}<div class="text-danger small mb-1">{{ error }}</div>{% endfor %}
+            <label class="visually-hidden" for="{{ form.pregunta.id_for_label }}">{{ form.pregunta.label }}</label>
+            {{ form.pregunta }}
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-2">
+              <div class="small text-muted">
+                <div>Te quedan {{ restantes }} de {{ limite }} preguntas esta hora.</div>
+                <div>Enter para enviar · Shift + Enter para un salto de línea</div>
+              </div>
+              <button type="submit" class="btn btn-primary btn-sm" data-ia-enviar><i class="bi bi-send me-1"></i>Preguntar</button>
+            </div>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="xnx-card mb-3">
+        <div class="xnx-card-header"><h2 class="xnx-card-title h6 mb-0"><i class="bi bi-clock-history me-2"></i>Mis conversaciones</h2></div>
+        <div class="xnx-card-body d-grid gap-2">
+          {% for guardado in chats %}
+            <div class="d-flex flex-wrap align-items-center gap-1">
+              <a href="?chat={{ guardado.pk }}" class="btn btn-sm flex-grow-1 text-start text-break {% if chat.pk == guardado.pk %}btn-primary{% else %}btn-outline-secondary{% endif %}"{% if chat.pk == guardado.pk %} aria-current="page"{% endif %}>
+                {{ guardado.titulo }}
+                <span class="d-block small">{{ guardado.actualizado|date:"j M Y, H:i" }}</span>
+              </a>
+              <a href="{% url 'asistente_chat_renombrar' proyecto.pk guardado.pk %}" class="btn btn-sm btn-outline-secondary" title="Renombrar" aria-label="Renombrar {{ guardado.titulo }}"><i class="bi bi-pencil" aria-hidden="true"></i></a>
+              <a href="{% url 'asistente_chat_eliminar' proyecto.pk guardado.pk %}" class="btn btn-sm btn-outline-danger" title="Eliminar" aria-label="Eliminar {{ guardado.titulo }}"><i class="bi bi-trash" aria-hidden="true"></i></a>
+            </div>
+          {% empty %}
+            <p class="small text-muted mb-0">Tus conversaciones aparecerán aquí cuando recibas una respuesta.</p>
+          {% endfor %}
+        </div>
+      </div>
+      {% if disponible %}
+      <div class="xnx-card mb-3">
+        <div class="xnx-card-header"><span class="xnx-card-title"><i class="bi bi-lightbulb me-2"></i>Ideas para preguntar</span></div>
+        <div class="xnx-card-body d-grid gap-2">
+          {% for sugerencia in sugerencias %}
+            <form method="post" action="{{ url_actual }}" class="m-0" data-ia-form>{% csrf_token %}<input type="hidden" name="pregunta" value="{{ sugerencia }}"><button class="btn btn-outline-primary btn-sm w-100 btn-ajustable ia-sugerencia" data-ia-enviar>{{ sugerencia }}</button></form>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="xnx-card">
+        <div class="xnx-card-body small text-muted">
+          <p class="mb-2"><i class="bi bi-shield-check me-1"></i>Para responder, se envían a Google Gemini los datos de este proyecto: nombre, descripción, tareas, responsables, fechas, eventos y correcciones. No se envían correos, contraseñas ni archivos.</p>
+          <p class="mb-0">Modelo: <code>{{ modelo }}</code>. Revisa las respuestas: la IA puede equivocarse.</p>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
+{% block scripts %}
+<script>
+  const pregunta = document.querySelector('.ia-formulario textarea');
+  if (pregunta) {
+    pregunta.addEventListener('keydown', function (event) {
+      if (event.key !== 'Enter' || event.shiftKey || event.isComposing || event.keyCode === 229) return;
+
+      event.preventDefault();
+      if (!event.repeat && pregunta.value.trim()) {
+        pregunta.form.requestSubmit();
+      }
+    });
+  }
+
+  async function leerRespuesta(respuesta, texto) {
+    const tipo = respuesta.headers.get('Content-Type') || '';
+    if (tipo.includes('application/json')) {
+      const datos = await respuesta.json();
+      throw new Error(datos.error);
+    }
+    if (!respuesta.ok || !tipo.includes('application/x-ndjson') || !respuesta.body) {
+      throw new Error('No se pudo iniciar la respuesta. Recarga la página e intenta de nuevo.');
+    }
+
+    const lector = respuesta.body.getReader();
+    const decodificador = new TextDecoder();
+    let pendiente = '';
+    try {
+      while (true) {
+        const {value, done} = await lector.read();
+        if (done) break;
+        pendiente += decodificador.decode(value, {stream: true});
+        const lineas = pendiente.split('\n');
+        pendiente = lineas.pop();
+        for (const linea of lineas) {
+          const evento = JSON.parse(linea);
+          if (evento.error) throw new Error(evento.error);
+          if (evento.final) return evento.url;
+          texto.append(evento.texto);
+        }
+      }
+      throw new Error('Se interrumpió la respuesta de Gemini. Intenta de nuevo.');
+    } finally {
+      await lector.cancel().catch(function () {});
+      lector.releaseLock();
+    }
+  }
+
+  // Comparte el bloqueo entre el formulario y las sugerencias mientras Gemini responde.
+  let enviando = false;
+  const plantilla = document.querySelector('#ia-turno-en-vivo');
+  const editor = document.querySelector('.ia-formulario');
+  const controles = document.querySelectorAll('[data-ia-enviar]');
+  document.querySelectorAll('[data-ia-form]').forEach(function (form) {
+    form.addEventListener('submit', async function (event) {
+      if (enviando) {
+        event.preventDefault();
+        return;
+      }
+      enviando = true;
+      const datos = new FormData(form);
+      const boton = form.querySelector('[data-ia-enviar]');
+      const etiqueta = boton.innerHTML;
+      controles.forEach(function (control) { control.disabled = true; });
+      boton.innerHTML = '<span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>Pensando…';
+      if (!window.fetch || !window.ReadableStream || !window.TextDecoder) return;
+
+      event.preventDefault();
+      const turno = plantilla.content.firstElementChild.cloneNode(true);
+      turno.querySelector('[data-ia-pregunta]').textContent = datos.get('pregunta');
+      editor.before(turno);
+      try {
+        const respuesta = await fetch(form.action, {
+          method: 'POST',
+          headers: {'Accept': 'application/x-ndjson'},
+          body: datos
+        });
+        const destino = await leerRespuesta(respuesta, turno.querySelector('[data-ia-texto]'));
+        history.replaceState(null, '', destino);
+        location.reload();
+      } catch (error) {
+        turno.querySelector('[data-ia-error]').textContent = error.message || 'No se pudo completar la respuesta.';
+        controles.forEach(function (control) { control.disabled = false; });
+        boton.innerHTML = etiqueta;
+        enviando = false;
+      }
+    });
+  });
+</script>
+{% endblock %}

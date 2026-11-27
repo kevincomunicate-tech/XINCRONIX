@@ -8,7 +8,29 @@ from cuentas.models import Usuario
 class UsuarioAdminForm(FormularioBootstrap, forms.ModelForm):
     class Meta:
         model = Usuario
-        fields = ["first_name", "last_name", "email", "perfil", "cargo", "telefono", "is_active"]
+        fields = ["first_name", "last_name", "email", "rol", "cargo", "telefono", "is_active"]
+
+    def __init__(self, *args, actor=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        campo = self.fields["rol"]
+        campo.required = False
+        campo.choices = [
+            (rol, label) for rol, label in Usuario.Rol.choices
+            if rol != Usuario.Rol.ADMIN or getattr(actor, "is_superuser", False)
+        ]
+        if self.instance.is_superuser:
+            campo.disabled = True
+
+    def clean_rol(self):
+        return self.cleaned_data["rol"] or self.instance.rol
+
+    def save(self, commit=True):
+        usuario = super().save(commit=False)
+        if commit and usuario.pk:
+            usuario.save(update_fields=self.Meta.fields)
+        elif commit:
+            usuario.save()
+        return usuario
 
 
 class UsuarioCrearForm(UsuarioAdminForm):

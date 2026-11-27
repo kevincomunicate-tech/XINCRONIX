@@ -1,0 +1,18 @@
+{% extends "base_dashboard.html" %}
+{% block titulo %}Renombrar conversación{% endblock %}
+{% block titulo_pagina %}Renombrar conversación{% endblock %}
+{% block volver %}{% include "partials/volver.html" with url=url_cancelar texto="Conversación" %}{% endblock %}
+{% block contenido %}
+  <div class="xnx-card" style="max-width:680px">
+    <div class="xnx-card-body">
+      <form method="post">
+        {% csrf_token %}
+        {% include "partials/formulario.html" with form=form %}
+        <div class="d-flex gap-2 mt-3">
+          <button type="submit" class="btn btn-primary">Guardar título</button>
+          <a href="{{ url_cancelar }}" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

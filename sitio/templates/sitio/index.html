@@ -1,2 +1,74 @@
 {% load static %}<!doctype html>
-<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Xincronix · Proyectos de software</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"><style>body{background:#06111f;color:#e9f6ff;background-image:radial-gradient(circle at 85% 8%,#0c477055,transparent 30%)}.hero{min-height:100vh;display:grid;place-items:center}.panel{max-width:900px;padding:4rem;border:1px solid #1bd5ff77;border-radius:28px;background:#071b2ddd;box-shadow:0 0 80px #0bd8ff22}.orb{color:#22d8ff;letter-spacing:.2em;font:700 .75rem monospace}.display-3{font-weight:800}.feature{border-left:2px solid #20d7ff;padding-left:1rem}.logo{width:45px}</style></head><body><main class="hero"><section class="panel"><div class="d-flex align-items-center gap-3 mb-5"><img class="logo" src="{% static 'img/logo.svg' %}" alt=""><strong class="fs-4">Xincronix</strong><span class="orb">PROJECT COMMAND CENTER</span></div><p class="orb">PLATAFORMA PARA TECNOLOGÍA Y SOFTWARE</p><h1 class="display-3">Convierte una idea<br>en software entregable.</h1><p class="lead text-info-emphasis col-lg-9">Planifica, documenta y desarrolla proyectos individuales, grupales o educativos. Mantén el tablero, el calendario, el roadmap y el Canvas en el mismo lugar.</p><div class="d-flex gap-2 my-4"><a href="{% url 'registro' %}" class="btn btn-info btn-lg">Crear cuenta</a><a href="{% url 'login' %}" class="btn btn-outline-light btn-lg">Iniciar sesión</a></div><div class="row g-4 mt-4"><div class="col-md-4 feature"><strong>Diseña</strong><div class="small text-secondary">Canvas y documentación compartida.</div></div><div class="col-md-4 feature"><strong>Construye</strong><div class="small text-secondary">Tablero, tareas, calendario y roadmap.</div></div><div class="col-md-4 feature"><strong>Aprende</strong><div class="small text-secondary">Supervisión docente y correcciones sin motor evaluativo.</div></div></div></section></main></body></html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Xincronix · Proyectos de software</title>
+  <link rel="icon" href="{% static 'img/logo.svg' %}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  {# Tema claro/oscuro compartido con el resto del sitio (en <head> para que no parpadee) #}
+  <script src="{% static 'js/tema.js' %}"></script>
+  <style>
+    /* Tema claro (predeterminado) */
+    :root {
+      --p-bg: #f4f7ff; --p-glow: rgba(42, 91, 255, .12); --p-panel: rgba(255, 255, 255, .92);
+      --p-borde: rgba(42, 91, 255, .22); --p-sombra: 0 24px 70px rgba(7, 16, 31, .1);
+      --p-texto: #07101f; --p-suave: #44516a; --p-acento: #2a5bff; --p-linea: #2a5bff;
+    }
+    /* Tema oscuro (el diseño original de la portada) */
+    html[data-theme="dark"] {
+      --p-bg: #06111f; --p-glow: rgba(12, 71, 112, .33); --p-panel: rgba(7, 27, 45, .87);
+      --p-borde: rgba(27, 213, 255, .47); --p-sombra: 0 0 80px rgba(11, 216, 255, .13);
+      --p-texto: #e9f6ff; --p-suave: #a9c3da; --p-acento: #22d8ff; --p-linea: #20d7ff;
+    }
+    body { color: var(--p-texto); background: var(--p-bg) radial-gradient(circle at 85% 8%, var(--p-glow), transparent 32%) fixed; }
+    .hero { min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding: 1rem; }
+    .panel { width: 100%; max-width: 900px; padding: clamp(1.5rem, 6vw, 4rem); border: 1px solid var(--p-borde); border-radius: clamp(18px, 4vw, 28px); background: var(--p-panel); box-shadow: var(--p-sombra); }
+    .marca { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem 1rem; margin-bottom: clamp(2rem, 6vw, 3rem); }
+    .marca-logo { display: flex; align-items: center; gap: .65rem; color: var(--p-texto); text-decoration: none; }
+    .marca-logo .xnx-marca { height: 30px; width: auto; }
+    .orb { color: var(--p-acento); letter-spacing: .2em; font: 700 .72rem monospace; }
+    .titulo { font-weight: 800; font-size: clamp(2.1rem, 7vw, 3.6rem); line-height: 1.08; letter-spacing: -.02em; }
+    .lead { color: var(--p-suave); max-width: 40rem; }
+    .acciones { display: flex; flex-wrap: wrap; gap: .6rem; margin: 1.75rem 0; }
+    .acciones .btn { white-space: nowrap; }
+    .btn-acento { color: #fff; background: var(--p-acento); border-color: var(--p-acento); font-weight: 600; }
+    html[data-theme="dark"] .btn-acento { color: #04121f; }
+    .btn-acento:hover { color: #fff; filter: brightness(1.08); }
+    .btn-contorno { color: var(--p-texto); border-color: var(--p-borde); }
+    .btn-contorno:hover { color: var(--p-texto); background: var(--p-glow); border-color: var(--p-acento); }
+    .feature { border-left: 2px solid var(--p-linea); padding-left: 1rem; }
+    .feature .small { color: var(--p-suave); }
+    .tema { position: fixed; top: 1rem; right: 1rem; z-index: 10; display: inline-grid; place-items: center; width: 40px; height: 40px; border: 1px solid var(--p-borde); border-radius: 50%; color: var(--p-texto); background: var(--p-panel); }
+    .tema:hover { border-color: var(--p-acento); color: var(--p-acento); }
+    @media (max-width: 575.98px) {
+      .acciones .btn { flex: 1 1 100%; }
+      .orb-cabecera { flex-basis: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <button type="button" class="tema" data-theme-toggle aria-label="Cambiar tema"><i class="bi bi-moon-stars-fill theme-toggle-icon" aria-hidden="true"></i></button>
+  <main class="hero">
+    <section class="panel">
+      <div class="marca">
+        <a class="marca-logo" href="{% url 'inicio' %}">{% include "partials/logo_xincronix.svg" %}<strong class="fs-4">Xincronix</strong></a>
+        <span class="orb orb-cabecera">PROJECT COMMAND CENTER</span>
+      </div>
+      <p class="orb">PLATAFORMA PARA TECNOLOGÍA Y SOFTWARE</p>
+      <h1 class="titulo">Convierte una idea<br>en software entregable.</h1>
+      <p class="lead mt-3">Planifica, documenta y desarrolla proyectos individuales, grupales o educativos. Mantén el tablero, el calendario, el roadmap y el Canvas en el mismo lugar.</p>
+      <div class="acciones">
+        <a href="{% url 'registro' %}" class="btn btn-acento btn-lg">Crear cuenta</a>
+        <a href="{% url 'login' %}" class="btn btn-contorno btn-lg">Iniciar sesión</a>
+      </div>
+      <div class="row g-4 mt-2">
+        <div class="col-md-4"><div class="feature"><strong>Diseña</strong><div class="small">Canvas y documentación compartida.</div></div></div>
+        <div class="col-md-4"><div class="feature"><strong>Construye</strong><div class="small">Tablero, tareas, calendario y roadmap.</div></div></div>
+        <div class="col-md-4"><div class="feature"><strong>Aprende</strong><div class="small">Supervisión docente y correcciones sin motor evaluativo.</div></div></div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

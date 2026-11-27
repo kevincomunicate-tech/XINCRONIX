@@ -18,7 +18,8 @@
 
 /* Controles y navegación adaptables en todas las vistas de trabajo. */
 .xnx-main, .xnx-content, .xnx-card, .xnx-card-body, .xnx-topbar-titulo-wrap { min-width: 0; }
-.xnx-content { overflow-wrap: anywhere; }
+/* break-word (no "anywhere"): "anywhere" dejaba tablas y botones de una letra por renglón */
+.xnx-content { overflow-wrap: break-word; }
 .xnx-mobile-account { display: none; }
 .canvas-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; padding: .75rem; }
 .canvas-toolbar > input:first-child { flex: 1 1 180px; min-width: 0; max-width: 260px; }

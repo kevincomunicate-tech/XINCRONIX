@@ -77,3 +77,112 @@ html[data-theme="dark"] .field-wrap select {
 @media (max-width: 600px) {
   .field-wrap select { height: 56px; font-size: 16px; }
 }
+
+
+/* =========================================================
+   LOGO DE XINCRONIX (partials/logo_xincronix.svg)
+   Sin fondo: toma el color del texto. Blanco sobre el panel
+   azul; tinta sobre el panel claro y blanco en modo oscuro.
+   ========================================================= */
+
+.left-logo-icon,
+.form-logo-icon {
+  display: flex;
+  align-items: center;
+  width: auto;
+  height: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+.left-logo-icon { color: #fff; }
+.form-logo-icon { color: var(--ink, #07101f); }
+.left-logo-icon .xnx-marca { height: 30px; filter: drop-shadow(0 6px 16px rgba(0, 0, 0, .25)); }
+.form-logo-icon .xnx-marca { height: 28px; }
+html[data-theme="dark"] .form-logo-icon { color: var(--d-text, #e9eefb); }
+
+/* Marca de agua del panel derecho: era el texto "XN", ahora es el logo */
+.login-right::before {
+  content: "";
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-60 -105 390 390'%3E%3Cpath fill='rgba%2842,91,255,0.07%29' d='M48.0 117.5 L0.0 180.5 L41.0 180.5 L67.0 146.5Z M158.0 99.5 L104.0 175.0 L146.0 175.0 L178.0 128.5Z M14.0 51.5 L96.0 165.5 L116.0 138.5 L55.0 51.5Z M117.0 39.5 L88.0 76.5 L106.0 103.5 L135.0 67.5Z M119.0 23.5 L226.0 175.5 L269.0 175.5 L159.0 23.5Z M270.0 0.0 L228.0 0.0 L193.0 49.5 L212.0 78.5Z'/%3E%3C/svg%3E");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100%;
+}
+html[data-theme="dark"] .login-right::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-60 -105 390 390'%3E%3Cpath fill='rgba%28123,155,255,0.09%29' d='M48.0 117.5 L0.0 180.5 L41.0 180.5 L67.0 146.5Z M158.0 99.5 L104.0 175.0 L146.0 175.0 L178.0 128.5Z M14.0 51.5 L96.0 165.5 L116.0 138.5 L55.0 51.5Z M117.0 39.5 L88.0 76.5 L106.0 103.5 L135.0 67.5Z M119.0 23.5 L226.0 175.5 L269.0 175.5 L159.0 23.5Z M270.0 0.0 L228.0 0.0 L193.0 49.5 L212.0 78.5Z'/%3E%3C/svg%3E"); }
+
+
+/* =========================================================
+   DIVISOR "O CONTINÚA CON" Y BOTÓN DE GOOGLE
+   Estaban solo en login.css: en registro y recuperar se veían
+   sin estilo. Mismas reglas, ahora para todas las páginas.
+   ========================================================= */
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  max-width: 760px;
+  margin: 30px 0 18px;
+  color: #9aa7b9;
+  font-size: 11px;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  white-space: nowrap;
+}
+.divider::before,
+.divider::after { flex: 1; height: 1px; content: ""; background: var(--line); }
+
+.btn-google {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 760px;
+  height: 60px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  background: var(--white, #fff);
+  transition: border-color .2s ease, color .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+.btn-google:not(:disabled):hover {
+  border-color: var(--electric);
+  color: var(--cobalt, #1a3a7c);
+  box-shadow: 5px 5px 0 rgba(42, 91, 255, .1);
+  transform: translate(-1px, -1px);
+}
+@media (max-width: 600px) {
+  .btn-google { height: 54px; border-radius: 11px; font-size: 14px; }
+  .divider { margin: 24px 0 14px; font-size: 10px; }
+}
+
+
+/* =========================================================
+   CELULAR Y TABLET (≤ 980px)
+   El panel azul ocupaba toda la primera pantalla y el
+   formulario quedaba muy abajo. Se oculta: el panel derecho
+   ya muestra el logo y el título.
+   ========================================================= */
+
+@media (max-width: 980px) {
+  .login-left { display: none !important; }
+  .login-page { min-height: 100vh; min-height: 100dvh; }
+  .login-right { min-height: 100vh; min-height: 100dvh; padding-top: 24px; }
+  .login-right::before { width: 150px; height: 150px; top: 70px; right: 4%; }
+  .theme-toggle { top: 24px; }
+}
+@media (max-width: 600px) {
+  .login-right { padding-top: 22px; }
+  .theme-toggle { top: 22px; }
+  .form-logo-icon .xnx-marca { height: 24px; }
+  .login-right::before { width: 110px; height: 110px; top: 78px; }
+}

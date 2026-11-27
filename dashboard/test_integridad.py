@@ -23,8 +23,8 @@ from dashboard.models import Correccion, DocumentoProyecto, Evento, InvitacionPr
 CLAVE = "Clave$egura2026"
 
 
-def usuario(correo, nombre="Ana", apellido="Ruiz", perfil="estudiante"):
-    return Usuario.objects.create_user(correo, CLAVE, first_name=nombre, last_name=apellido, perfil=perfil)
+def usuario(correo, nombre="Ana", apellido="Ruiz", perfil="estudiante", **extra):
+    return Usuario.objects.create_user(correo, CLAVE, first_name=nombre, last_name=apellido, perfil=perfil, **extra)
 
 
 class CamposObligatoriosEnLaBaseTests(TestCase):
@@ -111,7 +111,7 @@ class ReglasDeRelacionTests(TestCase):
             p.full_clean()
 
     def test_un_profesor_si_puede_ser_supervisor(self):
-        prof = usuario("prof@prueba.com", nombre="Carla", perfil="profesor")
+        prof = usuario("prof@prueba.com", nombre="Carla", perfil="profesor", rol=Usuario.Rol.SUPERVISOR)
         Proyecto(nombre="Educativo", descripcion="x", creado_por=self.ana, supervisor=prof).full_clean()
 
     def test_individual_no_admite_integrantes(self):
@@ -191,7 +191,7 @@ class AuditoriaTests(TestCase):
 
     def test_detecta_supervisor_que_no_es_profesor(self):
         Proyecto.objects.filter(pk=self.p.pk).update(supervisor=self.beto)
-        self.assertTrue(any("supervisor no tiene perfil" in linea for linea in problemas()))
+        self.assertTrue(any("no tiene un rol de supervisor activo" in linea for linea in problemas()))
 
     def test_comando_termina_bien_sin_problemas(self):
         salida = StringIO()

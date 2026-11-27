@@ -24,18 +24,18 @@ MAX_BYTES = 2 * 1024 * 1024
 MAX_FILAS = 2000
 
 COLUMNAS = {
-    "usuarios": ["email", "nombre", "apellido", "perfil", "cargo", "telefono"],
+    "usuarios": ["email", "nombre", "apellido", "rol", "cargo", "telefono"],
     "proyectos": ["nombre", "descripcion", "creado_por_email", "finalidad", "metodologia", "modalidad",
                   "visibilidad", "estado", "fecha_inicio", "fecha_fin", "tecnologia", "repositorio_url"],
 }
 OBLIGATORIAS = {
-    "usuarios": ["email", "nombre", "apellido", "perfil"],
+    "usuarios": ["email", "nombre", "apellido"],
     "proyectos": ["nombre", "descripcion", "creado_por_email", "finalidad", "metodologia", "modalidad",
                   "visibilidad", "estado"],
 }
 PLANTILLA_EJEMPLO = {
-    "usuarios": [["ana@ejemplo.com", "Ana", "Ruiz", "estudiante", "", ""]],
-    "proyectos": [["App de notas", "Registro de notas de clase", "profesor@ejemplo.com", "educativo", "kanban",
+    "usuarios": [["ana@ejemplo.com", "Ana", "Ruiz", "usuario", "", ""]],
+    "proyectos": [["App de notas", "Registro de notas de clase", "supervisor@ejemplo.com", "educativo", "kanban",
                    "individual", "privado", "planificacion", "2026-03-01", "2026-06-30", "Django", ""]],
 }
 
@@ -73,7 +73,8 @@ def leer_csv(contenido: bytes, tipo: str):
         encabezado = [c.strip().lower() for c in next(lector)]
     except StopIteration:
         raise ErrorImportacion("El archivo está vacío.")
-    faltan = [c for c in COLUMNAS[tipo] if c not in encabezado]
+    requeridas = OBLIGATORIAS[tipo] if tipo == "usuarios" else COLUMNAS[tipo]
+    faltan = [c for c in requeridas if c not in encabezado]
     if faltan:
         raise ErrorImportacion(f"Faltan columnas: {', '.join(faltan)}. Descarga la plantilla y úsala.")
     filas = []
@@ -117,6 +118,8 @@ def _validar_usuarios(filas, resultado):
             if correo in existentes:
                 resultado.errores.append((numero, f"«{correo}» ya existe en la plataforma."))
             correos_archivo.add(correo)
+        if d.get("rol") and d["rol"] not in (Usuario.Rol.USUARIO, Usuario.Rol.SUPERVISOR):
+            resultado.errores.append((numero, "El rol de carga debe ser usuario o supervisor. Asigna administradores desde la edición de cuentas."))
         if d.get("perfil") and d["perfil"] not in Usuario.Perfil.values:
             resultado.errores.append((numero, f"Perfil «{d['perfil']}» no existe. Usa: {', '.join(Usuario.Perfil.values)}."))
         validos.append((numero, d))
@@ -173,7 +176,9 @@ def importar(tipo, contenido):
         for _, d in filas:
             Usuario.objects.create_user(
                 d["email"].lower(), None,  # sin contraseña: se usa «Recuperar contraseña»
-                first_name=d["nombre"], last_name=d["apellido"], perfil=d["perfil"],
+                first_name=d["nombre"], last_name=d["apellido"],
+                rol=d.get("rol") or Usuario.Rol.USUARIO,
+                perfil=d.get("perfil") or Usuario.Perfil.PROFESIONAL,
                 cargo=d.get("cargo", ""), telefono=d.get("telefono", ""),
             )
             resultado.creados += 1

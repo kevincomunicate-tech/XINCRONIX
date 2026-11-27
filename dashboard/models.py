@@ -15,11 +15,14 @@ Usuario = settings.AUTH_USER_MODEL
 
 class ProyectoQuerySet(models.QuerySet):
     def visibles_para(self, usuario):
-        if not getattr(usuario, "is_authenticated", False):
+        if not getattr(usuario, "is_authenticated", False) or not usuario.is_active:
             return self.none()
-        if usuario.is_superuser:
+        if usuario.es_admin:
             return self
-        return self.filter(Q(creado_por=usuario) | Q(miembros=usuario) | Q(supervisor=usuario)).distinct()
+        acceso = Q(creado_por=usuario) | Q(miembros=usuario)
+        if usuario.es_supervisor:
+            acceso |= Q(supervisor=usuario)
+        return self.filter(acceso).distinct()
 
 
 class Proyecto(models.Model):
@@ -87,17 +90,17 @@ class Proyecto(models.Model):
     def clean(self):
         if self.modalidad == self.Modalidad.INDIVIDUAL and self.pk and self.miembros.exclude(pk=self.creado_por_id).exists():
             raise ValidationError("Un proyecto individual no puede tener integrantes adicionales.")
-        if self.supervisor_id and self.supervisor.perfil != "profesor":
-            raise ValidationError({"supervisor": "El supervisor debe tener el perfil de profesor."})
+        if self.supervisor_id and not self.supervisor.es_supervisor:
+            raise ValidationError({"supervisor": "Selecciona una cuenta activa con el rol global de supervisor."})
 
     def relacion_con(self, usuario):
-        if not getattr(usuario, "is_authenticated", False):
+        if not getattr(usuario, "is_authenticated", False) or not usuario.is_active:
             return None
-        if usuario.is_superuser:
+        if usuario.es_admin:
             return "administrador"
         if self.creado_por_id == usuario.pk:
             return "lider"
-        if self.supervisor_id == usuario.pk:
+        if self.supervisor_id == usuario.pk and usuario.es_supervisor:
             return "supervisor"
         return self.proyectomiembro_set.filter(usuario=usuario).values_list("rol", flat=True).first()
 
@@ -148,6 +151,7 @@ class InvitacionProyecto(models.Model):
     class Estado(models.TextChoices):
         PENDIENTE = "pendiente", "Pendiente"
         ACEPTADA = "aceptada", "Aceptada"
+        RECHAZADA = "rechazada", "Rechazada"
         CANCELADA = "cancelada", "Cancelada"
 
     proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE, related_name="invitaciones")
@@ -165,6 +169,21 @@ class InvitacionProyecto(models.Model):
     @property
     def vencida(self):
         return timezone.now() > self.vence_en
+
+    @property
+    def descripcion_rol(self):
+        """Qué podrá hacer la persona si acepta (se muestra en el correo y en la notificación)."""
+        if self.rol == ProyectoMiembro.Rol.LECTOR:
+            return "Solo lectura: podrás mirar el proyecto sin cambiar nada."
+        return "Colaborador: podrás editar tareas, calendario, canvas y documentos."
+
+    @classmethod
+    def pendientes_para(cls, usuario):
+        """Invitaciones vigentes dirigidas al correo de esta cuenta."""
+        if not getattr(usuario, "is_authenticated", False) or not usuario.email:
+            return cls.objects.none()
+        return (cls.objects.filter(email__iexact=usuario.email, estado=cls.Estado.PENDIENTE, vence_en__gt=timezone.now())
+                .select_related("proyecto", "creado_por"))
 
     def __str__(self):
         return f"{self.email} → {self.proyecto}"
@@ -290,3 +309,24 @@ class Lienzo(models.Model):
 
     def __str__(self):
         return self.nombre
+
+
+class ChatAsistente(models.Model):
+    proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE, related_name="chats_asistente")
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name="chats_asistente")
+    titulo = models.CharField(max_length=100)
+    actualizado = models.DateTimeField(auto_now=True)
+    version = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["-actualizado", "-pk"]
+        indexes = [models.Index(fields=["usuario", "proyecto", "-actualizado"], name="chat_usuario_proyecto_fecha")]
+
+
+class TurnoAsistente(models.Model):
+    chat = models.ForeignKey(ChatAsistente, on_delete=models.CASCADE, related_name="turnos")
+    pregunta = models.TextField()
+    respuesta = models.TextField()
+
+    class Meta:
+        ordering = ["pk"]

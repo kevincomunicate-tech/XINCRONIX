@@ -22,7 +22,6 @@
     {% csrf_token %}
     {% include "partials/campo_auth.html" with campo=form.nombre icono="bi-person" %}
     {% include "partials/campo_auth.html" with campo=form.email icono="bi-envelope" %}
-    {% include "partials/campo_auth.html" with campo=form.perfil icono="bi-person-badge" %}
     {% include "partials/campo_auth.html" with campo=form.password icono="bi-lock" ver_password=True fortaleza=True %}
 
     <button type="submit" class="btn-login">

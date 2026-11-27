@@ -72,8 +72,8 @@ def problemas():
     for p in Proyecto.objects.annotate(es_lider=Exists(lider)).filter(es_lider=False):
         hallazgos.append(f"Proyecto #{p.pk} «{p.nombre}»: su creador no aparece como líder del equipo.")
 
-    for p in Proyecto.objects.filter(supervisor__isnull=False).exclude(supervisor__perfil=Usuario.Perfil.PROFESOR):
-        hallazgos.append(f"Proyecto #{p.pk} «{p.nombre}»: el supervisor no tiene perfil de profesor.")
+    for p in Proyecto.objects.filter(supervisor__isnull=False).exclude(supervisor__rol=Usuario.Rol.SUPERVISOR, supervisor__is_active=True):
+        hallazgos.append(f"Proyecto #{p.pk} «{p.nombre}»: la cuenta asignada no tiene un rol de supervisor activo.")
 
     integrante = ProyectoMiembro.objects.filter(proyecto_id=OuterRef("proyecto_id"), usuario__email__iexact=OuterRef("email"))
     for i in InvitacionProyecto.objects.filter(estado=InvitacionProyecto.Estado.ACEPTADA).annotate(ok=Exists(integrante)).filter(ok=False):

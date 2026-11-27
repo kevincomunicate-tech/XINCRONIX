@@ -1,0 +1,14 @@
+{% comment %}
+  Barra de secciones de un proyecto (una sola copia para todas las páginas).
+  Uso: {% include "dashboard/proyectos/_secciones.html" with activa="tablero" %}
+{% endcomment %}
+<nav class="project-command-bar mb-4" aria-label="Secciones del proyecto">
+  <a href="{% url 'proyecto_detalle' proyecto.pk %}"{% if activa == "resumen" %} class="active" aria-current="page"{% endif %}><i class="bi bi-grid-1x2"></i> Resumen</a>
+  <a href="{% url 'proyecto_tablero' proyecto.pk %}"{% if activa == "tablero" %} class="active" aria-current="page"{% endif %}><i class="bi bi-kanban"></i> Tablero</a>
+  <a href="{% url 'proyecto_calendario' proyecto.pk %}"{% if activa == "calendario" %} class="active" aria-current="page"{% endif %}><i class="bi bi-calendar3"></i> Calendario</a>
+  <a href="{% url 'proyecto_roadmap' proyecto.pk %}"{% if activa == "roadmap" %} class="active" aria-current="page"{% endif %}><i class="bi bi-signpost-2"></i> Roadmap</a>
+  <a href="{% url 'proyecto_canvas' proyecto.pk %}"{% if activa == "canvas" %} class="active" aria-current="page"{% endif %}><i class="bi bi-easel2"></i> Canvas</a>
+  <a href="{% url 'proyecto_analytics' proyecto.pk %}"{% if activa == "estadisticas" %} class="active" aria-current="page"{% endif %}><i class="bi bi-graph-up"></i> Estadísticas</a>
+  <a href="{% url 'proyecto_repositorio' proyecto.pk %}"{% if activa == "repositorio" %} class="active" aria-current="page"{% endif %}><i class="bi bi-github"></i> Repositorio</a>
+  <a href="{% url 'proyecto_asistente' proyecto.pk %}"{% if activa == "asistente" %} class="active" aria-current="page"{% endif %}><i class="bi bi-stars"></i> Asistente IA</a>
+</nav>

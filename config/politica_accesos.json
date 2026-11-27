@@ -1,5 +1,5 @@
 {
-  "version": 3,
-  "descripcion": "La autorización se resuelve en el código de proyectos. Las cuentas staff usan /administracion/ y las demás /app/.",
-  "perfiles": ["profesional", "estudiante", "profesor", "administrador"]
+  "version": 4,
+  "descripcion": "Los roles globales se guardan en la cuenta. La administración exige el rol admin y cada proyecto aplica sus propios permisos.",
+  "roles": ["admin", "usuario", "supervisor"]
 }

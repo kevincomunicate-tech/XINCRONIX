@@ -28,7 +28,7 @@ class DatosBase(TestCase):
         cls.super = Usuario.objects.create_superuser("super@prueba.com", CLAVE, first_name="Yohan", last_name="Cuellar")
         cls.est = Usuario.objects.create_user("est@prueba.com", CLAVE, first_name="Ana", perfil="estudiante", last_name="Usuario")
         cls.est2 = Usuario.objects.create_user("est2@prueba.com", CLAVE, first_name="Beto", perfil="estudiante", is_active=False, last_name="Usuario")
-        cls.prof = Usuario.objects.create_user("prof@prueba.com", CLAVE, first_name="Carla", perfil="profesor", last_name="Usuario")
+        cls.prof = Usuario.objects.create_user("prof@prueba.com", CLAVE, first_name="Carla", rol=Usuario.Rol.SUPERVISOR, last_name="Usuario")
         cls.p1 = Proyecto.objects.create(nombre="Tienda", creado_por=cls.est, modalidad="grupal", estado="en_progreso", descripcion="Descripción de prueba")
         cls.p2 = Proyecto.objects.create(nombre="Notas", creado_por=cls.prof, estado="planificacion", descripcion="Descripción de prueba")
         ProyectoMiembro.objects.create(proyecto=cls.p1, usuario=cls.est, rol="lider")
@@ -49,22 +49,22 @@ class MotorDeFiltrosTests(DatosBase):
     def test_sin_criterios_trae_todo(self):
         self.assertEqual(self.total("usuarios", []), Usuario.objects.count())
 
-    def test_un_criterio_por_perfil(self):
-        self.assertEqual(self.total("usuarios", [crit("perfil", valor="estudiante")]), 2)
+    def test_un_criterio_por_rol(self):
+        self.assertEqual(self.total("usuarios", [crit("rol", valor="usuario")]), 2)
 
     def test_varios_criterios_en_y(self):
-        cr = [crit("perfil", valor="estudiante"), crit("is_active", valor="sí")]
+        cr = [crit("rol", valor="usuario"), crit("is_active", valor="sí")]
         self.assertEqual(self.total("usuarios", cr), 1)  # solo Ana está activa
 
     def test_varios_criterios_en_o(self):
-        cr = [crit("perfil", valor="profesor"), crit("first_name", "contiene", "ana")]
+        cr = [crit("rol", valor="supervisor"), crit("first_name", "contiene", "ana")]
         self.assertEqual(self.total("usuarios", cr, logica="o"), 2)
 
     def test_contiene_no_distingue_mayusculas(self):
         self.assertEqual(self.total("usuarios", [crit("email", "contiene", "PRUEBA.COM")]), Usuario.objects.count())
 
     def test_distinto_de(self):
-        self.assertEqual(self.total("usuarios", [crit("perfil", "distinto", "estudiante")]), Usuario.objects.exclude(perfil="estudiante").count())
+        self.assertEqual(self.total("usuarios", [crit("rol", "distinto", "usuario")]), Usuario.objects.exclude(rol="usuario").count())
 
     def test_rango_de_fechas_incluye_el_dia_final(self):
         cr = [crit("fecha_vencimiento", "entre", "2026-06-01", "2026-06-01")]
@@ -125,7 +125,7 @@ class ValidacionesDelMotorTests(DatosBase):
         self.assertEqual([c.ruta for c in cols], ["email"])  # ignorada; no se devuelve el hash
 
     def test_operador_que_no_aplica(self):
-        self.assertRechaza("usuarios", [crit("perfil", "entre", "a", "b")])
+        self.assertRechaza("usuarios", [crit("rol", "entre", "a", "b")])
 
     def test_contiene_en_una_fecha(self):
         self.assertRechaza("tareas", [crit("fecha_vencimiento", "contiene", "2026")])
@@ -140,7 +140,7 @@ class ValidacionesDelMotorTests(DatosBase):
         self.assertRechaza("usuarios", [crit("is_active", "igual", "tal vez")])
 
     def test_demasiados_criterios(self):
-        self.assertRechaza("usuarios", [crit("perfil", valor="x")] * (r.MAX_CRITERIOS + 1))
+        self.assertRechaza("usuarios", [crit("rol", valor="x")] * (r.MAX_CRITERIOS + 1))
 
     def test_logica_invalida(self):
         self.assertRechaza("usuarios", [], logica="xor")
@@ -181,9 +181,9 @@ class ExcelTests(DatosBase):
         self.assertEqual(valor.microsecond, 0)
 
     def test_hoja_de_criterios(self):
-        libro = self.abrir("usuarios", [crit("perfil", valor="estudiante")])
+        libro = self.abrir("usuarios", [crit("rol", valor="usuario")])
         self.assertEqual(libro.sheetnames, ["Reporte", "Criterios"])
-        self.assertIn("Estudiante", libro["Criterios"]["B3"].value)
+        self.assertIn("Usuario", libro["Criterios"]["B3"].value)
 
     def test_texto_peligroso_no_es_formula(self):
         Usuario.objects.create_user("inyeccion@prueba.com", CLAVE, first_name='=HYPERLINK("http://robo.example")', last_name="Usuario")
@@ -205,7 +205,7 @@ class ExcelTests(DatosBase):
 
 class PdfTests(DatosBase):
     def test_pdf_valido_con_cabecera_y_pie(self):
-        contenido = r.exportar_pdf("usuarios", [crit("perfil", valor="estudiante")], "y", ["email", "perfil"], "Yohan")
+        contenido = r.exportar_pdf("usuarios", [crit("rol", valor="usuario")], "y", ["email", "rol"], "Yohan")
         self.assertTrue(contenido.startswith(b"%PDF-"))
         self.assertIn(b"%%EOF", contenido[-64:])
         self.assertGreater(len(contenido), 1500)
@@ -240,7 +240,7 @@ class AccesoYRutasTests(DatosBase):
     def test_vista_previa_con_criterios_multiples(self):
         r_ = self.cliente(self.super).get(reverse("administracion:reportes"), {
             "tabla": "usuarios", "logica": "y", "ver": "1",
-            "c1_campo": "perfil", "c1_op": "igual", "c1_valor": "estudiante",
+            "c1_campo": "rol", "c1_op": "igual", "c1_valor": "usuario",
             "c2_campo": "is_active", "c2_op": "igual", "c2_valor": "no",
             "columnas": ["email", "is_active"]})
         self.assertEqual(r_.status_code, 200)

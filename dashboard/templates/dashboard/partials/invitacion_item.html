@@ -1,0 +1,16 @@
+{% comment %}
+  Una invitación pendiente con sus botones. Se usa en la campana de la barra
+  superior y en el Centro de proyectos.  Uso: {% include ... with inv=invitacion %}
+{% endcomment %}
+<div class="xnx-invitacion">
+  <div class="d-flex justify-content-between align-items-start gap-2">
+    <div class="fw-semibold min-w-0">{{ inv.proyecto.nombre }}</div>
+    <span class="badge {% if inv.rol == 'lector' %}text-bg-secondary{% else %}text-bg-primary{% endif %} flex-none">{{ inv.get_rol_display }}</span>
+  </div>
+  <div class="small text-muted">{{ inv.creado_por }} te invitó · vence {{ inv.vence_en|date:"j M" }}</div>
+  <div class="small mt-1">{{ inv.descripcion_rol }}</div>
+  <div class="d-flex gap-2 mt-2">
+    <form method="post" action="{% url 'invitacion_responder' inv.pk %}" class="m-0">{% csrf_token %}<input type="hidden" name="accion" value="aceptar"><button class="btn btn-primary btn-sm"><i class="bi bi-check-lg me-1"></i>Aceptar</button></form>
+    <form method="post" action="{% url 'invitacion_responder' inv.pk %}" class="m-0">{% csrf_token %}<input type="hidden" name="accion" value="rechazar"><input type="hidden" name="siguiente" value="{{ request.get_full_path }}"><button class="btn btn-outline-secondary btn-sm">Rechazar</button></form>
+  </div>
+</div>

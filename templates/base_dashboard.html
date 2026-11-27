@@ -7,14 +7,16 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   {% block css %}<link rel="stylesheet" href="{% static 'css/panel.css' %}">{% endblock %}
-  <link rel="stylesheet" href="{% static 'css/proyectos.css' %}?v=2">
+  <link rel="stylesheet" href="{% static 'css/proyectos.css' %}?v=3">
+  {# Capa final: arreglos de pantallas pequeñas, logo y modo oscuro de las vistas de proyecto #}
+  <link rel="stylesheet" href="{% static 'css/responsive.css' %}?v=1">
   <script src="{% static 'js/tema.js' %}"></script>
 </head>
 <body>
 {% with actual=request.resolver_match.url_name %}
 <div class="app-shell">
   <aside class="xnx-sidebar">
-    <div class="xnx-sidebar-logo"><a class="xnx-logo" href="{% url 'panel' %}"><img src="{% static 'img/logo.svg' %}" alt=""><div class="xnx-logo-text">Xin<span>cronix</span></div></a></div>
+    <div class="xnx-sidebar-logo"><a class="xnx-logo" href="{% url 'panel' %}">{% include "partials/logo_xincronix.svg" %}<div class="xnx-logo-text">Xin<span>cronix</span></div></a></div>
     <div class="xnx-sidebar-section">
       <a href="{% url 'panel' %}" class="xnx-sidebar-item{% if actual == 'panel' %} active{% endif %}"><i class="bi bi-cpu"></i> Centro</a>
       <a href="{% url 'proyectos' %}" class="xnx-sidebar-item{% if actual == 'proyectos' or actual == 'proyecto_detalle' %} active{% endif %}"><i class="bi bi-kanban"></i> Proyectos</a>
@@ -22,13 +24,13 @@
     </div>
     {% for item in menu_perfil %}<div class="xnx-sidebar-section"><a href="{{ item.href }}" class="xnx-sidebar-item{% if item.activo %} active{% endif %}"><i class="bi {{ item.icono }}"></i> {{ item.texto }}</a></div>{% endfor %}
     <div class="xnx-sidebar-bottom"><div class="xnx-sidebar-user">
-      <a href="{% url 'mi_cuenta' %}" class="xnx-sidebar-user-link" title="Mi cuenta"><div class="xnx-avatar">{{ request.user.iniciales }}</div><div><div class="user-name">{{ request.user.get_full_name|default:request.user.email }}</div><div class="user-role">{{ request.user.get_perfil_display }}</div></div></a>
+      <a href="{% url 'mi_cuenta' %}" class="xnx-sidebar-user-link" title="Mi cuenta"><div class="xnx-avatar">{{ request.user.iniciales }}</div><div><div class="user-name">{{ request.user.get_full_name|default:request.user.email }}</div><div class="user-role">{{ request.user.get_rol_display }}</div></div></a>
       <form method="post" action="{% url 'logout' %}" class="ms-auto">{% csrf_token %}<button class="btn btn-sm p-0 text-white-50 border-0 bg-transparent" aria-label="Cerrar sesión"><i class="bi bi-box-arrow-right"></i></button></form>
     </div></div>
     <div class="xnx-mobile-account"><a href="{% url 'mi_cuenta' %}" aria-label="Mi cuenta"><i class="bi bi-person-circle"></i><span>Mi cuenta</span></a><form method="post" action="{% url 'logout' %}">{% csrf_token %}<button aria-label="Cerrar sesión"><i class="bi bi-box-arrow-right"></i><span>Salir</span></button></form></div>
   </aside>
   <main class="xnx-main">
-    <div class="xnx-topbar"><div class="xnx-topbar-titulo-wrap">{% block volver %}{% endblock %}<div><span class="xnx-topbar-title">{% block titulo_pagina %}{% endblock %}</span><span class="xnx-topbar-sub">{% block subtitulo_pagina %}{% endblock %}</span></div></div><div class="xnx-topbar-right">{% block acciones %}{% endblock %}<button type="button" class="btn btn-outline-secondary btn-sm theme-btn" data-theme-toggle aria-label="Cambiar tema"><i class="bi bi-moon-stars-fill theme-toggle-icon"></i></button>{% block accion_principal %}{% endblock %}</div></div>
+    <div class="xnx-topbar"><div class="xnx-topbar-titulo-wrap">{% block volver %}{% endblock %}<div><span class="xnx-topbar-title">{% block titulo_pagina %}{% endblock %}</span><span class="xnx-topbar-sub">{% block subtitulo_pagina %}{% endblock %}</span></div></div><div class="xnx-topbar-right">{% block acciones %}{% endblock %}{% with total=invitaciones_pendientes|length %}<div class="dropdown xnx-notif"><button type="button" class="btn btn-outline-secondary btn-sm theme-btn xnx-notif-boton" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" aria-label="Notificaciones{% if total %}: {{ total }} invitación{{ total|pluralize:'es' }} pendiente{{ total|pluralize }}{% endif %}" title="Notificaciones"><i class="bi bi-bell{% if total %}-fill{% endif %}"></i>{% if total %}<span class="xnx-notif-num">{{ total }}</span>{% endif %}</button><div class="dropdown-menu dropdown-menu-end xnx-notif-menu"><div class="xnx-notif-titulo">Invitaciones a proyectos</div>{% for inv in invitaciones_pendientes %}{% include "dashboard/partials/invitacion_item.html" with inv=inv %}{% empty %}<p class="xnx-notif-vacio"><i class="bi bi-bell-slash me-1"></i>No tienes invitaciones pendientes.</p>{% endfor %}</div></div>{% endwith %}<button type="button" class="btn btn-outline-secondary btn-sm theme-btn" data-theme-toggle aria-label="Cambiar tema"><i class="bi bi-moon-stars-fill theme-toggle-icon"></i></button>{% block accion_principal %}{% endblock %}</div></div>
     <div class="xnx-content">{% block contenido %}{% endblock %}</div>
   </main>
 </div>
@@ -36,5 +38,12 @@
 <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index:1080">{% for mensaje in messages %}<div class="toast xnx-toast align-items-center border-0 is-{{ mensaje.tags }}" role="status" data-bs-delay="3500"><div class="d-flex"><div class="toast-body">{{ mensaje }}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button></div></div>{% endfor %}</div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>document.querySelectorAll('.xnx-toast').forEach(function (t) { new bootstrap.Toast(t).show(); });</script>
+<script>
+  // En pantallas pequeñas la barra de secciones se desliza: se centra en la sección actual
+  document.querySelectorAll('.project-command-bar, .xnx-pestanas').forEach(function (barra) {
+    var activa = barra.querySelector('.active, .activa');
+    if (activa && barra.scrollWidth > barra.clientWidth) barra.scrollLeft = activa.offsetLeft - (barra.clientWidth - activa.offsetWidth) / 2;
+  });
+</script>
 {% block scripts %}{% endblock %}
 </body></html>

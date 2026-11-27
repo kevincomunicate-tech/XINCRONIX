@@ -6,6 +6,7 @@ cada rama: superusuario, staff sin ser superusuario, anónimo y perfiles.
 
 from django.contrib.auth.models import AnonymousUser
 from django.test import TestCase
+from django.urls import reverse
 
 from cuentas.models import Usuario
 from cuentas.politica import Politica, obtener_politica
@@ -28,20 +29,30 @@ class PoliticaCajaBlancaTests(TestCase):
         self.assertEqual(self.politica.perfil_de(AnonymousUser()), "anonimo")
 
     def test_perfil_de_superusuario_es_administrador(self):
-        self.assertEqual(self.politica.perfil_de(self.super), "administrador")
+        self.assertEqual(self.politica.perfil_de(self.super), Usuario.Rol.ADMIN)
 
     def test_staff_sin_ser_superusuario_NO_es_administrador(self):
         # Regresión del hueco de seguridad: antes "is_staff" daba perfil administrador.
-        self.assertEqual(self.politica.perfil_de(self.staff), "profesor")
+        self.assertEqual(self.politica.perfil_de(self.staff), Usuario.Rol.USUARIO)
 
-    def test_perfil_de_usuario_normal_sale_de_su_campo_perfil(self):
-        self.assertEqual(self.politica.perfil_de(self.estudiante), "estudiante")
+    def test_perfil_de_usuario_normal_sale_de_su_rol_global(self):
+        self.assertEqual(self.politica.perfil_de(self.estudiante), Usuario.Rol.USUARIO)
 
     def test_es_superadministrador_solo_con_superusuario(self):
         self.assertTrue(self.politica.es_superadministrador(self.super))
         self.assertFalse(self.politica.es_superadministrador(self.staff))
         self.assertFalse(self.politica.es_superadministrador(self.estudiante))
         self.assertFalse(self.politica.es_superadministrador(AnonymousUser()))
+
+    def test_admin_global_abre_administracion_sin_ser_superusuario(self):
+        admin = Usuario.objects.create_user(
+            "admin-global@prueba.com", CLAVE, first_name="Admin", last_name="Global", rol=Usuario.Rol.ADMIN,
+        )
+        self.assertFalse(admin.is_superuser)
+        self.assertEqual(self.politica.url_inicio(admin), "/administracion/")
+        self.client.force_login(admin)
+        self.assertEqual(self.client.get("/administracion/").status_code, 200)
+        self.assertEqual(self.client.post(reverse("administracion:editar_usuario", args=[self.super.pk])).status_code, 403)
 
     def test_url_inicio_segun_superusuario(self):
         self.assertEqual(self.politica.url_inicio(self.super), "/administracion/")
@@ -60,11 +71,11 @@ class PoliticaCajaBlancaTests(TestCase):
         self.assertTrue(self.politica.menu(self.super, "/administracion/usuarios/")[0]["activo"])
 
     def test_perfiles_permitidos_por_ruta(self):
-        self.assertEqual(self.politica.perfiles_permitidos("/administracion/"), frozenset({"administrador"}))
-        self.assertEqual(self.politica.perfiles_permitidos("/administracion/monitoreo/"), frozenset({"administrador"}))
+        self.assertEqual(self.politica.perfiles_permitidos("/administracion/"), frozenset({Usuario.Rol.ADMIN}))
+        self.assertEqual(self.politica.perfiles_permitidos("/administracion/monitoreo/"), frozenset({Usuario.Rol.ADMIN}))
         self.assertEqual(
             self.politica.perfiles_permitidos("/app/proyectos/"),
-            frozenset({"administrador", "profesional", "estudiante", "profesor"}),
+            frozenset(Usuario.Rol.values),
         )
         self.assertIsNone(self.politica.perfiles_permitidos("/cuentas/login/"))
 
