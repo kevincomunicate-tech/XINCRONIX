@@ -23,8 +23,9 @@
     </div>
 
     <p class="small fw-semibold mb-1">Criterios (hasta {{ max_criterios }})</p>
+    <div class="xnx-criterios">
     {% for fila in filas_criterio %}
-    <div class="row g-2 mb-2">
+    <div class="row g-2 mb-2 xnx-criterio">
       <div class="col-md-3">
         <select name="c{{ forloop.counter }}_campo" class="form-select form-select-sm" aria-label="Campo del criterio {{ forloop.counter }}">
           <option value="">— sin criterio —</option>
@@ -44,6 +45,7 @@
       </div>
     </div>
     {% endfor %}
+    </div>
 
     <p class="small fw-semibold mt-3 mb-1">Columnas en el reporte</p>
     <div class="d-flex flex-wrap gap-3 small mb-3">

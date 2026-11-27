@@ -1,0 +1,12 @@
+{% autoescape off %}{{ quien }} te invitó al proyecto «{{ proyecto.nombre }}» en Xincronix.
+
+Permiso: {{ invitacion.descripcion_rol }}
+
+Para aceptarla, inicia sesión o crea una cuenta con {{ invitacion.email }} y abre este enlace:
+{{ enlace }}
+
+También la verás como notificación (la campana de arriba) al entrar a Xincronix, donde puedes aceptarla o rechazarla:
+{{ enlace_inicio }}
+
+La invitación vence en 7 días. Si no esperabas este correo, puedes ignorarlo.
+{% endautoescape %}

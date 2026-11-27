@@ -4,7 +4,7 @@
 {% block subtitulo_pagina %}Arrastra las tareas o cambia su estado desde la tarjeta{% endblock %}
 {% block accion_principal %}{% if "tareas" in permisos %}<a href="{% url 'tarea_crear' proyecto.pk %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Nueva tarea</a>{% endif %}{% endblock %}
 {% block contenido %}
-<div class="project-command-bar mb-4"><a href="{% url 'proyecto_detalle' proyecto.pk %}">Resumen</a><a class="active" href="{% url 'proyecto_tablero' proyecto.pk %}">Tablero</a><a href="{% url 'proyecto_calendario' proyecto.pk %}">Calendario</a><a href="{% url 'proyecto_roadmap' proyecto.pk %}">Roadmap</a><a href="{% url 'proyecto_canvas' proyecto.pk %}">Canvas</a><a href="{% url 'proyecto_analytics' proyecto.pk %}">Estadísticas</a></div>
+{% include "dashboard/proyectos/_secciones.html" with activa="tablero" %}
 <div class="kanban" data-move-url="{% url 'tarea_mover' proyecto.pk 0 %}">
 {% for estado, etiqueta, tareas in columnas %}<section class="kanban-column" data-estado="{{ estado }}"><h2>{{ etiqueta }} <span>{{ tareas|length }}</span></h2><div class="kanban-drop">
 {% for t in tareas %}<article class="task-card" draggable="{% if 'tareas' in permisos %}true{% else %}false{% endif %}" data-tarea="{{ t.pk }}"><div class="d-flex justify-content-between"><strong>{{ t.titulo }}</strong><span class="priority-{{ t.prioridad }}"></span></div><p>{{ t.descripcion|truncatechars:90 }}</p><div class="small text-muted">{{ t.asignado_a|default:"Sin asignar" }} · {{ t.fecha_vencimiento|date:"j M"|default:"Sin fecha" }}</div>

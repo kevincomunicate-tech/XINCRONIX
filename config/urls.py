@@ -12,7 +12,7 @@ urlpatterns = [
     path("app/", include("dashboard.urls")),  # todo lo que requiere sesión
     # Vista pública de un proyecto: fuera de /app/ para que no pida inicio de sesión.
     path("publico/", include("dashboard.urls_publico")),
-    # Solo el superadministrador (lo controla config/politica_accesos.json)
+    # Administradores activos de Xincronix
     path("administracion/", include("administracion.urls")),
 ]
 

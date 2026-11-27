@@ -36,6 +36,15 @@ class ValidacionUsuariosTests(TestCase):
         beto = Usuario.objects.get(email="beto@prueba.com")
         self.assertEqual((beto.first_name, beto.last_name, beto.perfil, beto.cargo), ("Beto", "Luna", "profesor", "Coordinador"))
 
+    def test_importacion_usa_el_rol_global_e_impide_crear_admin(self):
+        base = b"email,nombre,apellido,rol\n"
+        resultado = imp.importar("usuarios", base + b"ana@prueba.com,Ana,Ruiz,supervisor\n")
+        self.assertEqual(resultado.creados, 1)
+        self.assertEqual(Usuario.objects.get(email="ana@prueba.com").rol, Usuario.Rol.SUPERVISOR)
+        resultado = imp.importar("usuarios", base + b"admin@prueba.com,Ana,Ruiz,admin\n")
+        self.assertTrue(resultado.errores)
+        self.assertFalse(Usuario.objects.filter(email="admin@prueba.com").exists())
+
     def test_los_importados_no_tienen_contrasena(self):
         imp.importar("usuarios", csv_usuarios("ana@prueba.com,Ana,Ruiz,estudiante,,"))
         self.assertFalse(Usuario.objects.get(email="ana@prueba.com").has_usable_password())

@@ -1,6 +1,7 @@
 """Vistas de /app/: proyectos técnicos, colaboración y seguimiento."""
 
 import json
+import logging
 import uuid
 from datetime import timedelta
 
@@ -15,10 +16,14 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.template.loader import render_to_string
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from .forms import CorreccionForm, DocumentoForm, EventoForm, InvitacionForm, OrientacionProyectoForm, ProyectoForm, ProyectoLiderForm, TareaForm
 from .metricas import metricas_proyectos, porcentaje
 from .models import DocumentoProyecto, InvitacionProyecto, Lienzo, Proyecto, ProyectoMiembro, Tarea
+
+logger = logging.getLogger(__name__)
 
 
 def _proyecto(request, pk, permiso="ver"):
@@ -85,7 +90,7 @@ def proyecto_crear(request):
         correo_supervisor = orientacion.get("supervisor_email", "").lower()
         if correo_supervisor and not proyecto.supervisor_id:
             from cuentas.models import Usuario
-            proyecto.supervisor = Usuario.objects.filter(email=correo_supervisor, perfil=Usuario.Perfil.PROFESOR, is_active=True).first()
+            proyecto.supervisor = Usuario.objects.filter(email=correo_supervisor, rol=Usuario.Rol.SUPERVISOR, is_active=True).first()
         proyecto.save()
         ProyectoMiembro.objects.get_or_create(proyecto=proyecto, usuario=request.user, defaults={"rol": ProyectoMiembro.Rol.LIDER})
         request.session.pop("orientacion_proyecto", None)
@@ -205,16 +210,78 @@ def invitacion_crear(request, pk):
     invitacion.creado_por = request.user
     invitacion.vence_en = timezone.now() + timedelta(days=7)
     invitacion.save()
-    enlace = request.build_absolute_uri(reverse("invitacion_aceptar", args=[invitacion.token]))
-    send_mail(
-        subject=f"Invitación a {proyecto.nombre} en Xincronix",
-        message=(f"{request.user} te invitó al proyecto «{proyecto.nombre}».\n\n"
-                 f"Accede o crea una cuenta con {invitacion.email} y abre este enlace:\n{enlace}\n\n"
-                 "La invitación vence en 7 días."),
-        from_email=None, recipient_list=[invitacion.email], fail_silently=False,
-    )
-    messages.success(request, f"Invitación enviada a {invitacion.email}.")
+    if _enviar_correo_invitacion(request, invitacion):
+        messages.success(request, f"Invitación enviada a {invitacion.email}: le llega por correo y como notificación en Xincronix.")
+    else:
+        messages.warning(request, f"La invitación quedó creada y {invitacion.email} la verá como notificación al entrar a Xincronix, "
+                                  "pero el correo no se pudo enviar. Revisa la configuración de correo del servidor.")
     return redirect("proyecto_detalle", pk=pk)
+
+
+def _enviar_correo_invitacion(request, invitacion):
+    """Envía el correo de invitación (texto + HTML). Devuelve False si el servidor de correo falla."""
+    contexto = {
+        "invitacion": invitacion, "proyecto": invitacion.proyecto, "quien": request.user,
+        "enlace": request.build_absolute_uri(reverse("invitacion_aceptar", args=[invitacion.token])),
+        "enlace_inicio": request.build_absolute_uri(reverse("panel")),
+    }
+    try:
+        send_mail(
+            subject=f"Invitación a {invitacion.proyecto.nombre} en Xincronix",
+            message=render_to_string("dashboard/correo_invitacion.txt", contexto),
+            html_message=render_to_string("dashboard/correo_invitacion.html", contexto),
+            from_email=None, recipient_list=[invitacion.email], fail_silently=False,
+        )
+    except Exception:  # SMTP caído, credenciales malas, etc.: la invitación igual queda como notificación
+        logger.exception("No se pudo enviar el correo de invitación %s", invitacion.pk)
+        return False
+    return True
+
+
+def _invitacion_para_mi(request, pk):
+    """Una invitación vigente dirigida al correo de quien está conectado."""
+    invitacion = get_object_or_404(InvitacionProyecto.pendientes_para(request.user), pk=pk)
+    return invitacion
+
+
+@login_required
+@require_POST
+def invitacion_responder(request, pk):
+    """Aceptar o rechazar una invitación desde la notificación de la página."""
+    invitacion = _invitacion_para_mi(request, pk)
+    accion = request.POST.get("accion")
+    if accion == "aceptar":
+        ProyectoMiembro.objects.get_or_create(proyecto=invitacion.proyecto, usuario=request.user, defaults={"rol": invitacion.rol})
+        invitacion.estado = InvitacionProyecto.Estado.ACEPTADA
+        invitacion.save(update_fields=["estado"])
+        messages.success(request, f"Ahora haces parte de «{invitacion.proyecto}» ({invitacion.get_rol_display().lower()}).")
+        return redirect("proyecto_detalle", pk=invitacion.proyecto_id)
+    if accion == "rechazar":
+        invitacion.estado = InvitacionProyecto.Estado.RECHAZADA
+        invitacion.save(update_fields=["estado"])
+        messages.info(request, f"Rechazaste la invitación a «{invitacion.proyecto}».")
+        return redirect(_volver_seguro(request))
+    return HttpResponseBadRequest("Acción no válida.")
+
+
+@login_required
+@require_POST
+def invitacion_cancelar(request, pk, invitacion_pk):
+    """El líder retira una invitación que todavía no se ha respondido."""
+    proyecto, _ = _proyecto(request, pk, "invitaciones")
+    invitacion = get_object_or_404(proyecto.invitaciones, pk=invitacion_pk, estado=InvitacionProyecto.Estado.PENDIENTE)
+    invitacion.estado = InvitacionProyecto.Estado.CANCELADA
+    invitacion.save(update_fields=["estado"])
+    messages.info(request, f"Se canceló la invitación a {invitacion.email}.")
+    return redirect("proyecto_detalle", pk=pk)
+
+
+def _volver_seguro(request):
+    """Vuelve a la página anterior solo si es de este mismo sitio."""
+    destino = request.POST.get("siguiente") or ""
+    if destino and url_has_allowed_host_and_scheme(destino, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+        return destino
+    return reverse("panel")
 
 
 @login_required

@@ -1,6 +1,8 @@
 from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import user_passes_test
+from django.core.exceptions import PermissionDenied
+from django.db import transaction
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
 
@@ -12,8 +14,7 @@ from .forms import UsuarioAdminForm, UsuarioCrearForm
 
 
 def administrador(vista):
-    # Solo el superusuario administra: "is_staff" no basta (puede tener permisos parciales).
-    return user_passes_test(lambda usuario: usuario.is_active and usuario.is_superuser)(vista)
+    return user_passes_test(lambda usuario: getattr(usuario, "es_admin", False))(vista)
 
 
 @administrador
@@ -22,13 +23,16 @@ def inicio(request):
     usuarios = Usuario.objects.order_by("first_name", "email")
     if busqueda:
         usuarios = usuarios.filter(Q(email__icontains=busqueda) | Q(first_name__icontains=busqueda) | Q(last_name__icontains=busqueda))
-    resumen = Usuario.objects.values("perfil").annotate(total=Count("pk"))
-    return render(request, "administracion/inicio.html", {"usuarios": usuarios, "busqueda": busqueda, "resumen": resumen})
+    resumen = Usuario.objects.values("rol").annotate(total=Count("pk"))
+    totales = {item["rol"]: item["total"] for item in resumen}
+    return render(request, "administracion/inicio.html", {"usuarios": usuarios, "busqueda": busqueda, "resumen": [
+        {"rol": label, "total": totales.get(rol, 0)} for rol, label in Usuario.Rol.choices
+    ]})
 
 
 @administrador
 def crear_usuario(request):
-    form = UsuarioCrearForm(request.POST or None)
+    form = UsuarioCrearForm(request.POST or None, actor=request.user)
     if request.method == "POST" and form.is_valid():
         usuario = form.save()
         messages.success(request, f"Cuenta creada para {usuario.email}.")
@@ -37,9 +41,13 @@ def crear_usuario(request):
 
 
 @administrador
+@transaction.atomic
 def editar_usuario(request, pk):
-    usuario = get_object_or_404(Usuario, pk=pk)
-    form = UsuarioAdminForm(request.POST or None, instance=usuario)
+    usuarios = Usuario.objects.select_for_update() if request.method == "POST" else Usuario.objects
+    usuario = get_object_or_404(usuarios, pk=pk)
+    if usuario.rol == Usuario.Rol.ADMIN and not request.user.is_superuser and usuario.pk != request.user.pk:
+        raise PermissionDenied
+    form = UsuarioAdminForm(request.POST or None, instance=usuario, actor=request.user)
     if request.method == "POST" and form.is_valid():
         try:
             form.save()
@@ -52,8 +60,12 @@ def editar_usuario(request, pk):
 
 
 @administrador
+@transaction.atomic
 def eliminar_usuario(request, pk):
-    usuario = get_object_or_404(Usuario, pk=pk)
+    usuarios = Usuario.objects.select_for_update() if request.method == "POST" else Usuario.objects
+    usuario = get_object_or_404(usuarios, pk=pk)
+    if usuario.rol == Usuario.Rol.ADMIN and not request.user.is_superuser and usuario.pk != request.user.pk:
+        raise PermissionDenied
     if request.method == "POST":
         propia = usuario.pk == request.user.pk
         try:

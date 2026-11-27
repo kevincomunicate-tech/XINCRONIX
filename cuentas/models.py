@@ -1,7 +1,7 @@
 """Cuentas personales de la plataforma de proyectos Xincronix."""
 
 from django.contrib.auth.models import AbstractUser, BaseUserManager
-from django.db import models, transaction
+from django.db import models, router, transaction
 from django.utils import timezone
 
 from .restricciones import no_vacio
@@ -24,23 +24,26 @@ class UsuarioQuerySet(models.QuerySet):
     """
 
     def delete(self):
-        self._verificar_queda_un_superusuario()
-        return super().delete()
+        with transaction.atomic(using=self.db):
+            self._verificar_queda_un_superusuario()
+            return super().delete()
 
     def update(self, **kwargs):
         if kwargs.get("is_active") is False or kwargs.get("is_superuser") is False:
-            self._verificar_queda_un_superusuario()
+            with transaction.atomic(using=self.db):
+                self._verificar_queda_un_superusuario()
+                return super().update(**kwargs)
         return super().update(**kwargs)
 
     def _verificar_queda_un_superusuario(self):
-        with transaction.atomic():
+        with transaction.atomic(using=self.db):
             # Bloquea a todos los superusuarios activos: dos operaciones simultáneas no pueden
             # leer "quedan dos" y dejar cero.
-            list(self.model._base_manager.select_for_update().filter(is_superuser=True, is_active=True).values_list("pk", flat=True))
+            list(self.model._base_manager.using(self.db).select_for_update().filter(is_superuser=True, is_active=True).values_list("pk", flat=True))
             que_se_pierden = self.filter(is_superuser=True, is_active=True).count()
             if not que_se_pierden:
                 return
-            activos = self.model._base_manager.filter(is_superuser=True, is_active=True).count()
+            activos = self.model._base_manager.using(self.db).filter(is_superuser=True, is_active=True).count()
             if activos - que_se_pierden < 1:
                 raise SuperusuarioProtegido(MENSAJE_ULTIMO_SUPERUSUARIO)
 
@@ -70,6 +73,7 @@ class UsuarioManager(BaseUserManager.from_queryset(UsuarioQuerySet)):
         extra.setdefault("is_superuser", True)
         if not extra.get("is_staff") or not extra.get("is_superuser"):
             raise ValueError("Un superusuario debe tener is_staff e is_superuser en True.")
+        extra["rol"] = "admin"
         return self._crear(email, password, **extra)
 
 
@@ -81,11 +85,17 @@ class Usuario(AbstractUser):
         ESTUDIANTE = "estudiante", "Estudiante"
         PROFESOR = "profesor", "Profesor / supervisor"
 
+    class Rol(models.TextChoices):
+        ADMIN = "admin", "Administrador"
+        USUARIO = "usuario", "Usuario"
+        SUPERVISOR = "supervisor", "Supervisor"
+
     username = None
     email = models.EmailField("correo electrónico", unique=True)
     first_name = models.CharField("nombres", max_length=100)
     last_name = models.CharField("apellidos", max_length=100)
     perfil = models.CharField(max_length=15, choices=Perfil.choices, default=Perfil.PROFESIONAL)
+    rol = models.CharField("rol global", max_length=10, choices=Rol.choices, default=Rol.USUARIO, db_index=True)
     cargo = models.CharField("especialidad o rol", max_length=80, blank=True)
     telefono = models.CharField("teléfono", max_length=20, blank=True)
     avatar = models.ImageField("foto de perfil", upload_to="avatares/", blank=True)
@@ -100,12 +110,27 @@ class Usuario(AbstractUser):
         verbose_name_plural = "usuarios"
         ordering = ["first_name", "last_name", "email"]
         constraints = [
+            models.CheckConstraint(condition=models.Q(rol__in=["admin", "usuario", "supervisor"]), name="usuario_rol_global_valido"),
+            models.CheckConstraint(condition=models.Q(is_superuser=False) | models.Q(rol="admin"), name="usuario_superuser_rol_admin"),
             no_vacio("usuario", "first_name"),
             no_vacio("usuario", "last_name"),
         ]
 
+    def save(self, *args, **kwargs):
+        alias = kwargs.get("using") or router.db_for_write(type(self), instance=self)
+        with transaction.atomic(using=alias):
+            return super().save(*args, **kwargs)
+
     def __str__(self):
         return self.get_full_name() or self.email
+
+    @property
+    def es_admin(self):
+        return self.is_active and self.rol == self.Rol.ADMIN
+
+    @property
+    def es_supervisor(self):
+        return self.is_active and self.rol == self.Rol.SUPERVISOR
 
     @property
     def iniciales(self):

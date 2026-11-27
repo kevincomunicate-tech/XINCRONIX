@@ -24,7 +24,7 @@
       <div class="xnx-card">
         <div class="xnx-card-header"><span class="xnx-card-title"><i class="bi bi-info-circle me-2"></i>Resumen</span></div>
         <div class="xnx-card-body small">
-          <div class="mb-2"><span class="text-muted">Perfil:</span> <strong>{{ request.user.get_perfil_display }}</strong></div>
+          <div class="mb-2"><span class="text-muted">Rol global:</span> <strong>{{ request.user.get_rol_display }}</strong></div>
           <div class="mb-2"><span class="text-muted">Enfoque:</span> proyectos de tecnología y software</div>
           <div class="mb-2"><span class="text-muted">Desde:</span> {{ request.user.date_joined|date:"j \d\e F \d\e Y" }}</div>
           <div><span class="text-muted">Google:</span> {% if cuentas_google %}<span class="badge text-bg-success">Vinculada</span>{% else %}No vinculada{% endif %}</div>

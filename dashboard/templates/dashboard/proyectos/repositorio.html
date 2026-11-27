@@ -1,0 +1,95 @@
+{% extends "base_dashboard.html" %}{% load humanize %}
+{% block titulo %}Repositorio · {{ proyecto.nombre }}{% endblock %}
+{% block volver %}{% url 'proyecto_detalle' proyecto.pk as destino %}{% include "partials/volver.html" with url=destino texto="Proyecto" %}{% endblock %}
+{% block titulo_pagina %}Repositorio{% endblock %}
+{% block subtitulo_pagina %}{{ proyecto.nombre }} · desde GitHub{% endblock %}
+{% block contenido %}
+{% include "dashboard/proyectos/_secciones.html" with activa="repositorio" %}
+
+{% if not enlace or not es_github %}
+  <div class="xnx-card">
+    <div class="xnx-card-body">
+      <h2 class="h6 fw-bold mb-2"><i class="bi bi-github me-2"></i>{% if enlace %}El enlace del proyecto no es de GitHub{% else %}Este proyecto no tiene repositorio{% endif %}</h2>
+      <p class="small mb-2">{% if enlace %}El enlace guardado es <code>{{ enlace }}</code>. {% endif %}Para ver aquí los datos, pon en el campo «Repositorio o demo» un enlace de GitHub, por ejemplo <code>https://github.com/tu-usuario/tu-repo</code> o el de tu usuario u organización (<code>https://github.com/tu-usuario</code>) para ver todos sus repositorios.</p>
+      {% if "editar" in permisos %}<a href="{% url 'proyecto_editar' proyecto.pk %}" class="btn btn-outline-primary btn-sm"><i class="bi bi-pencil me-1"></i>Editar el proyecto</a>{% endif %}
+    </div>
+  </div>
+
+{% elif error %}
+  <div class="alert alert-warning d-flex gap-2" role="alert"><i class="bi bi-exclamation-triangle"></i><div>{{ error }}</div></div>
+  {% if desde_lista %}<a href="{% url 'proyecto_repositorio' proyecto.pk %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Repositorios de {{ dueno }}</a>{% endif %}
+
+{% elif repo %}
+  {% if desde_lista %}<a href="{% url 'proyecto_repositorio' proyecto.pk %}" class="btn btn-outline-secondary btn-sm mb-3"><i class="bi bi-arrow-left me-1"></i>Repositorios de {{ dueno }}</a>{% endif %}
+  <div class="xnx-card mb-3">
+    <div class="xnx-card-body">
+      <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+        <div class="min-w-0">
+          <h2 class="h5 fw-bold mb-1"><i class="bi bi-github me-2"></i>{{ repo.nombre }} {% if repo.privado %}<span class="badge text-bg-secondary align-middle">Privado</span>{% endif %}</h2>
+          <p class="text-muted mb-0">{{ repo.descripcion|default:"Sin descripción." }}</p>
+        </div>
+        <a href="{{ repo.url }}" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm"><i class="bi bi-box-arrow-up-right me-1"></i>Abrir en GitHub</a>
+      </div>
+      <div class="repo-datos mt-3">
+        <span><i class="bi bi-star"></i> {{ repo.estrellas|intcomma }} estrellas</span>
+        <span><i class="bi bi-diagram-2"></i> {{ repo.forks|intcomma }} forks</span>
+        <span title="GitHub cuenta juntos los issues y los pull requests abiertos"><i class="bi bi-record-circle"></i> {{ repo.issues|intcomma }} issues/PR abiertos</span>
+        {% if repo.rama %}<span><i class="bi bi-git"></i> {{ repo.rama }}</span>{% endif %}
+        {% if repo.licencia %}<span><i class="bi bi-file-earmark-text"></i> {{ repo.licencia }}</span>{% endif %}
+        {% if repo.actualizado %}<span><i class="bi bi-clock-history"></i> Último push {{ repo.actualizado|naturaltime }}</span>{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-8">
+      <div class="xnx-card h-100">
+        <div class="xnx-card-header"><span class="xnx-card-title"><i class="bi bi-clock-history me-2"></i>Últimos commits</span></div>
+        <div class="xnx-card-body">
+          {% for c in repo.commits %}
+            <div class="repo-commit">
+              <div class="min-w-0"><div class="fw-semibold small">{{ c.mensaje }}</div><div class="small text-muted">{{ c.autor }}{% if c.fecha %} · {{ c.fecha|naturaltime }}{% endif %}</div></div>
+              {% if c.url %}<a href="{{ c.url }}" target="_blank" rel="noopener" class="repo-sha" title="Ver el commit en GitHub">{{ c.sha }}</a>{% else %}<code>{{ c.sha }}</code>{% endif %}
+            </div>
+          {% empty %}<p class="text-muted small mb-0">El repositorio todavía no tiene commits.</p>{% endfor %}
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="xnx-card h-100">
+        <div class="xnx-card-header"><span class="xnx-card-title"><i class="bi bi-code-slash me-2"></i>Lenguajes</span></div>
+        <div class="xnx-card-body">
+          {% for l in repo.lenguajes %}
+            <div class="metric-row"><div class="d-flex justify-content-between small"><span>{{ l.nombre }}</span><strong>{{ l.porcentaje }}%</strong></div><div class="metric-bar"><span style="width: {{ l.porcentaje|stringformat:'.1f' }}%"></span></div></div>
+          {% empty %}<p class="text-muted small mb-0">GitHub no detectó lenguajes.</p>{% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% else %}
+  <div class="xnx-card">
+    <div class="xnx-card-header">
+      <span class="xnx-card-title"><i class="bi bi-github me-2"></i>Repositorios públicos de {{ dueno }}</span>
+      <a href="https://github.com/{{ dueno }}" target="_blank" rel="noopener" class="xnx-card-action">Ver en GitHub</a>
+    </div>
+    <div class="xnx-card-body">
+      {% for r in lista %}
+        <a class="repo-item" href="?repo={{ r.nombre|urlencode }}">
+          <div class="min-w-0">
+            <div class="fw-semibold">{{ r.nombre }}{% if r.fork %} <span class="badge text-bg-light border">fork</span>{% endif %}</div>
+            {% if r.descripcion %}<div class="small text-muted">{{ r.descripcion }}</div>{% endif %}
+          </div>
+          <div class="repo-item-meta small text-muted">
+            {% if r.lenguaje %}<span>{{ r.lenguaje }}</span>{% endif %}
+            <span><i class="bi bi-star"></i> {{ r.estrellas }}</span>
+            {% if r.actualizado %}<span>{{ r.actualizado|naturaltime }}</span>{% endif %}
+          </div>
+        </a>
+      {% empty %}<p class="text-muted small mb-0">{{ dueno }} no tiene repositorios públicos.</p>{% endfor %}
+    </div>
+  </div>
+{% endif %}
+
+<p class="small text-muted mt-3 mb-0"><i class="bi bi-info-circle me-1"></i>Datos de GitHub.{% if not con_token %} Esta vista muestra repositorios públicos.{% endif %}</p>
+{% endblock %}

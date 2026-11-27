@@ -30,7 +30,7 @@ class ModulosTests(TestCase):
         cls.lider = Usuario.objects.create_user("lider@prueba.com", CLAVE, perfil="estudiante", first_name="Prueba", last_name="Usuario")
         cls.editor = Usuario.objects.create_user("editor@prueba.com", CLAVE, perfil="profesional", first_name="Prueba", last_name="Usuario")
         cls.lector = Usuario.objects.create_user("lector@prueba.com", CLAVE, perfil="profesor", first_name="Prueba", last_name="Usuario")
-        cls.supervisor = Usuario.objects.create_user("prof@prueba.com", CLAVE, perfil="profesor", first_name="Prueba", last_name="Usuario")
+        cls.supervisor = Usuario.objects.create_user("prof@prueba.com", CLAVE, rol=Usuario.Rol.SUPERVISOR, perfil="profesor", first_name="Prueba", last_name="Usuario")
         cls.p = Proyecto.objects.create(nombre="Módulos", creado_por=cls.lider, supervisor=cls.supervisor,
                                         modalidad=Proyecto.Modalidad.GRUPAL, descripcion="Descripción de prueba")
         ProyectoMiembro.objects.create(proyecto=cls.p, usuario=cls.lider, rol=ProyectoMiembro.Rol.LIDER)

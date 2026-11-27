@@ -10,17 +10,17 @@ from django.db import transaction
 from .models import Usuario
 
 
-def bloquear_superusuarios():
+def bloquear_superusuarios(using=None):
     """Bloquea las filas de los superusuarios activos hasta terminar la transacción.
 
     Así dos operaciones simultáneas no pueden leer "quedan dos" y borrar cada una a una
     dejando cero. En SQLite el bloqueo lo hace la base completa.
     """
-    list(Usuario.objects.select_for_update().filter(is_superuser=True, is_active=True).values_list("pk", flat=True))
+    list(Usuario.objects.using(using).select_for_update().filter(is_superuser=True, is_active=True).values_list("pk", flat=True))
 
 
-def otros_superusuarios_activos(pk_excluido):
-    return Usuario.objects.filter(is_superuser=True, is_active=True).exclude(pk=pk_excluido)
+def otros_superusuarios_activos(pk_excluido, using=None):
+    return Usuario.objects.using(using).filter(is_superuser=True, is_active=True).exclude(pk=pk_excluido)
 
 
 def quitaria_el_ultimo_superusuario(usuario):

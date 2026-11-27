@@ -13,7 +13,7 @@ from .models import InvitacionProyecto, Proyecto, ProyectoMiembro, Tarea
 class ProyectoFlujoTests(TestCase):
     def setUp(self):
         self.autor = Usuario.objects.create_user("autor@example.com", "ClaveSegura123", first_name="Ana", last_name="Usuario")
-        self.profesor = Usuario.objects.create_user("profe@example.com", "ClaveSegura123", perfil=Usuario.Perfil.PROFESOR, first_name="Prueba", last_name="Usuario")
+        self.profesor = Usuario.objects.create_user("profe@example.com", "ClaveSegura123", rol=Usuario.Rol.SUPERVISOR, perfil=Usuario.Perfil.PROFESOR, first_name="Prueba", last_name="Usuario")
         self.colaborador = Usuario.objects.create_user("colab@example.com", "ClaveSegura123", first_name="Prueba", last_name="Usuario")
         self.client.force_login(self.autor)
 
@@ -56,3 +56,20 @@ class ProyectoFlujoTests(TestCase):
         respuesta = self.client.get(reverse("proyecto_canvas", args=[proyecto.pk]))
         self.assertContains(respuesta, 'class="canvas-editor"')
         self.assertIn("csrftoken", respuesta.cookies)
+
+
+class RepositorioUrlTests(TestCase):
+    """Un repositorio escrito sin esquema se guarda con https:// (comportamiento de Django 6.0)."""
+
+    def test_url_sin_esquema_usa_https(self):
+        from .forms import ProyectoForm
+
+        formulario = ProyectoForm(data={"nombre": "Repo", "descripcion": "Proyecto de prueba", "estado": "planificacion",
+                                        "repositorio_url": "github.com/equipo/repo"})
+        self.assertTrue(formulario.is_valid(), formulario.errors)
+        self.assertEqual(formulario.cleaned_data["repositorio_url"], "https://github.com/equipo/repo")
+
+    def test_formulario_del_lider_hereda_la_regla(self):
+        from .forms import ProyectoLiderForm
+
+        self.assertEqual(ProyectoLiderForm.base_fields["repositorio_url"].assume_scheme, "https")

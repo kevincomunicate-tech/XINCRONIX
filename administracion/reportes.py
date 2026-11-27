@@ -57,10 +57,10 @@ CATALOGO = {
         titulo="Usuarios",
         modelo=Usuario,
         columnas=(Columna("email", "Correo"), Columna("first_name", "Nombres"), Columna("last_name", "Apellidos"),
-                  Columna("perfil", "Perfil"), Columna("is_active", "Activa"), Columna("is_superuser", "Superusuario"),
+                  Columna("rol", "Rol global"), Columna("is_active", "Activa"),
                   Columna("date_joined", "Fecha de registro"), Columna("last_login", "Último inicio de sesión")),
         filtros={"email": ("igual", "distinto", "contiene"), "first_name": ("igual", "contiene"), "last_name": ("contiene",),
-                 "perfil": ("igual", "distinto"), "is_active": ("igual",), "is_superuser": ("igual",),
+                 "rol": ("igual", "distinto"), "is_active": ("igual",),
                  "date_joined": ("entre", "mayor_que", "menor_que"), "last_login": ("entre", "vacio", "no_vacio")},
         orden="email",
     ),
@@ -470,5 +470,4 @@ def _fuentes_pdf(pdfmetrics, TTFont):
 
 
 def puede_ver_reportes(usuario):
-    """Solo el cargo más alto (superusuario). El sistema no tiene un rol 'administrador' aparte."""
-    return bool(usuario.is_authenticated and usuario.is_active and usuario.is_superuser)
+    return bool(getattr(usuario, "es_admin", False))

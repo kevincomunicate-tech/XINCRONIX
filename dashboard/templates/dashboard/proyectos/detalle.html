@@ -1,12 +1,124 @@
 {% extends "base_dashboard.html" %}
 {% block titulo %}{{ proyecto.nombre }}{% endblock %}{% block volver %}{% url 'proyectos' as destino %}{% include "partials/volver.html" with url=destino texto="Proyectos" %}{% endblock %}{% block titulo_pagina %}{{ proyecto.nombre }}{% endblock %}{% block subtitulo_pagina %}{{ proyecto.get_finalidad_display }} · {{ proyecto.get_metodologia_display }} · {{ proyecto.get_modalidad_display }}{% endblock %}
-{% block accion_principal %}{% if "editar" in permisos %}<a href="{% url 'proyecto_editar' proyecto.pk %}" class="btn btn-outline-primary btn-sm">Editar</a>{% endif %}{% endblock %}
+{% block accion_principal %}{% if "editar" in permisos %}<a href="{% url 'proyecto_editar' proyecto.pk %}" class="btn btn-outline-primary btn-sm"><i class="bi bi-pencil me-1"></i>Editar</a>{% endif %}{% endblock %}
 {% block contenido %}
-<div class="project-command-bar mb-4"><a href="{% url 'proyecto_tablero' proyecto.pk %}"><i class="bi bi-kanban"></i> Tablero</a><a href="{% url 'proyecto_calendario' proyecto.pk %}"><i class="bi bi-calendar3"></i> Calendario</a><a href="{% url 'proyecto_roadmap' proyecto.pk %}"><i class="bi bi-signpost-2"></i> Roadmap</a><a href="{% url 'proyecto_canvas' proyecto.pk %}"><i class="bi bi-easel2"></i> Canvas</a><a href="{% url 'proyecto_analytics' proyecto.pk %}"><i class="bi bi-graph-up"></i> Estadísticas</a></div>
-<div class="row g-3 mb-4"><div class="col-md-4"><div class="stat-card h-100"><div class="stat-label">Avance</div><div class="stat-value">{{ avance }}%</div><div class="xnx-progress mt-3"><div class="xnx-progress-bar" style="width:{{ avance }}%"></div></div></div></div><div class="col-md-4"><div class="stat-card h-100"><div class="stat-label">Tecnologías</div><div class="fw-semibold mt-2">{{ proyecto.tecnologia|default:"Por definir" }}</div><div class="small text-muted mt-2">{{ proyecto.fecha_inicio|date:"j M Y"|default:"Sin inicio" }} → {{ proyecto.fecha_fin|date:"j M Y"|default:"sin cierre" }}</div></div></div><div class="col-md-4"><div class="stat-card h-100"><div class="stat-label">Supervisor</div><div class="fw-semibold mt-2">{{ proyecto.supervisor|default:"Sin supervisor asignado" }}</div><div class="small text-muted mt-2">{% if proyecto.contexto_educativo %}{{ proyecto.contexto_educativo }}{% else %}No es un proyecto educativo o no tiene contexto{% endif %}</div></div></div></div>
-{% if proyecto.descripcion %}<div class="xnx-card mb-4"><div class="xnx-card-body">{{ proyecto.descripcion|linebreaksbr }}{% if proyecto.repositorio_url %}<div class="mt-2"><a href="{{ proyecto.repositorio_url }}" rel="noopener" target="_blank"><i class="bi bi-github"></i> Abrir repositorio/demo</a></div>{% endif %}</div></div>{% endif %}
-<div class="row g-3"><div class="col-lg-7"><div class="xnx-card mb-3"><div class="xnx-card-header"><span class="xnx-card-title"><i class="bi bi-list-task me-2"></i>Tareas</span><a href="{% url 'proyecto_tablero' proyecto.pk %}" class="xnx-card-action">Abrir tablero</a></div><div class="xnx-card-body">{% for t in tareas|slice:":5" %}<div class="d-flex justify-content-between border-bottom py-2 gap-2"><div><strong class="small">{{ t.titulo }}</strong><div class="small text-muted">{{ t.asignado_a|default:"Sin asignar" }}</div></div><span class="badge text-bg-light border align-self-center">{{ t.get_estado_display }}</span></div>{% empty %}<p class="text-muted small mb-0">Aún no hay tareas.</p>{% endfor %}</div></div>
-<div class="xnx-card mb-3"><div class="xnx-card-header"><span class="xnx-card-title"><i class="bi bi-folder2-open me-2"></i>Documentación</span></div><div class="xnx-card-body">{% for d in documentos %}<div class="d-flex justify-content-between small py-1"><a href="{{ d.archivo.url }}">{{ d.nombre }}</a><span class="text-muted">{{ d.subido_por }}</span></div>{% empty %}<p class="text-muted small">No hay documentos aún.</p>{% endfor %}{% if "documentos" in permisos %}<form method="post" action="{% url 'documento_subir' proyecto.pk %}" enctype="multipart/form-data" class="mt-3 d-flex gap-2">{% csrf_token %}<input name="nombre" class="form-control form-control-sm" placeholder="Nombre del documento" required><input name="archivo" class="form-control form-control-sm" type="file" required><button class="btn btn-outline-primary btn-sm">Subir</button></form>{% endif %}</div></div></div>
-{% if "miembros" in permisos %}<div class="xnx-card mb-3"><div class="xnx-card-header"><span class="xnx-card-title"><i class="bi bi-globe me-2"></i>Visibilidad</span></div><div class="xnx-card-body small">{% if proyecto.visibilidad == "publico" %}<p>Público: cualquiera con este enlace puede ver el proyecto en solo lectura, sin iniciar sesión.</p><div class="input-group input-group-sm mb-2"><input class="form-control" readonly value="{{ enlace_url }}"></div><form method="post" action="{% url 'proyecto_enlace_nuevo' proyecto.pk %}">{% csrf_token %}<button class="btn btn-outline-danger btn-sm">Generar enlace nuevo (invalida el actual)</button></form>{% else %}<p>Privado: solo el equipo ve el proyecto. Para compartirlo por enlace, cambia la visibilidad en Editar.</p>{% endif %}</div></div>{% endif %}<div class="col-lg-5"><div class="xnx-card mb-3"><div class="xnx-card-header"><span class="xnx-card-title"><i class="bi bi-people me-2"></i>Equipo</span></div><div class="xnx-card-body">{% for m in miembros %}<div class="activity-item"><div class="xnx-avatar">{{ m.usuario.iniciales }}</div><div class="flex-grow-1"><div class="fw-semibold small">{{ m.usuario }}</div>{% if "miembros" in permisos and m.usuario_id != proyecto.creado_por_id %}<form method="post" action="{% url 'miembro_cambiar_rol' proyecto.pk m.pk %}" class="d-flex gap-1 mt-1">{% csrf_token %}<select name="rol" class="form-select form-select-sm"><option value="editor" {% if m.rol == "editor" %}selected{% endif %}>Colaborador</option><option value="lector" {% if m.rol == "lector" %}selected{% endif %}>Solo lectura</option></select><button class="btn btn-sm btn-outline-primary">Guardar</button></form>{% else %}<div class="activity-time">{{ m.get_rol_display }}</div>{% endif %}</div>{% if "miembros" in permisos and m.usuario_id != proyecto.creado_por_id %}<form method="post" action="{% url 'miembro_quitar' proyecto.pk m.pk %}">{% csrf_token %}<button class="btn btn-sm btn-outline-danger"><i class="bi bi-x-lg"></i></button></form>{% endif %}</div>{% endfor %}{% if "invitaciones" in permisos %}<form method="post" action="{% url 'invitacion_crear' proyecto.pk %}" class="mt-3">{% csrf_token %}<label class="small fw-semibold">Invitar con enlace por correo</label><div class="form-text">Al invitar, el proyecto pasa a grupal si era individual.</div><div class="input-group"><input name="email" type="email" class="form-control form-control-sm" placeholder="persona@correo.com" required><select name="rol" class="form-select form-select-sm"><option value="editor">Colaborador</option><option value="lector">Solo lectura</option></select><button class="btn btn-primary btn-sm">Enviar</button></div></form>{% endif %}</div></div>
-<div class="xnx-card"> <div class="xnx-card-header"><span class="xnx-card-title"><i class="bi bi-chat-left-text me-2"></i>Correcciones del supervisor</span></div><div class="xnx-card-body">{% for c in correcciones %}<div class="small border-bottom py-2"><strong>{{ c.autor }}</strong>{% if c.tarea %} · {{ c.tarea }}{% endif %}<div>{{ c.comentario }}</div>{% if c.sugerencia_calificacion %}<span class="text-muted">Referencia: {{ c.sugerencia_calificacion }}</span>{% endif %}</div>{% empty %}<p class="text-muted small">No hay observaciones.</p>{% endfor %}{% if "correcciones" in permisos %}<form method="post" action="{% url 'correccion_crear' proyecto.pk %}" class="mt-3">{% csrf_token %}<textarea name="comentario" class="form-control form-control-sm" rows="2" placeholder="Observación o corrección" required></textarea><div class="d-flex gap-2 mt-2"><select name="tarea" class="form-select form-select-sm"><option value="">Proyecto general</option>{% for t in tareas %}<option value="{{ t.pk }}">{{ t.titulo }}</option>{% endfor %}</select><input type="number" name="sugerencia_calificacion" class="form-control form-control-sm" placeholder="Referencia"><button class="btn btn-outline-primary btn-sm">Registrar</button></div></form>{% endif %}</div></div></div></div>
+{% include "dashboard/proyectos/_secciones.html" with activa="resumen" %}
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4"><div class="stat-card h-100"><div class="stat-label">Avance</div><div class="stat-value">{{ avance }}%</div><div class="xnx-progress mt-3"><div class="xnx-progress-bar" style="width:{{ avance }}%"></div></div></div></div>
+  <div class="col-md-4"><div class="stat-card h-100"><div class="stat-label">Tecnologías</div><div class="fw-semibold mt-2">{{ proyecto.tecnologia|default:"Por definir" }}</div><div class="small text-muted mt-2">{{ proyecto.fecha_inicio|date:"j M Y"|default:"Sin inicio" }} → {{ proyecto.fecha_fin|date:"j M Y"|default:"sin cierre" }}</div></div></div>
+  <div class="col-md-4"><div class="stat-card h-100"><div class="stat-label">Supervisor</div><div class="fw-semibold mt-2">{{ proyecto.supervisor|default:"Sin supervisor asignado" }}</div><div class="small text-muted mt-2">{% if proyecto.contexto_educativo %}{{ proyecto.contexto_educativo }}{% else %}No es un proyecto educativo o no tiene contexto{% endif %}</div></div></div>
+</div>
+
+{% if proyecto.descripcion %}
+<div class="xnx-card mb-4"><div class="xnx-card-body">{{ proyecto.descripcion|linebreaksbr }}{% if proyecto.repositorio_url %}<div class="mt-2"><a href="{{ proyecto.repositorio_url }}" rel="noopener" target="_blank"><i class="bi bi-github"></i> Abrir repositorio/demo</a></div>{% endif %}</div></div>
+{% endif %}
+
+<div class="row g-3">
+  {# Columna principal: tareas, documentos y visibilidad #}
+  <div class="col-lg-7">
+    <div class="xnx-card mb-3">
+      <div class="xnx-card-header"><span class="xnx-card-title"><i class="bi bi-list-task me-2"></i>Tareas</span><a href="{% url 'proyecto_tablero' proyecto.pk %}" class="xnx-card-action">Abrir tablero</a></div>
+      <div class="xnx-card-body">
+        {% for t in tareas|slice:":5" %}
+          <div class="d-flex justify-content-between border-bottom py-2 gap-2"><div class="min-w-0"><strong class="small">{{ t.titulo }}</strong><div class="small text-muted">{{ t.asignado_a|default:"Sin asignar" }}</div></div><span class="badge text-bg-light border align-self-center">{{ t.get_estado_display }}</span></div>
+        {% empty %}<p class="text-muted small mb-0">Aún no hay tareas.</p>{% endfor %}
+      </div>
+    </div>
+
+    <div class="xnx-card mb-3">
+      <div class="xnx-card-header"><span class="xnx-card-title"><i class="bi bi-folder2-open me-2"></i>Documentación</span></div>
+      <div class="xnx-card-body">
+        {% for d in documentos %}<div class="d-flex justify-content-between gap-2 small py-1"><a href="{{ d.archivo.url }}">{{ d.nombre }}</a><span class="text-muted">{{ d.subido_por }}</span></div>{% empty %}<p class="text-muted small">No hay documentos aún.</p>{% endfor %}
+        {% if "documentos" in permisos %}
+          <form method="post" action="{% url 'documento_subir' proyecto.pk %}" enctype="multipart/form-data" class="xnx-form-fila mt-3">{% csrf_token %}
+            <input name="nombre" class="form-control form-control-sm" placeholder="Nombre del documento" aria-label="Nombre del documento" required>
+            <input name="archivo" class="form-control form-control-sm" type="file" aria-label="Archivo" required>
+            <button class="btn btn-outline-primary btn-sm"><i class="bi bi-upload me-1"></i>Subir</button>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if "miembros" in permisos %}
+    <div class="xnx-card mb-3">
+      <div class="xnx-card-header"><span class="xnx-card-title"><i class="bi bi-globe me-2"></i>Visibilidad</span></div>
+      <div class="xnx-card-body small">
+        {% if proyecto.visibilidad == "publico" %}
+          <p>Público: cualquiera con este enlace puede ver el proyecto en solo lectura, sin iniciar sesión.</p>
+          <div class="input-group input-group-sm mb-2"><input class="form-control" readonly value="{{ enlace_url }}" aria-label="Enlace público"></div>
+          <form method="post" action="{% url 'proyecto_enlace_nuevo' proyecto.pk %}">{% csrf_token %}<button class="btn btn-outline-danger btn-sm btn-ajustable">Generar enlace nuevo (invalida el actual)</button></form>
+        {% else %}
+          <p class="mb-0">Privado: solo el equipo ve el proyecto. Para compartirlo por enlace, cambia la visibilidad en Editar.</p>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  {# Columna lateral: equipo y correcciones #}
+  <div class="col-lg-5">
+    <div class="xnx-card mb-3">
+      <div class="xnx-card-header"><span class="xnx-card-title"><i class="bi bi-people me-2"></i>Equipo</span></div>
+      <div class="xnx-card-body">
+        {% for m in miembros %}
+          <div class="activity-item">
+            <div class="xnx-avatar">{{ m.usuario.iniciales }}</div>
+            <div class="flex-grow-1 min-w-0">
+              <div class="fw-semibold small">{{ m.usuario }}</div>
+              {% if "miembros" in permisos and m.usuario_id != proyecto.creado_por_id %}
+                <form method="post" action="{% url 'miembro_cambiar_rol' proyecto.pk m.pk %}" class="xnx-form-fila mt-1">{% csrf_token %}
+                  <select name="rol" class="form-select form-select-sm" aria-label="Permiso de {{ m.usuario }}"><option value="editor" {% if m.rol == "editor" %}selected{% endif %}>Colaborador</option><option value="lector" {% if m.rol == "lector" %}selected{% endif %}>Solo lectura</option></select>
+                  <button class="btn btn-sm btn-outline-primary">Guardar</button>
+                </form>
+              {% else %}<div class="activity-time">{{ m.get_rol_display }}</div>{% endif %}
+            </div>
+            {% if "miembros" in permisos and m.usuario_id != proyecto.creado_por_id %}
+              <form method="post" action="{% url 'miembro_quitar' proyecto.pk m.pk %}">{% csrf_token %}<button class="btn btn-sm btn-outline-danger" aria-label="Quitar a {{ m.usuario }} del equipo" title="Quitar del equipo"><i class="bi bi-x-lg"></i></button></form>
+            {% endif %}
+          </div>
+        {% endfor %}
+        {% if "invitaciones" in permisos and invitaciones %}
+          <div class="mt-3">
+            <div class="small fw-semibold mb-1">Invitaciones pendientes</div>
+            {% for inv in invitaciones %}
+              <div class="xnx-pendiente">
+                <div class="min-w-0"><div class="small text-truncate">{{ inv.email }}</div><div class="activity-time">{{ inv.get_rol_display }} · {% if inv.vencida %}vencida{% else %}vence {{ inv.vence_en|date:"j M" }}{% endif %}</div></div>
+                <form method="post" action="{% url 'invitacion_cancelar' proyecto.pk inv.pk %}" class="m-0">{% csrf_token %}<button class="btn btn-outline-secondary btn-sm" title="Cancelar la invitación">Cancelar</button></form>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+        {% if "invitaciones" in permisos %}
+          <form method="post" action="{% url 'invitacion_crear' proyecto.pk %}" class="mt-3">{% csrf_token %}
+            <label class="small fw-semibold" for="invitar-email">Invitar a alguien</label>
+            <div class="form-text">Le llega por correo y como notificación en Xincronix, donde puede aceptarla o rechazarla. Al invitar, el proyecto pasa a grupal si era individual.</div>
+            <div class="xnx-form-fila mt-1">
+              <input id="invitar-email" name="email" type="email" class="form-control form-control-sm xnx-campo-completo" placeholder="persona@correo.com" required>
+              <select name="rol" class="form-select form-select-sm" aria-label="Permiso de la invitación"><option value="editor">Colaborador (puede editar)</option><option value="lector">Solo lectura (solo mirar)</option></select>
+              <button class="btn btn-primary btn-sm"><i class="bi bi-send me-1"></i>Enviar</button>
+            </div>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="xnx-card">
+      <div class="xnx-card-header"><span class="xnx-card-title"><i class="bi bi-chat-left-text me-2"></i>Correcciones del supervisor</span></div>
+      <div class="xnx-card-body">
+        {% for c in correcciones %}<div class="small border-bottom py-2"><strong>{{ c.autor }}</strong>{% if c.tarea %} · {{ c.tarea }}{% endif %}<div>{{ c.comentario }}</div>{% if c.sugerencia_calificacion %}<span class="text-muted">Referencia: {{ c.sugerencia_calificacion }}</span>{% endif %}</div>{% empty %}<p class="text-muted small">No hay observaciones.</p>{% endfor %}
+        {% if "correcciones" in permisos %}
+          <form method="post" action="{% url 'correccion_crear' proyecto.pk %}" class="mt-3">{% csrf_token %}
+            <textarea name="comentario" class="form-control form-control-sm" rows="2" placeholder="Observación o corrección" aria-label="Observación o corrección" required></textarea>
+            <div class="xnx-form-fila mt-2">
+              <select name="tarea" class="form-select form-select-sm" aria-label="Tarea relacionada"><option value="">Proyecto general</option>{% for t in tareas %}<option value="{{ t.pk }}">{{ t.titulo }}</option>{% endfor %}</select>
+              <input type="number" name="sugerencia_calificacion" class="form-control form-control-sm xnx-campo-corto" placeholder="Referencia" aria-label="Referencia de calificación">
+              <button class="btn btn-outline-primary btn-sm">Registrar</button>
+            </div>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

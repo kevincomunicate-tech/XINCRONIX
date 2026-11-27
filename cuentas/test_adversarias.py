@@ -16,9 +16,9 @@ class RegistroExigenteTests(TestCase):
         base.update(datos)
         return Client().post(reverse("registro"), base)
 
-    def test_no_se_puede_registrar_con_perfil_de_administrador(self):
-        self.registrar(perfil="administrador")
-        self.assertFalse(Usuario.objects.filter(email="ana@prueba.com").exists())
+    def test_el_registro_ignora_un_rol_de_administrador_enviado(self):
+        self.registrar(rol="admin")
+        self.assertEqual(Usuario.objects.get(email="ana@prueba.com").rol, Usuario.Rol.USUARIO)
 
     def test_contrasena_muy_comun_o_solo_numeros_se_rechaza(self):
         for clave in ("12345678", "password", "11111111"):
@@ -124,10 +124,19 @@ class CorreoYContrasenaExigenteTests(TestCase):
         self.ana.refresh_from_db()
         self.assertEqual(self.ana.email, "ana@prueba.com")
 
-    def test_no_se_puede_elegir_perfil_de_administrador_en_mi_cuenta(self):
-        self.c.post(reverse("mi_cuenta"), {"first_name": "Ana", "last_name": "", "email": "ana@prueba.com", "perfil": "administrador", "cargo": "", "telefono": ""})
+    def test_mi_cuenta_muestra_el_rol_sin_un_selector_para_los_tres_roles(self):
+        for rol, etiqueta in Usuario.Rol.choices:
+            with self.subTest(rol=rol):
+                Usuario.objects.filter(pk=self.ana.pk).update(rol=rol)
+                respuesta = self.c.get(reverse("mi_cuenta"))
+                self.assertContains(respuesta, etiqueta)
+                self.assertNotContains(respuesta, 'name="perfil"')
+                self.assertNotContains(respuesta, 'name="rol"')
+
+    def test_no_se_puede_elegir_rol_de_administrador_en_mi_cuenta(self):
+        self.c.post(reverse("mi_cuenta"), {"first_name": "Ana", "last_name": "Ruiz", "email": "ana@prueba.com", "rol": "admin", "cargo": "", "telefono": ""})
         self.ana.refresh_from_db()
-        self.assertNotEqual(self.ana.perfil, "administrador")
+        self.assertEqual(self.ana.rol, Usuario.Rol.USUARIO)
 
     def test_cambiar_contrasena_exige_la_actual(self):
         self.c.post(reverse("cambiar_contrasena"), {"old_password": "otra-cosa", "new_password1": "Nueva$egura2027", "new_password2": "Nueva$egura2027"})

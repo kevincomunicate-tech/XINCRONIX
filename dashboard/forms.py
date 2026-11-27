@@ -2,6 +2,7 @@ import os
 
 from django import forms
 from django.core.exceptions import ValidationError
+from django.db import models
 
 from cuentas.forms import CampoFecha, CampoFechaHora, FormularioBootstrap
 from cuentas.models import Usuario
@@ -16,19 +17,31 @@ class OrientacionProyectoForm(FormularioBootstrap, forms.Form):
     metodologia = forms.ChoiceField(label="¿Cómo quieres trabajar?", choices=[("", "Prefiero decidir después")] + list(Proyecto.Metodologia.choices), required=False)
     modalidad = forms.ChoiceField(label="¿Trabajarás solo o en grupo?", choices=[("", "Aún no lo sé")] + list(Proyecto.Modalidad.choices), required=False)
     contexto_educativo = forms.CharField(label="Curso, institución o reto (opcional)", max_length=180, required=False)
-    supervisor_email = forms.EmailField(label="Correo del profesor supervisor (opcional)", required=False)
+    supervisor_email = forms.EmailField(label="Correo del supervisor (opcional)", required=False)
+
+
+def campo_url_https(campo_modelo, **kwargs):
+    """Si escriben "github.com/equipo/repo" sin esquema, se completa con https://.
+
+    Django 6.0 hará esto por defecto; así el comportamiento ya queda fijo y
+    desaparece la advertencia RemovedInDjango60Warning.
+    """
+    if isinstance(campo_modelo, models.URLField):
+        kwargs.setdefault("assume_scheme", "https")
+    return campo_modelo.formfield(**kwargs)
 
 
 class ProyectoForm(FormularioBootstrap, forms.ModelForm):
     class Meta:
         model = Proyecto
+        formfield_callback = campo_url_https
         fields = ["nombre", "descripcion", "tecnologia", "repositorio_url", "estado", "fecha_inicio", "fecha_fin", "supervisor"]
-        labels = {"repositorio_url": "Repositorio o demo", "supervisor": "Profesor supervisor"}
+        labels = {"repositorio_url": "Repositorio o demo", "supervisor": "Supervisor"}
         widgets = {"descripcion": forms.Textarea(attrs={"rows": 4}), "fecha_inicio": CampoFecha(), "fecha_fin": CampoFecha()}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["supervisor"].queryset = Usuario.objects.filter(perfil=Usuario.Perfil.PROFESOR, is_active=True).order_by("first_name", "email")
+        self.fields["supervisor"].queryset = Usuario.objects.filter(rol=Usuario.Rol.SUPERVISOR, is_active=True).order_by("first_name", "email")
         self.fields["supervisor"].required = False
 
 
@@ -109,3 +122,24 @@ class CorreccionForm(FormularioBootstrap, forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields["tarea"].queryset = proyecto.tareas.all()
         self.fields["tarea"].required = False
+
+
+class RenombrarChatForm(FormularioBootstrap, forms.Form):
+    titulo = forms.CharField(label="Título", max_length=100)
+
+
+class PreguntaAsistenteForm(forms.Form):
+    """Pregunta para el asistente IA del proyecto (Gemini)."""
+
+    pregunta = forms.CharField(
+        label="Tu pregunta",
+        max_length=1000,
+        widget=forms.Textarea(attrs={"rows": 3, "class": "form-control", "placeholder": "Ej.: ¿qué tareas debería priorizar esta semana?"}),
+        error_messages={"required": "Escribe una pregunta.", "max_length": "La pregunta puede tener hasta 1000 caracteres."},
+    )
+
+    def clean_pregunta(self):
+        pregunta = self.cleaned_data["pregunta"].strip()
+        if not pregunta:
+            raise forms.ValidationError("Escribe una pregunta.")
+        return pregunta

@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views
+from . import views, views_integraciones
 
 urlpatterns = [
     path("", views.panel, name="panel"),
@@ -13,6 +13,8 @@ urlpatterns = [
     path("proyectos/<int:pk>/eliminar/", views.proyecto_eliminar, name="proyecto_eliminar"),
     path("proyectos/<int:pk>/invitaciones/", views.invitacion_crear, name="invitacion_crear"),
     path("invitaciones/<uuid:token>/aceptar/", views.invitacion_aceptar, name="invitacion_aceptar"),
+    path("invitaciones/<int:pk>/responder/", views.invitacion_responder, name="invitacion_responder"),
+    path("proyectos/<int:pk>/invitaciones/<int:invitacion_pk>/cancelar/", views.invitacion_cancelar, name="invitacion_cancelar"),
     path("proyectos/<int:pk>/miembros/<int:miembro_pk>/quitar/", views.miembro_quitar, name="miembro_quitar"),
     path("proyectos/<int:pk>/miembros/<int:miembro_pk>/rol/", views.miembro_cambiar_rol, name="miembro_cambiar_rol"),
     path("proyectos/<int:pk>/tareas/nueva/", views.tarea_crear, name="tarea_crear"),
@@ -27,6 +29,12 @@ urlpatterns = [
     path("proyectos/<int:pk>/estadisticas/", views.proyecto_analytics, name="proyecto_analytics"),
     path("proyectos/<int:pk>/canvas/", views.proyecto_canvas, name="proyecto_canvas"),
     path("proyectos/<int:pk>/canvas/guardar/", views.canvas_guardar, name="canvas_guardar"),
+    path("proyectos/<int:pk>/repositorio/", views_integraciones.proyecto_repositorio, name="proyecto_repositorio"),
+    path("proyectos/<int:pk>/asistente/", views_integraciones.proyecto_asistente, name="proyecto_asistente"),
+    path("proyectos/<int:pk>/asistente/chats/<int:chat_id>/renombrar/", views_integraciones.gestionar_chat,
+         {"accion": "renombrar"}, name="asistente_chat_renombrar"),
+    path("proyectos/<int:pk>/asistente/chats/<int:chat_id>/eliminar/", views_integraciones.gestionar_chat,
+         {"accion": "eliminar"}, name="asistente_chat_eliminar"),
     path("proyectos/<int:pk>/documentos/subir/", views.documento_subir, name="documento_subir"),
     path("proyectos/<int:pk>/documentos/<int:documento_pk>/eliminar/", views.documento_eliminar, name="documento_eliminar"),
     path("proyectos/<int:pk>/correcciones/", views.correccion_crear, name="correccion_crear"),

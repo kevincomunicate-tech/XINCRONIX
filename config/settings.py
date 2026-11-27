@@ -93,6 +93,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "cuentas.context_processors.politica_usuario",  # menú según el perfil
                 "cuentas.context_processors.inicio_google",     # botón "Continuar con Google"
+                "dashboard.context_processors.invitaciones",    # campana de invitaciones pendientes
             ],
         },
     },
@@ -105,8 +106,8 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Base de datos
 #
 # El motor se elige en .env con DB_ENGINE:
-#   mysql       -> MySQL o MariaDB (XAMPP, MariaDB suelto, servidor)  [por defecto]
-#   sqlite      -> un archivo db.sqlite3 en la carpeta del proyecto
+#   sqlite      -> un archivo db.sqlite3 en la carpeta del proyecto  [por defecto]
+#   mysql       -> MySQL o MariaDB (XAMPP, MariaDB suelto, servidor)
 #   postgresql  -> PostgreSQL
 #
 # Los MODELOS y las MIGRACIONES no cambian al cambiar de motor: Django
@@ -226,7 +227,7 @@ AUTHENTICATION_BACKENDS = [
 # ---------------------------------------------------------------------------
 # Inicio de sesión con Google (django-allauth)
 #
-# Las credenciales se crean en Google Cloud Console (ver docs/google_login.md)
+# Las credenciales se crean en Google Cloud Console (ver docs/integraciones.md)
 # y se ponen en .env. Sin ellas el botón "Continuar con Google" aparece
 # desactivado y el resto del sistema funciona igual.
 # ---------------------------------------------------------------------------
@@ -255,6 +256,34 @@ SOCIALACCOUNT_STORE_TOKENS = False  # no guardamos tokens de Google: solo usamos
 # La redirección separa el área administrativa y el espacio de proyectos.
 ACCOUNT_ADAPTER = "cuentas.adaptadores.CuentaAdapter"
 SOCIALACCOUNT_ADAPTER = "cuentas.adaptadores.GoogleAdapter"
+
+
+# ---------------------------------------------------------------------------
+# Asistente IA con Google Gemini (opcional)
+#
+# La clave se crea en Google AI Studio (ver docs/integraciones.md) y va en .env.
+# Solo la usa el servidor: nunca llega al navegador. Sin clave, el asistente
+# muestra cómo configurarlo y el resto del sistema funciona igual.
+# ---------------------------------------------------------------------------
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
+# El modelo se puede cambiar sin tocar el código (Google publica modelos nuevos seguido)
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash").strip()
+# Si el modelo principal responde "saturado" (503), se intenta con estos, en orden (separados por coma). Vacío = sin respaldo.
+GEMINI_MODEL_RESPALDO = os.getenv("GEMINI_MODEL_RESPALDO", "gemini-3.6-flash,gemini-3.5-flash-lite").strip()
+# Preguntas por persona y por hora (protege la cuota gratuita de la clave)
+GEMINI_LIMITE_POR_HORA = int(os.getenv("GEMINI_LIMITE_POR_HORA", "60"))
+
+
+# ---------------------------------------------------------------------------
+# GitHub (opcional)
+#
+# Sin token se pueden ver repositorios PÚBLICOS (GitHub permite 60 consultas por
+# hora desde una misma IP). Con un token personal "fine-grained" de solo lectura
+# el límite sube y también se ven los privados a los que el token tenga acceso.
+# ---------------------------------------------------------------------------
+
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "").strip()
 
 
 # ---------------------------------------------------------------------------
@@ -292,6 +321,14 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 EMAIL_BACKEND = os.getenv("DJANGO_EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "Xincronix <no-responder@xincronix.local>")
+# Correo real (SMTP), por ejemplo Gmail con una "contraseña de aplicación".
+# Se usa cuando DJANGO_EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend (ver docs/integraciones.md).
+EMAIL_HOST = os.getenv("EMAIL_HOST", "localhost")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True") == "True"
+EMAIL_TIMEOUT = 15  # segundos: si el servidor de correo no responde, la invitación igual queda como notificación
 
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

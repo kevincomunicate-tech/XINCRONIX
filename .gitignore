@@ -3,6 +3,8 @@
 
 # Secretos
 .env
+.env.*
+!.env.example
 
 # Base de datos de desarrollo y archivos generados
 db.sqlite3

@@ -51,6 +51,7 @@ class RecuperarView(auth_views.PasswordResetView):
     template_name = "cuentas/recuperar.html"
     form_class = RecuperarForm
     email_template_name = "cuentas/correo_recuperar.txt"
+    html_email_template_name = "cuentas/correo_recuperar.html"
     subject_template_name = "cuentas/correo_recuperar_asunto.txt"
     success_url = reverse_lazy("recuperar_enviado")
 

@@ -42,7 +42,6 @@ class LoginForm(AuthenticationForm):
 class RegistroForm(FormularioBootstrap, forms.Form):
     nombre = forms.CharField(label="Nombre completo", max_length=150, widget=forms.TextInput(attrs={"autocomplete": "name", "autofocus": True}))
     email = forms.EmailField(label="Correo electrónico", max_length=150, widget=forms.EmailInput(attrs={"autocomplete": "email"}))
-    perfil = forms.ChoiceField(label="Usaré la plataforma como", choices=Usuario.Perfil.choices)
     password = forms.CharField(label="Contraseña", strip=False, widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}))
 
     def clean_nombre(self):
@@ -71,7 +70,7 @@ class RegistroForm(FormularioBootstrap, forms.Form):
         nombre, _, apellido = self.cleaned_data["nombre"].partition(" ")
         return Usuario.objects.create_user(
             email=self.cleaned_data["email"], password=self.cleaned_data["password"],
-            first_name=nombre, last_name=apellido, perfil=self.cleaned_data["perfil"],
+            first_name=nombre, last_name=apellido,
         )
 
 
@@ -86,9 +85,15 @@ class NuevaContrasenaForm(SetPasswordForm):
 
 
 class PerfilForm(FormularioBootstrap, forms.ModelForm):
+    def save(self, commit=True):
+        usuario = super().save(commit=False)
+        if commit:
+            usuario.save(update_fields=self.Meta.fields)
+        return usuario
+
     class Meta:
         model = Usuario
-        fields = ["first_name", "last_name", "email", "perfil", "cargo", "telefono"]
+        fields = ["first_name", "last_name", "email", "cargo", "telefono"]
         labels = {"first_name": "Nombres", "last_name": "Apellidos", "cargo": "Especialidad o rol"}
 
     def clean_email(self):
